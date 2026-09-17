@@ -1,0 +1,988 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduExam AI 2026 - Tạo & Trộn Đề Kiểm Tra Chuẩn Bộ GD&ĐT 2026 - 2027</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+              800: '#3730a3',
+              900: '#312e81'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- KaTeX for rendering Math formulas -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Vue 3 -->
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen">
+  <div id="app" class="flex flex-col min-h-screen">
+
+    <!-- HEADER / NAVIGATION -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md shadow-brand-500/20">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="font-extrabold text-xl tracking-tight text-slate-900">EduExam<span class="text-brand-600">AI 2026</span></span>
+              <span class="bg-emerald-50 text-emerald-700 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-emerald-200">Chuẩn Bộ GD&ĐT 2026 - 2027</span>
+            </div>
+            <p class="text-xs text-slate-500 hidden sm:block">Tạo đề thi đa môn, hỗ trợ công thức Toán - Lý - Hóa, trộn đề và xuất Word 3 phần</p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <!-- API Key Config Button -->
+          <button @click="showApiModal = true" class="inline-flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition border border-slate-300">
+            <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>Cài đặt AI</span>
+            <span v-if="parsedKeyCount > 1" class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-bold">Xoay vòng {{ parsedKeyCount }} keys</span>
+            <span v-else-if="parsedKeyCount === 1" class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span v-else-if="isUsingEnvKeys" class="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>Đã nạp {{ effectiveKeyCount }} Keys (.env)</span>
+            </span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+
+      <!-- BREADCRUMB / STATUS BANNER -->
+      <div class="bg-gradient-to-r from-brand-700 via-indigo-700 to-purple-800 rounded-2xl p-6 text-white shadow-lg shadow-brand-500/10 relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl">
+          <h1 class="text-2xl sm:text-3xl font-black tracking-tight text-white mb-2">Hệ Thống Biên Soạn & Trộn Đề Kiểm Tra EduExam AI 2026</h1>
+          <p class="text-brand-100 text-sm sm:text-base leading-relaxed">
+            Hỗ trợ cấu trúc định dạng Bộ GD&ĐT năm học 2026 - 2027: <span class="font-semibold text-white">20 câu Trắc nghiệm</span> + <span class="font-semibold text-white">4 câu Đúng/Sai</span> (16 ý) + <span class="font-semibold text-white">6 câu Trả lời ngắn</span> + <span class="font-semibold text-white">Tự luận tùy chọn</span>. Chuyển đổi công thức toán, lý, hóa sang <b>Word Equation (OMML)</b> nguyên bản.
+          </p>
+        </div>
+        <div class="absolute right-0 bottom-0 opacity-10 transform translate-x-8 translate-y-8 pointer-events-none">
+          <svg class="w-72 h-72" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3L1 9l11 6 9-4.91V17h2V9M5 13.18v4L12 21l7-3.82v-4L12 17l-7-3.82z"/></svg>
+        </div>
+      </div>
+
+      <!-- STEP 1: CONFIGURATION & CREATION -->
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+              <span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-sm font-bold">1</span>
+              <span>Thiết lập & Khởi tạo Đề thi</span>
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">Chọn phương thức tạo đề từ Prompt, tải file PDF/Word hoặc thử ngay đề mẫu</p>
+          </div>
+
+          <!-- Quick Action Buttons for Samples -->
+          <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+            <span class="text-xs font-semibold text-slate-400">Thử mẫu nhanh:</span>
+            <button @click="loadSample('toan')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition">
+              📐 Toán 12
+            </button>
+            <button @click="loadSample('ly')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition">
+              ⚡ Vật lý 12
+            </button>
+            <button @click="loadSample('hoa')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition">
+              🧪 Hóa học 12
+            </button>
+            <button @click="loadSample('gdqp')" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition">
+              🛡️ GDQP 10
+            </button>
+          </div>
+        </div>
+
+        <div class="p-6 space-y-6">
+          <!-- Subject & Grade Selectors -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Môn học</label>
+                <button v-if="isCustomSubject" @click="isCustomSubject = false; form.subject = 'Toán học'" class="text-[10px] text-brand-600 hover:underline">Chọn từ danh sách</button>
+              </div>
+              <div v-if="!isCustomSubject">
+                <select v-model="form.subject" @change="handleSubjectSelectChange" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                  <option value="Toán học">Toán học (Công thức & Đồ thị)</option>
+                  <option value="Vật lý">Vật lý (Công thức & Dao động)</option>
+                  <option value="Hóa học">Hóa học (Phương trình & Hữu cơ)</option>
+                  <option value="Sinh học">Sinh học</option>
+                  <option value="Tiếng Anh">Tiếng Anh</option>
+                  <option value="Lịch sử">Lịch sử</option>
+                  <option value="Địa lý">Địa lý</option>
+                  <option value="Giáo dục kinh tế & Pháp luật">GDKT & Pháp luật</option>
+                  <option value="Tin học">Tin học (Python & Thuật toán)</option>
+                  <option value="Giáo dục Quốc phòng & An ninh">Giáo dục Quốc phòng & An ninh (GDQP)</option>
+                  <option value="Công nghệ">Công nghệ</option>
+                  <option value="Ngữ văn">Ngữ văn</option>
+                  <option value="__other__">✨ Môn học khác (Tự nhập tên môn)...</option>
+                </select>
+              </div>
+              <div v-else>
+                <input type="text" v-model="form.subject" placeholder="Nhập tên môn học (ví dụ: GDQP, Âm nhạc...)" class="w-full bg-slate-50 border border-brand-500 rounded-xl px-3.5 py-2.5 text-sm font-bold text-brand-700 focus:ring-2 focus:ring-brand-500 focus:outline-none shadow-sm">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Khối lớp</label>
+              <select v-model="form.grade" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                <option value="12">Lớp 12 (Ôn thi Tốt nghiệp THPT)</option>
+                <option value="11">Lớp 11 (CT GDPT 2018)</option>
+                <option value="10">Lớp 10 (CT GDPT 2018)</option>
+                <option value="9">Lớp 9 (Chuyển cấp)</option>
+                <option value="8">Lớp 8</option>
+                <option value="7">Lớp 7</option>
+                <option value="6">Lớp 6</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Thời gian làm bài</label>
+              <input type="number" v-model.number="form.duration_minutes" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="50 phút">
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Cơ cấu số câu hỏi (P1 / P2 / P3 / Tự luận)</label>
+                <span class="text-[10px] text-slate-500 font-medium italic">Tự luận = 0: Không tạo</span>
+              </div>
+              <div class="grid grid-cols-4 gap-1.5">
+                <div class="space-y-0.5 text-center">
+                  <span class="text-[10px] font-bold text-slate-500">P1 (TN)</span>
+                  <input type="number" min="0" v-model.number="form.num_part1" title="Phần 1: Trắc nghiệm 4 lựa chọn" class="w-full text-center bg-slate-50 border border-slate-300 rounded-xl py-2 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div class="space-y-0.5 text-center">
+                  <span class="text-[10px] font-bold text-slate-500">P2 (Đ/S)</span>
+                  <input type="number" min="0" v-model.number="form.num_part2" title="Phần 2: Đúng / Sai" class="w-full text-center bg-slate-50 border border-slate-300 rounded-xl py-2 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div class="space-y-0.5 text-center">
+                  <span class="text-[10px] font-bold text-slate-500">P3 (Ngắn)</span>
+                  <input type="number" min="0" v-model.number="form.num_part3" title="Phần 3: Trả lời ngắn" class="w-full text-center bg-slate-50 border border-slate-300 rounded-xl py-2 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                </div>
+                <div class="space-y-0.5 text-center">
+                  <span class="text-[10px] font-bold text-purple-700">Tự luận</span>
+                  <input type="number" min="0" max="10" v-model.number="form.num_essay" title="Phần 4: Tự luận (Chọn 0 nếu không tạo câu tự luận)" class="w-full text-center bg-purple-50 border border-purple-300 rounded-xl py-2 text-sm font-bold text-purple-900 focus:ring-2 focus:ring-purple-500 focus:outline-none">
+                </div>
+              </div>
+
+              <!-- Live Point Allocation Bar -->
+              <div class="mt-2.5 px-3 py-2 bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200 rounded-xl flex flex-wrap items-center justify-between text-[11px] shadow-xs">
+                <div class="flex items-center space-x-1.5 font-bold text-slate-700">
+                  <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                  <span>Phân bổ điểm chuẩn:</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-2 text-slate-700 font-semibold">
+                  <span v-if="form.num_part1 > 0" class="text-blue-700 bg-blue-100/70 px-2 py-0.5 rounded">P.I: <b>{{ formScoring.part1_points }} đ</b> ({{ formScoring.part1_per_q }} đ/c)</span>
+                  <span v-if="form.num_part2 > 0" class="text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded">P.II: <b>{{ formScoring.part2_points }} đ</b> (tối đa 1,0 đ/c)</span>
+                  <span v-if="form.num_part3 > 0" class="text-amber-700 bg-amber-100/70 px-2 py-0.5 rounded">P.III: <b>{{ formScoring.part3_points }} đ</b> ({{ formScoring.part3_per_q }} đ/c)</span>
+                  <span v-if="form.num_essay > 0" class="text-purple-700 bg-purple-100/70 px-2 py-0.5 rounded">Tự luận: <b>{{ formScoring.part4_points }} đ</b></span>
+                  <span class="px-2 py-0.5 bg-emerald-600 text-white rounded-md font-black text-xs tracking-wide">TỔNG: 10,0 ĐIỂM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- School Name & Academic Year (Tùy biến tiêu đề đề thi) -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1 pb-1">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Tên trường / Đơn vị khảo thí</label>
+              <input type="text" v-model="form.school_name" @input="syncSchoolInfo" placeholder="Ví dụ: SỞ GD&ĐT HÀ NỘI - TRƯỜNG THPT NGUYỄN TRÃI" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none shadow-xs">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Năm học</label>
+              <input type="text" v-model="form.academic_year" @input="syncSchoolInfo" placeholder="Ví dụ: NĂM HỌC 2026 - 2027" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none shadow-xs">
+            </div>
+          </div>
+
+          <!-- INPUT METHOD TABS -->
+          <div class="border-t border-slate-100 pt-4">
+            <div class="flex border-b border-slate-200">
+              <button @click="inputMode = 'prompt'" :class="{'border-brand-600 text-brand-600 font-bold': inputMode === 'prompt', 'border-transparent text-slate-500 hover:text-slate-700': inputMode !== 'prompt'}" class="py-2.5 px-5 border-b-2 text-sm transition flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span>Tạo tự động bằng Prompt</span>
+              </button>
+              <button @click="inputMode = 'file'" :class="{'border-brand-600 text-brand-600 font-bold': inputMode === 'file', 'border-transparent text-slate-500 hover:text-slate-700': inputMode !== 'file'}" class="py-2.5 px-5 border-b-2 text-sm transition flex items-center space-x-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                <span>Tạo từ File PDF hoặc Word (.docx)</span>
+              </button>
+            </div>
+
+            <!-- Tab Content: Prompt -->
+            <div v-if="inputMode === 'prompt'" class="pt-4 space-y-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Chủ đề bài học / Ma trận kiến thức</label>
+                <input type="text" v-model="form.topic" placeholder="Ví dụ: Đạo hàm và ứng dụng khảo sát hàm số, Nguyên hàm tích phân, Oxyz..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-600 mb-1">Yêu cầu cụ thể hoặc ghi chú thêm cho AI</label>
+                <textarea v-model="form.prompt" rows="3" placeholder="Ví dụ: Tăng cường các bài toán thực tế và liên môn; 40% nhận biết, 30% thông hiểu, 20% vận dụng, 10% vận dụng cao; các công thức toán học chú thích chi tiết..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+              </div>
+            </div>
+
+            <!-- Tab Content: File Upload -->
+            <div v-if="inputMode === 'file'" class="pt-4 space-y-4">
+              <div class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-brand-500 transition bg-slate-50 relative cursor-pointer" @dragover.prevent @drop.prevent="handleFileDrop">
+                <input type="file" ref="fileInput" @change="handleFileSelect" accept=".docx,.doc,.pdf,.txt" class="absolute inset-0 opacity-0 cursor-pointer">
+                <div class="flex flex-col items-center justify-center space-y-2">
+                  <div class="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  </div>
+                  <div class="text-sm font-semibold text-slate-700">
+                    <span v-if="uploadedFileName" class="text-brand-600">{{ uploadedFileName }}</span>
+                    <span v-else>Kéo thả tập tin vào đây hoặc <span class="text-brand-600 underline">bấm để chọn file</span></span>
+                  </div>
+                  <p class="text-xs text-slate-400">Hỗ trợ các tệp: Microsoft Word (.docx), PDF (.pdf), Text (.txt)</p>
+                </div>
+              </div>
+
+              <div v-if="extractedPreview" class="bg-slate-100 rounded-xl p-4 border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-bold text-slate-700">Trích xuất nội dung thành công ({{ extractedPreview.length }} ký tự)</span>
+                  <button @click="extractedPreview = ''" class="text-xs text-rose-600 hover:underline">Xóa</button>
+                </div>
+                <div class="text-xs text-slate-600 max-h-36 overflow-y-auto whitespace-pre-wrap font-mono bg-white p-2.5 rounded-lg border border-slate-200">{{ extractedPreview }}</div>
+                
+                <!-- Quick Action Bar -->
+                <div class="mt-3.5 pt-3 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div class="text-xs text-slate-600 flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-brand-50 text-brand-700 font-semibold border border-brand-200">Môn: {{ form.subject }}</span>
+                    <span class="inline-flex items-center px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200">Lớp: {{ form.grade }}</span>
+                  </div>
+                  <button @click="startGenerate" :disabled="isGenerating || isExtracting" class="inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-xs shadow-md hover:from-brand-700 hover:to-indigo-700 active:scale-95 transition disabled:opacity-50">
+                    <svg v-if="isGenerating" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                    <span>{{ isGenerating ? 'Đang tạo đề từ tài liệu...' : 'BẮT ĐẦU TẠO ĐỀ TỪ TÀI LIỆU NÀY' }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- GENERATE ERROR BANNER -->
+          <div v-if="generateError" class="p-4 bg-rose-50 border border-rose-200 rounded-xl space-y-2">
+            <div class="flex items-start justify-between">
+              <div class="flex items-start space-x-2.5 text-rose-800">
+                <svg class="w-5 h-5 text-rose-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                <div>
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-rose-900">Không thể tạo đề thi từ AI</h4>
+                  <p class="text-xs text-rose-700 mt-1 whitespace-pre-line leading-relaxed font-sans">{{ generateError }}</p>
+                </div>
+              </div>
+              <button @click="generateError = ''" class="text-rose-400 hover:text-rose-600 text-sm font-bold ml-2">✕</button>
+            </div>
+            <div class="pt-2 flex flex-wrap gap-2 text-xs border-t border-rose-100">
+              <button @click="showApiModal = true" class="px-3 py-1.5 bg-white border border-rose-300 text-rose-700 font-semibold rounded-lg hover:bg-rose-100 transition shadow-sm">
+                🔑 Cấu hình / Nhập thêm API Key
+              </button>
+              <button @click="loadSample('toan')" class="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 transition shadow-sm">
+                📐 Thử ngay đề mẫu chuẩn (Toán 12)
+              </button>
+            </div>
+          </div>
+
+          <!-- GENERATE BUTTON -->
+          <div class="pt-2 flex justify-end">
+            <button @click="startGenerate" :disabled="isGenerating || isExtracting" class="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-sm shadow-md shadow-brand-500/25 hover:from-brand-700 hover:to-indigo-700 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed">
+              <svg v-if="isGenerating || isExtracting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+              <span>{{ isGenerating ? 'Đang khởi tạo đề kiểm tra...' : (isExtracting ? 'Đang trích xuất file...' : 'TẠO ĐỀ KIỂM TRA') }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 2: EXAM SHUFFLING TOOLBAR (VISIBLE ONCE EXAM IS LOADED) -->
+      <div v-if="exam" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div>
+            <h2 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+              <span class="w-7 h-7 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-bold">2</span>
+              <span>Trộn Đề Thi Tự Động (Tạo Nhiều Mã Đề)</span>
+            </h2>
+            <p class="text-xs text-slate-500 mt-1">Đảo câu hỏi, đảo phương án A-B-C-D, giữ tính logic của lời giải và tự động lập ma trận đáp án</p>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <div class="flex items-center space-x-2">
+              <label class="text-xs font-semibold text-slate-600">Số mã đề:</label>
+              <select v-model.number="shuffleConfig.num_variants" class="bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800">
+                <option :value="1">1 đề (gốc)</option>
+                <option :value="2">2 mã đề</option>
+                <option :value="4">4 mã đề (Chuẩn)</option>
+                <option :value="6">6 mã đề</option>
+                <option :value="8">8 mã đề</option>
+                <option :value="12">12 mã đề</option>
+                <option :value="16">16 mã đề</option>
+                <option :value="20">20 mã đề</option>
+                <option :value="24">24 mã đề (Chuẩn phòng thi THPT / ĐGNL)</option>
+              </select>
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <label class="text-xs font-semibold text-slate-600">Mã bắt đầu:</label>
+              <input type="number" v-model.number="shuffleConfig.start_code" class="w-20 bg-slate-50 border border-slate-300 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-800 text-center">
+            </div>
+
+            <button @click="startShuffle" :disabled="isShuffling" class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-lg bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-700 active:scale-95 transition disabled:opacity-50">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>{{ isShuffling ? 'Đang trộn...' : 'TIẾN HÀNH TRỘN ĐỀ' }}</span>
+            </button>
+          </div>
+
+          <!-- Tùy chọn xáo trộn chi tiết -->
+          <div class="flex flex-wrap items-center gap-4 pt-3 border-t border-slate-200/80 w-full text-xs">
+            <span class="font-bold text-slate-700">Tùy chọn xáo trộn:</span>
+            <label class="flex items-center space-x-2 text-slate-700 cursor-pointer select-none">
+              <input type="checkbox" v-model="shuffleConfig.shuffle_part1_options" class="rounded text-brand-600 focus:ring-brand-500 w-4 h-4">
+              <span class="font-medium">Đảo câu hỏi & hoán vị phương án A-B-C-D (Phần I)</span>
+            </label>
+            <label class="flex items-center space-x-2 text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 cursor-pointer select-none font-semibold">
+              <input type="checkbox" v-model="shuffleConfig.shuffle_part2_subitems" class="rounded text-emerald-600 focus:ring-emerald-500 w-4 h-4">
+              <span>Đảo câu hỏi & hoán vị các lệnh a, b, c, d (Phần II - Đúng / Sai)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- DOWNLOAD BUTTONS BAR -->
+        <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <div class="flex items-center space-x-2 text-xs text-slate-600">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span>
+            <span class="font-semibold">Đã tạo {{ variants.length }} mã đề:</span>
+            <span class="font-mono font-bold text-brand-600">{{ variants.map(v => v.code).join(', ') }}</span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Export Current Variant -->
+            <button @click="exportSingleDocx(activeVariantCode)" class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-blue-600 text-white font-semibold text-xs hover:bg-blue-700 shadow-sm transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Tải Word Mã {{ activeVariantCode }}</span>
+            </button>
+
+            <!-- Export Master Combined Docx -->
+            <button @click="exportMasterDocx" class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-700 shadow-sm transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Tải Word Tổng Hợp (Kèm Ma Trận)</span>
+            </button>
+
+            <!-- Export Zip All -->
+            <button @click="exportZipAll" class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-purple-600 text-white font-semibold text-xs hover:bg-purple-700 shadow-sm transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/></svg>
+              <span>Tải Trọn Bộ ZIP</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- AUDITOR AGENT VERIFICATION BADGE -->
+        <div v-if="exam && exam.audit_report" class="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100 border border-emerald-300 rounded-2xl p-4 shadow-sm">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div class="flex items-start space-x-3">
+              <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+                🛡️
+              </div>
+              <div>
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="font-extrabold text-emerald-950 text-sm">Hội Đồng Khảo Thí AI: Đã Thẩm Định & Kiểm Duyệt Độc Lập</span>
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-black text-[10px] tracking-wide uppercase">
+                    Chất lượng: {{ exam.audit_report.quality_score }}/100
+                  </span>
+                </div>
+                <p class="text-xs text-emerald-800 mt-1 leading-relaxed">
+                  Tất cả <b>{{ exam.audit_report.total_questions }} câu hỏi</b> (Phần I, II, III) đã được AI Auditor Agent đối soát 100%: 
+                  Đảm bảo không có phương án rác/vô nghĩa, đáp án trùng khớp hoàn toàn với câu hỏi và lời giải chi tiết.
+                </p>
+                <div v-if="exam.audit_report.notes && exam.audit_report.notes.length" class="mt-2 text-[11px] text-emerald-900 space-y-0.5">
+                  <div v-for="(n, idx) in exam.audit_report.notes" :key="idx" class="flex items-start space-x-1.5 font-medium">
+                    <span class="text-emerald-600 font-bold">✓</span>
+                    <span>{{ n }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="shrink-0 flex sm:flex-col items-center sm:items-end gap-1">
+              <span class="inline-flex items-center space-x-1 px-3 py-1 rounded-lg bg-emerald-700 text-white font-bold text-xs shadow-xs">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                <span>100% ĐẠT CHUẨN</span>
+              </span>
+              <span class="text-[10px] text-emerald-700 font-semibold">Khớp 100% Câu hỏi & Đáp án</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: INTERACTIVE PREVIEW & EDITOR -->
+      <div v-if="activeExam" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <!-- Variant Tab Header -->
+        <div class="bg-slate-100 border-b border-slate-200 px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+          <!-- Code selection tabs -->
+          <div class="flex items-center space-x-1 overflow-x-auto">
+            <span class="text-xs font-bold text-slate-500 mr-2">MÃ ĐỀ:</span>
+            <button v-for="v in variants" :key="v.code" @click="setActiveVariant(v.code)" :class="{'bg-white text-brand-700 font-extrabold shadow-sm border border-slate-300': activeVariantCode === v.code, 'bg-slate-200 text-slate-600 hover:bg-slate-300 font-medium': activeVariantCode !== v.code}" class="px-3.5 py-1.5 rounded-lg text-xs transition font-mono">
+              {{ v.code }}
+            </button>
+          </div>
+
+          <!-- Section View Mode (Đề / Đáp Án / Giải Chi Tiết) -->
+          <div class="flex items-center space-x-1 bg-slate-200 p-1 rounded-lg">
+            <button @click="viewSection = 'questions'" :class="{'bg-white text-slate-900 font-bold shadow-xs': viewSection === 'questions', 'text-slate-600': viewSection !== 'questions'}" class="px-3 py-1 rounded-md text-xs transition">
+              1. Đề Bài
+            </button>
+            <button @click="viewSection = 'answers'" :class="{'bg-white text-slate-900 font-bold shadow-xs': viewSection === 'answers', 'text-slate-600': viewSection !== 'answers'}" class="px-3 py-1 rounded-md text-xs transition">
+              2. Bảng Đáp Án
+            </button>
+            <button @click="viewSection = 'explanations'" :class="{'bg-white text-slate-900 font-bold shadow-xs': viewSection === 'explanations', 'text-slate-600': viewSection !== 'explanations'}" class="px-3 py-1 rounded-md text-xs transition">
+              3. Lời Giải Chi Tiết
+            </button>
+          </div>
+        </div>
+
+        <!-- EXAM CONTENT DISPLAY AREA -->
+        <div class="p-8 space-y-8 exam-paper max-w-4xl mx-auto" ref="examContainer">
+
+          <!-- VIEW SECTION 1: ĐỀ BÀI -->
+          <div v-show="viewSection === 'questions'" class="space-y-8">
+            <!-- Header Paper Info -->
+            <div class="grid grid-cols-2 gap-6 pb-4 border-b border-slate-300">
+              <div class="text-center space-y-1">
+                <p class="text-xs font-bold text-slate-800 uppercase">{{ activeExam.school_name }}</p>
+                <p class="text-xs italic text-slate-600">{{ activeExam.academic_year }}</p>
+              </div>
+              <div class="text-center space-y-1">
+                <p class="text-sm font-black text-slate-900 uppercase tracking-tight">{{ activeExam.title }}</p>
+                <p class="text-xs font-bold text-slate-700">Môn: {{ activeExam.subject }} - Lớp: {{ activeExam.grade }}</p>
+                <p class="text-xs italic text-slate-500">Thời gian làm bài: {{ activeExam.duration_minutes }} phút (Không kể thời gian phát đề)</p>
+                <div class="inline-block border-2 border-rose-600 text-rose-700 px-3 py-0.5 rounded font-mono font-black text-xs">
+                  MÃ ĐỀ THI: {{ activeVariantCode }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Student Info Line -->
+            <div class="text-xs italic text-slate-600 flex justify-between pb-2 border-b border-dashed border-slate-200">
+              <span>Họ và tên thí sinh: ............................................................................................</span>
+              <span>Số báo danh: .............................</span>
+            </div>
+
+            <!-- PHẦN I: TRẮC NGHIỆM NHIỀU LỰA CHỌN -->
+            <div v-if="activeExam.part1_mcq && activeExam.part1_mcq.length" class="space-y-4">
+              <div class="bg-indigo-50 border-l-4 border-brand-600 p-3 rounded-r-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <h3 class="text-sm font-bold text-brand-900 uppercase">
+                    PHẦN I ({{ activeScoring.part1_points }} ĐIỂM)
+                  </h3>
+                  <p class="text-xs text-brand-700 mt-0.5">Thí sinh trả lời từ câu 1 đến câu {{ activeExam.part1_mcq.length }}. Mỗi câu hỏi thí sinh chỉ chọn một phương án. (Mỗi câu trả lời đúng được {{ activeScoring.part1_per_q }} điểm)</p>
+                </div>
+                <span class="px-2.5 py-1 bg-brand-100 text-brand-800 rounded-lg text-xs font-bold whitespace-nowrap self-start sm:self-center">{{ activeScoring.part1_points }} điểm</span>
+              </div>
+
+              <div class="space-y-4">
+                <div v-for="(q, idx) in activeExam.part1_mcq" :key="q.id" class="p-3.5 rounded-xl border border-slate-200 hover:border-brand-300 transition bg-white space-y-2">
+                  <div class="flex items-start space-x-2">
+                    <span class="font-bold text-slate-900 text-sm whitespace-nowrap">Câu {{ idx + 1 }}:</span>
+                    <div class="text-sm text-slate-800 math-content" v-html="renderMath(q.question)"></div>
+                  </div>
+
+                  <!-- Options grid (Strictly 4 options A, B, C, D) -->
+                  <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 pt-1 pl-4">
+                    <div v-for="opt in (q.options ? q.options.slice(0, 4) : [])" :key="opt.label" class="flex items-start space-x-1.5 text-xs text-slate-700">
+                      <span class="font-bold text-slate-900">{{ opt.label }}.</span>
+                      <span class="math-content" v-html="renderMath(opt.text)"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PHẦN II: TRẮC NGHIỆM ĐÚNG SAI -->
+            <div v-if="activeExam.part2_tf && activeExam.part2_tf.length" class="space-y-4">
+              <div class="bg-indigo-50 border-l-4 border-brand-600 p-3 rounded-r-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <h3 class="text-sm font-bold text-brand-900 uppercase">
+                    PHẦN II ({{ activeScoring.part2_points }} ĐIỂM)
+                  </h3>
+                  <p class="text-xs text-brand-700 mt-0.5">Thí sinh trả lời từ câu 1 đến câu {{ activeExam.part2_tf.length }}. Trong mỗi ý a), b), c), d) ở mỗi câu, thí sinh chọn đúng hoặc sai. (Tối đa {{ activeScoring.part2_per_q }} đ/câu: Đúng 1 ý: 0,1đ; 2 ý: 0,25đ; 3 ý: 0,5đ; 4 ý: 1,0đ)</p>
+                </div>
+                <span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-lg text-xs font-bold whitespace-nowrap self-start sm:self-center">{{ activeScoring.part2_points }} điểm</span>
+              </div>
+
+              <div class="space-y-4">
+                <div v-for="(q, idx) in activeExam.part2_tf" :key="q.id" class="p-3.5 rounded-xl border border-slate-200 hover:border-brand-300 transition bg-white space-y-2">
+                  <div class="flex items-start space-x-2">
+                    <span class="font-bold text-slate-900 text-sm whitespace-nowrap">Câu {{ idx + 1 }}:</span>
+                    <div class="text-sm text-slate-800 math-content" v-html="renderMath(q.question)"></div>
+                  </div>
+
+                  <div class="space-y-1.5 pl-4 pt-1">
+                    <div v-for="sub in q.sub_items" :key="sub.label" class="flex items-start space-x-2 text-xs text-slate-700">
+                      <span class="font-bold text-slate-900">{{ sub.label }})</span>
+                      <span class="math-content" v-html="renderMath(sub.statement)"></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PHẦN III: TRẢ LỜI NGẮN -->
+            <div v-if="activeExam.part3_short && activeExam.part3_short.length" class="space-y-4">
+              <div class="bg-indigo-50 border-l-4 border-brand-600 p-3 rounded-r-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <h3 class="text-sm font-bold text-brand-900 uppercase">
+                    PHẦN III ({{ activeScoring.part3_points }} ĐIỂM)
+                  </h3>
+                  <p class="text-xs text-brand-700 mt-0.5">Thí sinh trả lời từ câu 1 đến câu {{ activeExam.part3_short.length }}. Viết câu trả lời vào phiếu trả lời theo mẫu quy định. (Mỗi câu trả lời đúng được {{ activeScoring.part3_per_q }} điểm)</p>
+                </div>
+                <span class="px-2.5 py-1 bg-amber-100 text-amber-800 rounded-lg text-xs font-bold whitespace-nowrap self-start sm:self-center">{{ activeScoring.part3_points }} điểm</span>
+              </div>
+
+              <div class="space-y-4">
+                <div v-for="(q, idx) in activeExam.part3_short" :key="q.id" class="p-3.5 rounded-xl border border-slate-200 hover:border-brand-300 transition bg-white space-y-2">
+                  <div class="flex items-start space-x-2">
+                    <span class="font-bold text-slate-900 text-sm whitespace-nowrap">Câu {{ idx + 1 }}:</span>
+                    <div class="text-sm text-slate-800 math-content" v-html="renderMath(q.question)"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PHẦN IV: CÂU HỎI TỰ LUẬN (CHỈ HIỂN THỊ KHI SỐ CÂU > 0) -->
+            <div v-if="activeExam.part4_essay && activeExam.part4_essay.length" class="space-y-4">
+              <div class="bg-purple-50 border-l-4 border-purple-600 p-3 rounded-r-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <h3 class="text-sm font-bold text-purple-900 uppercase">
+                    PHẦN IV ({{ activeScoring.part4_points }} ĐIỂM) - CÂU HỎI TỰ LUẬN
+                  </h3>
+                  <p class="text-xs text-purple-700 mt-0.5">Thí sinh trả lời từ câu 1 đến câu {{ activeExam.part4_essay.length }}. Trình bày bài giải chi tiết vào tờ giấy thi.</p>
+                </div>
+                <span class="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-lg text-xs font-bold whitespace-nowrap self-start sm:self-center">{{ activeScoring.part4_points }} điểm</span>
+              </div>
+
+              <div class="space-y-4">
+                <div v-for="(q, idx) in activeExam.part4_essay" :key="q.id" class="p-3.5 rounded-xl border border-slate-200 hover:border-purple-300 transition bg-white space-y-2">
+                  <div class="flex items-start space-x-2">
+                    <span class="font-bold text-slate-900 text-sm whitespace-nowrap">Câu {{ idx + 1 }} <span v-if="q.points" class="text-purple-700 font-semibold text-xs">({{ q.points }} điểm)</span>:</span>
+                    <div class="text-sm text-slate-800 math-content" v-html="renderMath(q.question)"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- End of exam -->
+            <div class="text-center font-bold text-xs text-slate-400 pt-6">
+              ------------------ HẾT ------------------
+            </div>
+          </div>
+
+          <!-- VIEW SECTION 2: BẢNG ĐÁP ÁN -->
+          <div v-show="viewSection === 'answers'" class="space-y-8">
+            <div class="text-center space-y-1 pb-4 border-b border-slate-200">
+              <h3 class="text-lg font-black text-rose-700 uppercase">BẢNG ĐÁP ÁN MÃ ĐỀ {{ activeVariantCode }}</h3>
+              <p class="text-xs text-slate-500 font-medium">Đối chiếu và chấm điểm tự động</p>
+            </div>
+
+            <!-- Part 1 Table -->
+            <div v-if="activeExam.part1_mcq && activeExam.part1_mcq.length" class="space-y-2">
+              <h4 class="text-xs font-bold text-indigo-900 uppercase">1. Đáp án Phần I (Trắc nghiệm nhiều lựa chọn) - {{ activeScoring.part1_points }} điểm ({{ activeScoring.part1_per_q }} đ/câu)</h4>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs text-center border-collapse border border-slate-300">
+                  <thead>
+                    <tr class="bg-slate-100">
+                      <th class="border border-slate-300 py-1.5 px-2 font-bold text-slate-700">Câu</th>
+                      <th v-for="(q, idx) in activeExam.part1_mcq" :key="idx" class="border border-slate-300 py-1.5 px-1 font-bold text-slate-700">{{ idx + 1 }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="border border-slate-300 py-1.5 px-2 font-bold bg-slate-50">Đ/Á</td>
+                      <td v-for="(q, idx) in activeExam.part1_mcq" :key="idx" class="border border-slate-300 py-1.5 px-1 font-extrabold text-rose-600 bg-rose-50/50">{{ q.answer }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Part 2 Table -->
+            <div v-if="activeExam.part2_tf && activeExam.part2_tf.length" class="space-y-2">
+              <h4 class="text-xs font-bold text-indigo-900 uppercase">2. Đáp án Phần II (Trắc nghiệm Đúng / Sai) - {{ activeScoring.part2_points }} điểm (Tối đa {{ activeScoring.part2_per_q }} đ/câu)</h4>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs text-center border-collapse border border-slate-300">
+                  <thead>
+                    <tr class="bg-slate-100">
+                      <th class="border border-slate-300 py-1.5 px-3 font-bold text-slate-700">Câu</th>
+                      <th class="border border-slate-300 py-1.5 px-3 font-bold text-slate-700">Lệnh a)</th>
+                      <th class="border border-slate-300 py-1.5 px-3 font-bold text-slate-700">Lệnh b)</th>
+                      <th class="border border-slate-300 py-1.5 px-3 font-bold text-slate-700">Lệnh c)</th>
+                      <th class="border border-slate-300 py-1.5 px-3 font-bold text-slate-700">Lệnh d)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(q, idx) in activeExam.part2_tf" :key="idx">
+                      <td class="border border-slate-300 py-1.5 px-3 font-bold bg-slate-50">Câu {{ idx + 1 }}</td>
+                      <td v-for="sub in q.sub_items" :key="sub.label" class="border border-slate-300 py-1.5 px-3 font-bold" :class="sub.is_correct ? 'text-emerald-700 bg-emerald-50/40' : 'text-rose-700 bg-rose-50/40'">
+                        {{ sub.is_correct ? 'Đ' : 'S' }}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Part 3 Table -->
+            <div v-if="activeExam.part3_short && activeExam.part3_short.length" class="space-y-2">
+              <h4 class="text-xs font-bold text-indigo-900 uppercase">3. Đáp án Phần III (Trả lời ngắn) - {{ activeScoring.part3_points }} điểm ({{ activeScoring.part3_per_q }} đ/câu)</h4>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs text-center border-collapse border border-slate-300">
+                  <thead>
+                    <tr class="bg-slate-100">
+                      <th class="border border-slate-300 py-1.5 px-2 font-bold text-slate-700">Câu</th>
+                      <th v-for="(q, idx) in activeExam.part3_short" :key="idx" class="border border-slate-300 py-1.5 px-2 font-bold text-slate-700">{{ idx + 1 }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td class="border border-slate-300 py-1.5 px-2 font-bold bg-slate-50">Đáp số</td>
+                      <td v-for="(q, idx) in activeExam.part3_short" :key="idx" class="border border-slate-300 py-1.5 px-2 font-bold text-rose-600 font-mono">{{ q.answer }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Part 4 Rubric Table -->
+            <div v-if="activeExam.part4_essay && activeExam.part4_essay.length" class="space-y-3 pt-2">
+              <h4 class="text-xs font-bold text-purple-900 uppercase">4. Hướng dẫn chấm & Thang điểm Phần Tự luận - {{ activeScoring.part4_points }} điểm</h4>
+              <div class="space-y-2.5">
+                <div v-for="(q, idx) in activeExam.part4_essay" :key="idx" class="p-3 bg-purple-50/60 border border-purple-200 rounded-xl space-y-1.5 text-xs">
+                  <div class="flex items-center justify-between">
+                    <span class="font-bold text-purple-950 text-sm">Câu {{ idx + 1 }} <span v-if="q.points" class="text-xs text-purple-700 font-semibold">({{ q.points }} điểm)</span></span>
+                    <span v-if="q.answer" class="text-slate-600 italic">Đáp số: <b class="font-mono text-purple-800">{{ q.answer }}</b></span>
+                  </div>
+                  <div class="text-slate-700 math-content leading-relaxed" v-html="renderMath(q.explanation || q.answer)"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Master Comparison Matrices across Variants -->
+            <div v-if="gradingMatrix && gradingMatrix.codes && gradingMatrix.codes.length > 1" class="space-y-6 pt-6 border-t-2 border-slate-200">
+              <div class="bg-gradient-to-r from-purple-50 via-indigo-50 to-emerald-50 p-4 rounded-xl border border-purple-200 flex items-center justify-between">
+                <div>
+                  <h4 class="text-sm font-black text-purple-950 uppercase tracking-tight">Ma Trận Đối Chiếu Đáp Án Giữa Các Mã Đề</h4>
+                  <p class="text-xs text-purple-700">So sánh đối chiếu toàn diện đáp án Phần I, Phần II và Phần III cho {{ gradingMatrix.codes.length }} mã đề: <span class="font-mono font-bold">{{ gradingMatrix.codes.join(', ') }}</span></p>
+                </div>
+                <span class="px-3 py-1 rounded-full bg-purple-600 text-white font-black text-xs">
+                  {{ gradingMatrix.codes.length }} MÃ ĐỀ
+                </span>
+              </div>
+
+              <!-- 1. Part 1 Comparison Matrix -->
+              <div v-if="gradingMatrix.part1 && Object.keys(gradingMatrix.part1).length" class="space-y-2">
+                <h5 class="text-xs font-bold text-purple-900 uppercase flex items-center space-x-1.5">
+                  <span class="w-2 h-2 rounded-full bg-purple-600"></span>
+                  <span>✦ Bảng 1: Ma trận đáp án Phần I (Trắc nghiệm 4 lựa chọn)</span>
+                </h5>
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                  <table class="w-full text-xs text-center border-collapse">
+                    <thead>
+                      <tr class="bg-purple-100 text-purple-900 font-bold">
+                        <th class="border border-slate-200 py-1.5 px-3">Câu</th>
+                        <th v-for="c in gradingMatrix.codes" :key="c" class="border border-slate-200 py-1.5 px-3 font-mono">Mã {{ c }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="(q_val, q_idx) in gradingMatrix.part1" :key="q_idx" class="hover:bg-slate-50">
+                        <td class="border border-slate-200 py-1 px-3 font-bold bg-slate-50">{{ q_idx }}</td>
+                        <td v-for="c in gradingMatrix.codes" :key="c" class="border border-slate-200 py-1 px-3 font-bold text-brand-700">
+                          <span class="inline-block w-5 h-5 leading-5 rounded-full bg-indigo-50 border border-indigo-200 text-brand-800">{{ q_val[c] }}</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 2. Part 2 Comparison Matrix (Đúng / Sai) -->
+              <div v-if="gradingMatrix.part2_rows && gradingMatrix.part2_rows.length" class="space-y-2">
+                <div class="flex items-center justify-between">
+                  <h5 class="text-xs font-bold text-emerald-900 uppercase flex items-center space-x-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                    <span>✦ Bảng 2: Ma trận đáp án Phần II (Trắc nghiệm Đúng / Sai theo từng lệnh a, b, c, d)</span>
+                  </h5>
+                  <div class="flex items-center space-x-3 text-[11px]">
+                    <span class="inline-flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span><span class="font-semibold text-emerald-800">Đ: Đúng</span></span>
+                    <span class="inline-flex items-center space-x-1"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span><span class="font-semibold text-rose-800">S: Sai</span></span>
+                  </div>
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                  <table class="w-full text-xs text-center border-collapse">
+                    <thead>
+                      <tr class="bg-emerald-100 text-emerald-950 font-bold">
+                        <th class="border border-slate-200 py-1.5 px-3">Câu / Lệnh</th>
+                        <th v-for="c in gradingMatrix.codes" :key="c" class="border border-slate-200 py-1.5 px-3 font-mono">Mã {{ c }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="row in gradingMatrix.part2_rows" :key="row.label" class="hover:bg-slate-50">
+                        <td class="border border-slate-200 py-1 px-3 font-bold bg-slate-50 text-slate-800">{{ row.label }}</td>
+                        <td v-for="c in gradingMatrix.codes" :key="c" class="border border-slate-200 py-1 px-3 font-bold" :class="row.answers[c] === 'Đ' ? 'text-emerald-700 bg-emerald-50/40' : (row.answers[c] === 'S' ? 'text-rose-700 bg-rose-50/40' : 'text-slate-400')">
+                          <span :class="row.answers[c] === 'Đ' ? 'px-2 py-0.5 rounded bg-emerald-100 border border-emerald-300' : (row.answers[c] === 'S' ? 'px-2 py-0.5 rounded bg-rose-100 border border-rose-300' : '')">
+                            {{ row.answers[c] }}
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 3. Part 3 Comparison Matrix (Trả lời ngắn) -->
+              <div v-if="gradingMatrix.part3_rows && gradingMatrix.part3_rows.length" class="space-y-2">
+                <h5 class="text-xs font-bold text-indigo-900 uppercase flex items-center space-x-1.5">
+                  <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+                  <span>✦ Bảng 3: Ma trận đáp số Phần III (Trả lời ngắn)</span>
+                </h5>
+                <div class="overflow-x-auto rounded-xl border border-slate-200">
+                  <table class="w-full text-xs text-center border-collapse">
+                    <thead>
+                      <tr class="bg-indigo-100 text-indigo-950 font-bold">
+                        <th class="border border-slate-200 py-1.5 px-3">Câu</th>
+                        <th v-for="c in gradingMatrix.codes" :key="c" class="border border-slate-200 py-1.5 px-3 font-mono">Mã {{ c }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr v-for="row in gradingMatrix.part3_rows" :key="row.label" class="hover:bg-slate-50">
+                        <td class="border border-slate-200 py-1 px-3 font-bold bg-slate-50 text-slate-800">{{ row.label }}</td>
+                        <td v-for="c in gradingMatrix.codes" :key="c" class="border border-slate-200 py-1 px-3 font-bold font-mono text-rose-600 bg-white">
+                          {{ row.answers[c] }}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- VIEW SECTION 3: HƯỚNG DẪN GIẢI CHI TIẾT -->
+          <div v-show="viewSection === 'explanations'" class="space-y-8">
+            <div class="text-center space-y-1 pb-4 border-b border-slate-200">
+              <h3 class="text-lg font-black text-emerald-800 uppercase">HƯỚNG DẪN GIẢI CHI TIẾT - MÃ ĐỀ {{ activeVariantCode }}</h3>
+              <p class="text-xs text-slate-500 font-medium">Trình bày từng bước, công thức hiển thị trực quan</p>
+            </div>
+
+            <!-- Part 1 Explanations -->
+            <div v-if="activeExam.part1_mcq && activeExam.part1_mcq.length" class="space-y-4">
+              <h4 class="text-xs font-bold text-brand-900 uppercase bg-slate-100 p-2 rounded-lg">Phần I: Lời giải câu trắc nghiệm nhiều lựa chọn ({{ activeScoring.part1_points }} điểm)</h4>
+              <div v-for="(q, idx) in activeExam.part1_mcq" :key="idx" class="p-3.5 rounded-xl border border-slate-200 bg-white space-y-1.5">
+                <div class="flex items-center space-x-2">
+                  <span class="font-bold text-slate-900 text-sm">Câu {{ idx + 1 }}</span>
+                  <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-700 font-bold text-xs">Chọn {{ q.answer }}</span>
+                </div>
+                <div class="text-xs text-slate-700 math-content pl-2 border-l-2 border-indigo-400" v-html="renderMath(q.explanation)"></div>
+              </div>
+            </div>
+
+            <!-- Part 2 Explanations -->
+            <div v-if="activeExam.part2_tf && activeExam.part2_tf.length" class="space-y-4">
+              <h4 class="text-xs font-bold text-brand-900 uppercase bg-slate-100 p-2 rounded-lg">Phần II: Lời giải câu trắc nghiệm Đúng / Sai ({{ activeScoring.part2_points }} điểm)</h4>
+              <div v-for="(q, idx) in activeExam.part2_tf" :key="idx" class="p-3.5 rounded-xl border border-slate-200 bg-white space-y-2">
+                <div class="font-bold text-slate-900 text-sm">Câu {{ idx + 1 }}:</div>
+                <div class="space-y-2 pl-2">
+                  <div v-for="sub in q.sub_items" :key="sub.label" class="text-xs text-slate-700 space-y-0.5">
+                    <div class="flex items-center space-x-2">
+                      <span class="font-bold text-slate-800">Ý {{ sub.label }})</span>
+                      <span class="px-2 py-0.5 rounded text-[11px] font-bold" :class="sub.is_correct ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'">
+                        {{ sub.is_correct ? 'ĐÚNG' : 'SAI' }}
+                      </span>
+                    </div>
+                    <div class="math-content pl-4 text-slate-600 italic" v-html="renderMath(sub.explanation)"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Part 3 Explanations -->
+            <div v-if="activeExam.part3_short && activeExam.part3_short.length" class="space-y-4">
+              <h4 class="text-xs font-bold text-brand-900 uppercase bg-slate-100 p-2 rounded-lg">Phần III: Lời giải câu trả lời ngắn ({{ activeScoring.part3_points }} điểm)</h4>
+              <div v-for="(q, idx) in activeExam.part3_short" :key="idx" class="p-3.5 rounded-xl border border-slate-200 bg-white space-y-1.5">
+                <div class="flex items-center space-x-2">
+                  <span class="font-bold text-slate-900 text-sm">Câu {{ idx + 1 }}</span>
+                  <span class="px-2 py-0.5 rounded bg-rose-100 text-rose-700 font-bold text-xs font-mono">Đáp số: {{ q.answer }}</span>
+                </div>
+                <div class="text-xs text-slate-700 math-content pl-2 border-l-2 border-emerald-400" v-html="renderMath(q.explanation)"></div>
+              </div>
+            </div>
+
+            <!-- Part 4 Explanations -->
+            <div v-if="activeExam.part4_essay && activeExam.part4_essay.length" class="space-y-4">
+              <h4 class="text-xs font-bold text-purple-900 uppercase bg-purple-50 p-2 rounded-lg">Phần IV: Lời giải chi tiết câu hỏi tự luận ({{ activeScoring.part4_points }} điểm)</h4>
+              <div v-for="(q, idx) in activeExam.part4_essay" :key="idx" class="p-3.5 rounded-xl border border-slate-200 bg-white space-y-2">
+                <div class="flex items-center space-x-2">
+                  <span class="font-bold text-slate-900 text-sm">Câu {{ idx + 1 }}</span>
+                  <span v-if="q.points" class="px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-bold text-xs">{{ q.points }} điểm</span>
+                </div>
+                <div class="text-xs text-slate-700 math-content pl-2 border-l-2 border-purple-400 whitespace-pre-line leading-relaxed" v-html="renderMath(q.explanation || q.answer)"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="bg-white border-t border-slate-200 mt-auto py-6 text-center text-xs text-slate-500">
+      <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div class="flex items-center space-x-2 font-semibold text-slate-700">
+          <span>EduExam AI 2026</span>
+          <span>•</span>
+          <span class="text-brand-600 font-bold">Chuẩn Bộ GD&ĐT Năm học 2026 - 2027</span>
+        </div>
+        <p>© 2026 EduExam AI. Hệ thống khảo thí & trộn đề chuyên nghiệp phục vụ giáo dục Việt Nam.</p>
+      </div>
+    </footer>
+
+    <!-- API SETTINGS MODAL -->
+    <div v-if="showApiModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-slate-200 space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <h3 class="font-bold text-slate-900 text-base flex items-center space-x-2">
+            <svg class="w-5 h-5 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>Cấu hình AI Provider</span>
+          </h3>
+          <button @click="showApiModal = false" class="text-slate-400 hover:text-slate-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
+
+        <div class="space-y-4 text-xs">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Nhà cung cấp AI</label>
+            <select v-model="apiProvider" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800">
+              <option value="gemini">Google Gemini API (Khuyên dùng - Nhanh & Miễn phí)</option>
+              <option value="openai">OpenAI (GPT-4o, GPT-4o-mini)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Phiên bản Mô hình (Model)</label>
+            <select v-model="modelName" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs font-medium text-slate-800">
+              <option value="auto">✨ Tự động nhận diện model khả dụng tốt nhất (Khuyên dùng)</option>
+              <option value="gemini-2.0-flash">gemini-2.0-flash (Mặc định chuẩn Google 2025/2026)</option>
+              <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+              <option value="gemini-1.5-flash-latest">gemini-1.5-flash-latest</option>
+              <option value="gemini-1.5-pro-latest">gemini-1.5-pro-latest</option>
+              <option value="gemini-pro">gemini-pro</option>
+            </select>
+          </div>
+
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block font-semibold text-slate-700">Danh sách API Key (Hỗ trợ xoay vòng)</label>
+              <span v-if="parsedKeyCount > 1" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px] flex items-center space-x-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Xoay vòng {{ parsedKeyCount }} Keys (Trình duyệt)</span>
+              </span>
+              <span v-else-if="parsedKeyCount === 1" class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-[11px]">
+                1 Key đang kích hoạt (Trình duyệt)
+              </span>
+              <span v-else-if="isUsingEnvKeys" class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[11px] flex items-center space-x-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Tự động nạp {{ effectiveKeyCount }} Keys từ .env</span>
+              </span>
+              <span v-else class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium text-[11px]">
+                Chưa nhập key
+              </span>
+            </div>
+
+            <!-- Notice when .env keys are active and textarea is empty -->
+            <div v-if="isUsingEnvKeys" class="mb-2.5 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-950 text-xs space-y-1.5 shadow-sm">
+              <div class="font-bold flex items-center space-x-1.5 text-emerald-800">
+                <svg class="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <span>Hệ thống đã nhận diện {{ effectiveKeyCount }} API Keys từ file <code>.env</code>:</span>
+              </div>
+              <div class="flex flex-wrap gap-1.5 pt-0.5">
+                <span v-for="(k, idx) in serverConfig.gemini_masked_keys" :key="idx" class="font-mono bg-white border border-emerald-300 text-emerald-800 px-2 py-0.5 rounded text-[11px] shadow-xs">
+                  Key #{{ idx + 1 }}: {{ k }}
+                </span>
+              </div>
+              <p class="text-[11px] text-emerald-700">Các key trên đang hoạt động ở chế độ xoay vòng tự động. Bạn không cần nhập gì vào ô bên dưới trừ khi muốn dùng key cá nhân riêng.</p>
+            </div>
+
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[11px] text-slate-500">Dán danh sách khóa API vào đây:</span>
+              <button @click="loadFromEnvFile" type="button" class="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 hover:underline inline-flex items-center space-x-1 transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                <span>Nạp các Keys hiện tại từ .env để sửa</span>
+              </button>
+            </div>
+
+            <textarea v-model="apiKey" rows="4" placeholder="Nhập một hoặc nhiều API Key (mỗi dòng một key hoặc phân cách bằng dấu phẩy)&#10;Ví dụ:&#10;AQ.Ab8RN6...&#10;AQ.Ab8RN6..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 font-mono text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+            <p class="text-[11px] text-slate-500 mt-1">💡 Bạn có thể bấm <b>"Lưu vào file .env"</b> để lưu vĩnh viễn cấu trúc chuẩn vào server, hoặc <b>"Lưu trên trình duyệt"</b> để lưu cục bộ.</p>
+          </div>
+
+          <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-[11px] leading-relaxed space-y-1">
+            <div class="font-bold flex items-center space-x-1.5 text-emerald-800">
+              <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Chế độ xoay vòng thông minh (Key Pool & Failover)</span>
+            </div>
+            <p>Hệ thống tự động phân tải đều giữa các Key (Round-Robin). Nếu một Key chạm trần Rate Limit (mã lỗi 429) hoặc hết hạn mức, hệ thống sẽ <b>tự động chuyển sang Key tiếp theo</b> ngay lập tức mà không làm gián đoạn việc tạo đề!</p>
+          </div>
+
+          <div class="p-3 bg-brand-50 rounded-xl text-brand-800 text-[11px] leading-relaxed">
+            💡 <b>Mẹo:</b> File <code>.env</code> chuẩn được lưu tự động theo từng dòng <code>GEMINI_API_KEY_1="..."</code>, <code>GEMINI_API_KEY_2="..."</code> giúp bảo mật và nạp tức thì khi chạy máy chủ.
+          </div>
+        </div>
+
+        <div class="pt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-100">
+          <button @click="showApiModal = false" class="px-3 py-2 rounded-xl text-slate-500 font-semibold text-xs hover:bg-slate-100 transition">
+            Đóng
+          </button>
+          <div class="flex items-center space-x-2">
+            <button @click="saveApiKey" class="px-3.5 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 border border-slate-300 transition">
+              Lưu trên trình duyệt
+            </button>
+            <button @click="saveToEnvFile" :disabled="isSavingEnv" class="inline-flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-emerald-600 text-white font-bold text-xs hover:bg-emerald-700 shadow-sm transition disabled:opacity-50">
+              <svg v-if="isSavingEnv" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+              <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+              <span>{{ isSavingEnv ? 'Đang lưu .env...' : 'Lưu vào file .env (Chuẩn cấu trúc)' }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div v-if="toast.show" class="fixed bottom-6 right-6 z-50 flex items-center space-x-2 px-4 py-3 rounded-xl shadow-lg text-xs font-semibold" :class="toast.type === 'error' ? 'bg-rose-600 text-white' : 'bg-slate-900 text-white'">
+      <span>{{ toast.message }}</span>
+    </div>
+
+  </div>
+
+  <script src="app.js?v=20260917_v4"></script>
+</body>
+</html>

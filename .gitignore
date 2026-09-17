@@ -1,0 +1,28 @@
+﻿# Python cache
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+.venv/
+ENV/
+
+# Secret and API Keys (Bảo vệ API Key)
+.env
+.env.local
+
+# Temporary files and exports
+exports/*.docx
+exports/*.zip
+temp_uploads/
+*.log
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
