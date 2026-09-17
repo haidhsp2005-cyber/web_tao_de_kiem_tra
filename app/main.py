@@ -59,7 +59,10 @@ def make_ascii_filename(name: str) -> str:
     clean = re.sub(r"[^a-zA-Z0-9_.-]", "_", ascii_text)
     return re.sub(r"_+", "_", clean).strip("_")
 
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    pass
 
 # 0. Lấy cấu hình hệ thống & API Keys từ .env
 @app.get("/api/config")

@@ -3,7 +3,12 @@ import json
 import re
 import httpx
 import json_repair
-from dotenv import load_dotenv
+try:
+    from dotenv import load_dotenv
+    load_dotenv(override=True)
+except ImportError:
+    pass
+
 from .models import ExamStructure, Option, Part1Question, Part2Question, Part3Question, Part4EssayQuestion, SubItem, GenerateRequest, AuditReport, ExamScoring, calculate_exam_scoring
 from .explanation_sync import (
     extract_concluded_letter,
@@ -11,8 +16,6 @@ from .explanation_sync import (
     reconcile_tf_subitem
 )
 from .exam_auditor import heal_mcq_offline, audit_and_verify_exam
-
-load_dotenv(override=True)
 
 SYSTEM_PROMPT = """Bạn là một chuyên gia khảo thí và biên soạn đề kiểm tra hàng đầu của Bộ Giáo dục & Đào tạo Việt Nam.
 Nhiệm vụ của bạn là biên soạn một đề kiểm tra chuẩn định dạng mới nhất (áp dụng theo chương trình GDPT mới 2025).
