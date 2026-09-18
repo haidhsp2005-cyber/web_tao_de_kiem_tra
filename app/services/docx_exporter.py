@@ -12,7 +12,7 @@ import latex2mathml.converter
 from lxml import etree
 from typing import List, Optional, Dict, Any
 
-from .models import ExamStructure, ExamVariant, Option, Part1Question, Part2Question, Part3Question, ExamScoring, calculate_exam_scoring, sync_part4_essay_points
+from .models import ExamStructure, ExamVariant, Option, Part1Question, Part2Question, Part3Question, ExamScoring, calculate_exam_scoring, sync_part4_essay_points, clean_essay_explanation
 from .explanation_sync import synchronize_mcq_explanation_with_answer
 
 # Locate MML2OMML.XSL
@@ -635,7 +635,7 @@ def create_exam_document(
             p_t4 = doc.add_paragraph()
             p_t4.paragraph_format.space_before = Pt(10)
             p_t4.paragraph_format.space_after = Pt(4)
-            r = p_t4.add_run(f"4. HƯỚNG DẪN CHẤM VÀ THANG ĐIỂM PHẦN TỰ LUẬN ({format_points(scoring.part4_points)} điểm)")
+            r = p_t4.add_run(f"4. HƯỚNG DẪN CHẤM PHẦN TỰ LUẬN ({format_points(scoring.part4_points)} điểm)")
             r.bold = True
             r.font.name = "Times New Roman"
             r.font.size = Pt(11)
@@ -661,7 +661,7 @@ def create_exam_document(
                     p_rubric.paragraph_format.left_indent = Inches(0.25)
                     p_rubric.paragraph_format.space_before = Pt(1)
                     p_rubric.paragraph_format.space_after = Pt(3)
-                    add_formatted_text_with_math(p_rubric, q.explanation, font_size=10.5)
+                    add_formatted_text_with_math(p_rubric, clean_essay_explanation(q.explanation), font_size=10.5)
             doc.add_paragraph().paragraph_format.space_after = Pt(6)
 
         # 5. Master Comparison Table if multiple variants are supplied
@@ -1017,7 +1017,7 @@ def create_exam_document(
             p_s4 = doc.add_paragraph()
             p_s4.paragraph_format.space_before = Pt(12)
             p_s4.paragraph_format.space_after = Pt(4)
-            r = p_s4.add_run(f"PHẦN IV. LỜI GIẢI CHI TIẾT VÀ BIỂU ĐIỂM TỰ LUẬN ({format_points(scoring.part4_points)} điểm)")
+            r = p_s4.add_run(f"PHẦN IV. LỜI GIẢI CHI TIẾT CÂU HỎI TỰ LUẬN ({format_points(scoring.part4_points)} điểm)")
             r.bold = True
             r.font.name = "Times New Roman"
             r.font.size = Pt(12)
@@ -1039,7 +1039,7 @@ def create_exam_document(
                 p_exp.paragraph_format.space_before = Pt(1)
                 p_exp.paragraph_format.space_after = Pt(4)
                 
-                text_to_show = q.explanation or q.answer or "Học sinh giải và trình bày theo đúng các bước phương pháp."
+                text_to_show = clean_essay_explanation(q.explanation) or clean_essay_explanation(q.answer) or "Học sinh giải và trình bày theo đúng các bước phương pháp."
                 add_formatted_text_with_math(p_exp, text_to_show, font_size=10.5)
 
     return doc

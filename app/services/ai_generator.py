@@ -31,11 +31,14 @@ CẤU TRÚC ĐỀ THEO SỐ LƯỢNG YÊU CẦU:
 - PHẦN IV: Câu hỏi Tự luận (Thí sinh trình bày bài giải hoặc phân tích chi tiết). Số lượng yêu cầu: {num_essay} câu (khóa 'part4_essay').
   * QUY TẮC BẮT BUỘC CHO PHẦN TỰ LUẬN:
     + NẾU {num_essay} LÀ 0: TUYỆT ĐỐI KHÔNG TẠO BẤT KỲ CÂU HỎI TỰ LUẬN NÀO, trường 'part4_essay' BẮT BUỘC PHẢI LÀ MẢNG RỖNG [].
-    + NẾU {num_essay} > 0: BẮT BUỘC tạo đúng {num_essay} câu tự luận trong mảng 'part4_essay'. Mỗi câu gồm 'id', đề bài 'question', thang điểm 'points' (ví dụ 1.0, 1.5, 2.0), tóm tắt kết quả then chốt 'answer', và hướng dẫn chấm chi tiết kèm phân bố điểm từng bước 'explanation'.
+    + NẾU {num_essay} > 0: BẮT BUỘC tạo đúng {num_essay} câu tự luận trong mảng 'part4_essay'. Mỗi câu gồm 'id', đề bài 'question', thang điểm 'points' (ví dụ 1.0, 1.5, 2.0), tóm tắt kết quả then chốt 'answer', và hướng dẫn chấm 'explanation'.
+  * QUY TẮC BẮT BUỘC CHO PHẦN TỰ LUẬN ('explanation'):
+    + TUYỆT ĐỐI KHÔNG ghi các bước kèm điểm số con (như 'Bước 1 (0.5đ):', 'Bước 2 (0.5đ):' hay chia điểm từng phần nhỏ) vì tổng cộng các bước lại sẽ bị sai lệch so với điểm phân bổ của câu hỏi.
+    + BẮT BUỘC CHỈ DÙNG CÁC GẠCH ĐẦU DÒNG '-' ĐỂ NÊU RÕ CÁC Ý CHÍNH CỦA ĐÁP ÁN (ví dụ: '- Nêu được khái niệm...\\n- Tính toán...\\n- Kết luận...'). Điểm của cả câu đã được ghi ở tiêu đề câu.
 
 QUY TẮC BẮT BUỘC ĐỂ KHÔNG BỊ TRÀN TOKEN HOẶC THIẾU CÂU HỎI:
 1. TUYỆT ĐỐI KHÔNG ĐƯỢC BỎ SÓT các phần có số lượng yêu cầu > 0.
-2. Để tiết kiệm token, phần lời giải ('explanation') các câu trắc nghiệm viết ngắn gọn súc tích; phần tự luận ghi rõ các mốc điểm từng bước.
+2. Để tiết kiệm token, phần lời giải ('explanation') các câu trắc nghiệm viết ngắn gọn súc tích; phần tự luận chỉ gạch đầu dòng '-' các ý chính, tuyệt đối không chia điểm từng bước.
 3. TUYỆT ĐỐI KHÔNG sử dụng dấu ngoặc kép đôi "..." bên trong nội dung văn bản (dùng dấu nháy đơn '...' thay vì "..." để đảm bảo tính hợp lệ của JSON).
 4. Mọi công thức toán học, ký hiệu khoa học, phương trình phản ứng BẮT BUỘC phải đặt trong dấu $...$ (nội dòng) hoặc $$...$$ (khối).
    Ví dụ: $x^2 + 2x - 3 = 0$, $\\int_0^1 x dx$, $\\vec{F} = m\\vec{a}$, $CH_3COOH + C_2H_5OH \\rightleftharpoons CH_3COOC_2H_5 + H_2O$.
@@ -92,9 +95,9 @@ CẤU TRÚC JSON ĐẦU RA BẮT BUỘC (Chỉ trả về DUY NHẤT một chu�
     {
       "id": 1,
       "question": "Nội dung đề bài câu hỏi tự luận...",
-      "points": 1.5,
+      "points": 1.0,
       "answer": "Kết quả then chốt...",
-      "explanation": "- Bước 1 (0.5đ): Lập luận...\\n- Bước 2 (0.5đ): Tính toán...\\n- Bước 3 (0.5đ): Kết luận..."
+      "explanation": "- Nêu cơ sở lý thuyết và điều kiện bài toán\\n- Phân tích và thực hiện các bước giải\\n- Kết luận đáp số then chốt"
     }
   ]
 }
@@ -1467,7 +1470,7 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
     if request.num_essay == 0:
         user_prompt += "\nLƯU Ý QUAN TRỌNG: Người dùng chọn 0 câu tự luận. TUYỆT ĐỐI KHÔNG TẠO BẤT KỲ CÂU HỎI TỰ LUẬN NÀO, trường 'part4_essay' BẮT BUỘC để mảng rỗng []."
     else:
-        user_prompt += f"\nLƯU Ý QUAN TRỌNG: BẮT BUỘC tạo đúng {request.num_essay} câu hỏi tự luận trong 'part4_essay' kèm điểm số 'points' và hướng dẫn chấm chi tiết."
+        user_prompt += f"\nLƯU Ý QUAN TRỌNG VỀ TỰ LUẬN: BẮT BUỘC tạo đúng {request.num_essay} câu hỏi tự luận trong 'part4_essay'. Trong phần 'explanation', TUYỆT ĐỐI KHÔNG ghi 'Bước 1 (0.5đ):' hay chia nhỏ điểm các bước (vì tổng điểm các bước cộng lại sẽ bị lệch so với điểm câu hỏi), BẮT BUỘC CHỈ gạch đầu dòng '-' các ý chính của đáp án."
 
     full_prompt = (
         SYSTEM_PROMPT

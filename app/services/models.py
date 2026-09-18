@@ -1,3 +1,4 @@
+import re
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, Field
 
@@ -152,12 +153,72 @@ def calculate_exam_scoring(
         part4_per_q=p4_per_q
     )
 
+def clean_essay_explanation(text: str) -> str:
+    """
+    Chuẩn hóa lời giải/hướng dẫn chấm câu tự luận:
+    - Loại bỏ tiền tố các bước ('Bước 1:', 'Bước 2 (0.5đ):', '(0.5đ):', v.v.)
+    - Loại bỏ điểm số con từng phần ở cuối dòng (ví dụ '... (0.5đ)') để tránh gây hiểu lầm cộng dồn sai tổng điểm.
+    - Định dạng lại thành các gạch đầu dòng '- ' mạch lạc cho các ý chính.
+    """
+    if not text:
+        return ""
+    lines = str(text).split("\n")
+    cleaned_lines = []
+    
+    points_regex = r'(?:[\(\[]\s*\d+(?:[.,]\d+)?\s*(?:đ|điểm|pt|pts)?\s*[\)\]]|\d+(?:[.,]\d+)?\s*(?:đ|điểm))'
+    step_word = r'(?:bước|giai\s*đoạn)\s*\d+'
+
+    prefix_pattern = re.compile(
+        r'^\s*(?:[-*+•]|\d+[\.)])?\s*'
+        r'(?:'
+            rf'{step_word}\s*(?:{points_regex})?'
+            r'|'
+            rf'{points_regex}\s*(?:{step_word})?'
+            r'|'
+            rf'{points_regex}'
+            r'|'
+            rf'{step_word}'
+        r')\s*[:.-]*\s*',
+        re.IGNORECASE
+    )
+    trailing_point_pattern = re.compile(
+        r'\s*[\(\[]\s*\d+(?:[.,]\d+)?\s*(?:đ|điểm|pt|pts)?\s*[\)\]]\s*$',
+        re.IGNORECASE
+    )
+    
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        subbed = prefix_pattern.sub('', stripped).strip()
+        subbed = trailing_point_pattern.sub('', subbed).strip()
+        subbed = re.sub(r'^\s*[-*+•]\s*', '', subbed).strip()
+        if subbed:
+            if subbed[0].isalpha():
+                subbed = subbed[0].upper() + subbed[1:]
+            cleaned_lines.append(f"- {subbed}")
+            
+    return "\n".join(cleaned_lines) if cleaned_lines else text
+
 def sync_part4_essay_points(part4_essay: List[Any], total_p4: float) -> List[Any]:
     """
     Đồng bộ và phân bổ lại điểm từng câu tự luận (q.points) sao cho:
-    Tổng điểm của tất cả các câu con luôn luôn BẰNG CHÍNH XÁC điểm của Phần IV (total_p4).
+    1. Tổng điểm của tất cả các câu con luôn luôn BẰNG CHÍNH XÁC điểm của Phần IV (total_p4).
+    2. Lời giải/hướng dẫn chấm được làm sạch, bỏ chia điểm từng bước, chỉ gạch đầu dòng các ý chính.
     """
-    if not part4_essay or total_p4 is None or total_p4 <= 0:
+    if not part4_essay:
+        return part4_essay
+
+    # Chuẩn hóa lời giải/hướng dẫn chấm: bỏ bước và điểm con, chỉ giữ gạch đầu dòng
+    for q in part4_essay:
+        if isinstance(q, dict):
+            if q.get("explanation"):
+                q["explanation"] = clean_essay_explanation(q["explanation"])
+        else:
+            if getattr(q, "explanation", None):
+                q.explanation = clean_essay_explanation(q.explanation)
+
+    if total_p4 is None or total_p4 <= 0:
         return part4_essay
         
     n = len(part4_essay)

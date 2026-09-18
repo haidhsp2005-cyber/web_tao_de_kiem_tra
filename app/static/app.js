@@ -340,6 +340,41 @@ createApp({
       return formatPoints(res);
     };
 
+    const cleanEssayExplanation = (text) => {
+      if (!text) return "";
+      const lines = String(text).split("\n");
+      const cleaned = [];
+      const pointsPattern = "(?:[\\(\\[]\\s*\\d+(?:[.,]\\d+)?\\s*(?:đ|điểm|pt|pts)?\\s*[\\)\\]]|\\d+(?:[.,]\\d+)?\\s*(?:đ|điểm))";
+      const stepPatternStr = "(?:bước|giai\\s*đoạn)\\s*\\d+";
+      const prefixPattern = new RegExp(
+        "^\\s*(?:[-*+•]|\\d+[\\.)])?\\s*" +
+        "(?:" +
+          stepPatternStr + "\\s*(?:" + pointsPattern + ")?" +
+          "|" +
+          pointsPattern + "\\s*(?:" + stepPatternStr + ")?" +
+          "|" +
+          pointsPattern +
+          "|" +
+          stepPatternStr +
+        ")\\s*[:.-]*\\s*",
+        "i"
+      );
+      const trailingPointPattern = /\s*[\(\[]\s*\d+(?:[.,]\d+)?\s*(?:đ|điểm|pt|pts)?\s*[\)\]]\s*$/i;
+
+      for (let rawLine of lines) {
+        let line = rawLine.trim();
+        if (!line) continue;
+        let subbed = line.replace(prefixPattern, "").replace(trailingPointPattern, "").replace(/^\s*[-*+•]\s*/, "").trim();
+        if (subbed) {
+          if (/^[a-zà-ỹ]/i.test(subbed)) {
+            subbed = subbed.charAt(0).toUpperCase() + subbed.slice(1);
+          }
+          cleaned.push("- " + subbed);
+        }
+      }
+      return cleaned.length > 0 ? cleaned.join("\n") : text;
+    };
+
     const setActiveVariant = (code) => {
       activeVariantCode.value = code;
       nextTick(triggerKaTeX);
@@ -773,7 +808,8 @@ createApp({
       formScoring,
       activeScoring,
       getEssayPoints,
-      formatPoints
+      formatPoints,
+      cleanEssayExplanation
     };
   }
 }).mount("#app");

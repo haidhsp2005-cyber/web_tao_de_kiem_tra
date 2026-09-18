@@ -675,14 +675,14 @@
 
             <!-- Part 4 Rubric Table -->
             <div v-if="activeExam.part4_essay && activeExam.part4_essay.length" class="space-y-3 pt-2">
-              <h4 class="text-xs font-bold text-purple-900 uppercase">4. Hướng dẫn chấm & Thang điểm Phần Tự luận - {{ activeScoring.part4_points }} điểm</h4>
+              <h4 class="text-xs font-bold text-purple-900 uppercase">4. Hướng dẫn chấm Phần Tự luận ({{ activeScoring.part4_points }} điểm)</h4>
               <div class="space-y-2.5">
                 <div v-for="(q, idx) in activeExam.part4_essay" :key="idx" class="p-3 bg-purple-50/60 border border-purple-200 rounded-xl space-y-1.5 text-xs">
                   <div class="flex items-center justify-between">
                     <span class="font-bold text-purple-950 text-sm">Câu {{ idx + 1 }} <span class="text-xs text-purple-700 font-semibold">({{ getEssayPoints(q, idx) }} điểm)</span></span>
                     <span v-if="q.answer" class="text-slate-600 italic">Đáp số: <b class="font-mono text-purple-800">{{ q.answer }}</b></span>
                   </div>
-                  <div class="text-slate-700 math-content leading-relaxed" v-html="renderMath(q.explanation || q.answer)"></div>
+                  <div class="text-slate-700 math-content leading-relaxed" v-html="renderMath(cleanEssayExplanation(q.explanation || q.answer))"></div>
                 </div>
               </div>
             </div>
@@ -845,7 +845,7 @@
                   <span class="font-bold text-slate-900 text-sm">Câu {{ idx + 1 }}</span>
                   <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-bold text-xs">{{ getEssayPoints(q, idx) }} điểm</span>
                 </div>
-                <div class="text-xs text-slate-700 math-content pl-2 border-l-2 border-purple-400 whitespace-pre-line leading-relaxed" v-html="renderMath(q.explanation || q.answer)"></div>
+                <div class="text-xs text-slate-700 math-content pl-2 border-l-2 border-purple-400 whitespace-pre-line leading-relaxed" v-html="renderMath(cleanEssayExplanation(q.explanation || q.answer))"></div>
               </div>
             </div>
           </div>
@@ -983,6 +983,6 @@
 
   </div>
 
-  <script src="app.js?v=20260918_v1"></script>
+  <script src="app.js?v=20260918_v2"></script>
 </body>
 </html>
