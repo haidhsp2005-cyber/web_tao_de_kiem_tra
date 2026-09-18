@@ -12,7 +12,7 @@ import latex2mathml.converter
 from lxml import etree
 from typing import List, Optional, Dict, Any
 
-from .models import ExamStructure, ExamVariant, Option, Part1Question, Part2Question, Part3Question, ExamScoring, calculate_exam_scoring
+from .models import ExamStructure, ExamVariant, Option, Part1Question, Part2Question, Part3Question, ExamScoring, calculate_exam_scoring, sync_part4_essay_points
 from .explanation_sync import synchronize_mcq_explanation_with_answer
 
 # Locate MML2OMML.XSL
@@ -126,6 +126,8 @@ def add_formatted_text_with_math(paragraph, text: str, bold=False, italic=False,
 def format_points(val: Any, decimals: int = 1) -> str:
     try:
         f_val = float(val)
+        if f_val.is_integer():
+            return str(int(f_val))
         return f"{f_val:.{decimals}f}".replace(".", ",")
     except Exception:
         return str(val)
@@ -167,6 +169,10 @@ def create_exam_document(
             num_p4=len(exam.part4_essay or []),
             p4_points_total=p4_total
         )
+
+    # Đảm bảo điểm các câu con tự luận luôn luôn bằng đúng điểm của Phần IV
+    if exam.part4_essay and scoring:
+        sync_part4_essay_points(exam.part4_essay, scoring.part4_points)
     
     # -------------------------------------------------------------
     # 1. HEADER (Two columns table: School Info | Exam & Test Code)
@@ -410,7 +416,7 @@ def create_exam_document(
             p_q.paragraph_format.space_after = Pt(4)
             p_q.paragraph_format.line_spacing = 1.15
             
-            pts_str = f" ({q.points} điểm)" if q.points else ""
+            pts_str = f" ({format_points(q.points)} điểm)" if q.points else ""
             run_num = p_q.add_run(f"Câu {idx}{pts_str}: ")
             run_num.bold = True
             run_num.font.name = "Times New Roman"
@@ -639,7 +645,7 @@ def create_exam_document(
                 p_item = doc.add_paragraph()
                 p_item.paragraph_format.space_before = Pt(4)
                 p_item.paragraph_format.space_after = Pt(2)
-                pts_str = f" ({q.points} điểm)" if q.points else ""
+                pts_str = f" ({format_points(q.points)} điểm)" if q.points else ""
                 r_qnum = p_item.add_run(f"Câu {idx}{pts_str}: ")
                 r_qnum.bold = True
                 r_qnum.font.name = "Times New Roman"
@@ -1022,7 +1028,7 @@ def create_exam_document(
                 p_item.paragraph_format.space_before = Pt(6)
                 p_item.paragraph_format.space_after = Pt(2)
                 
-                pts_str = f" ({q.points} điểm)" if q.points else ""
+                pts_str = f" ({format_points(q.points)} điểm)" if q.points else ""
                 r_qnum = p_item.add_run(f"Câu {idx}{pts_str}: ")
                 r_qnum.bold = True
                 r_qnum.font.name = "Times New Roman"

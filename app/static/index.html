@@ -585,7 +585,7 @@
               <div class="space-y-4">
                 <div v-for="(q, idx) in activeExam.part4_essay" :key="q.id" class="p-3.5 rounded-xl border border-slate-200 hover:border-purple-300 transition bg-white space-y-2">
                   <div class="flex items-start space-x-2">
-                    <span class="font-bold text-slate-900 text-sm whitespace-nowrap">Câu {{ idx + 1 }} <span v-if="q.points" class="text-purple-700 font-semibold text-xs">({{ q.points }} điểm)</span>:</span>
+                    <span class="font-bold text-slate-900 text-sm whitespace-nowrap">Câu {{ idx + 1 }} <span class="text-purple-700 font-semibold text-xs">({{ getEssayPoints(q, idx) }} điểm)</span>:</span>
                     <div class="text-sm text-slate-800 math-content" v-html="renderMath(q.question)"></div>
                   </div>
                 </div>
@@ -679,7 +679,7 @@
               <div class="space-y-2.5">
                 <div v-for="(q, idx) in activeExam.part4_essay" :key="idx" class="p-3 bg-purple-50/60 border border-purple-200 rounded-xl space-y-1.5 text-xs">
                   <div class="flex items-center justify-between">
-                    <span class="font-bold text-purple-950 text-sm">Câu {{ idx + 1 }} <span v-if="q.points" class="text-xs text-purple-700 font-semibold">({{ q.points }} điểm)</span></span>
+                    <span class="font-bold text-purple-950 text-sm">Câu {{ idx + 1 }} <span class="text-xs text-purple-700 font-semibold">({{ getEssayPoints(q, idx) }} điểm)</span></span>
                     <span v-if="q.answer" class="text-slate-600 italic">Đáp số: <b class="font-mono text-purple-800">{{ q.answer }}</b></span>
                   </div>
                   <div class="text-slate-700 math-content leading-relaxed" v-html="renderMath(q.explanation || q.answer)"></div>
@@ -843,7 +843,7 @@
               <div v-for="(q, idx) in activeExam.part4_essay" :key="idx" class="p-3.5 rounded-xl border border-slate-200 bg-white space-y-2">
                 <div class="flex items-center space-x-2">
                   <span class="font-bold text-slate-900 text-sm">Câu {{ idx + 1 }}</span>
-                  <span v-if="q.points" class="px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-bold text-xs">{{ q.points }} điểm</span>
+                  <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-bold text-xs">{{ getEssayPoints(q, idx) }} điểm</span>
                 </div>
                 <div class="text-xs text-slate-700 math-content pl-2 border-l-2 border-purple-400 whitespace-pre-line leading-relaxed" v-html="renderMath(q.explanation || q.answer)"></div>
               </div>
@@ -983,6 +983,6 @@
 
   </div>
 
-  <script src="app.js?v=20260917_v4"></script>
+  <script src="app.js?v=20260918_v1"></script>
 </body>
 </html>

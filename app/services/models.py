@@ -152,6 +152,53 @@ def calculate_exam_scoring(
         part4_per_q=p4_per_q
     )
 
+def sync_part4_essay_points(part4_essay: List[Any], total_p4: float) -> List[Any]:
+    """
+    Đồng bộ và phân bổ lại điểm từng câu tự luận (q.points) sao cho:
+    Tổng điểm của tất cả các câu con luôn luôn BẰNG CHÍNH XÁC điểm của Phần IV (total_p4).
+    """
+    if not part4_essay or total_p4 is None or total_p4 <= 0:
+        return part4_essay
+        
+    n = len(part4_essay)
+    if n == 1:
+        pt = round(float(total_p4), 2)
+        if isinstance(part4_essay[0], dict):
+            part4_essay[0]["points"] = pt
+        else:
+            part4_essay[0].points = pt
+        return part4_essay
+
+    raw_points = []
+    for q in part4_essay:
+        pts = q.get("points", 1.0) if isinstance(q, dict) else getattr(q, "points", 1.0)
+        try:
+            val = float(pts) if pts and float(pts) > 0 else 1.0
+        except (ValueError, TypeError):
+            val = 1.0
+        raw_points.append(val)
+    
+    all_equal = len(set(raw_points)) <= 1
+    
+    if all_equal:
+        base = round(total_p4 / n, 2)
+        allocated = [base] * n
+    else:
+        sum_raw = sum(raw_points)
+        allocated = [round((pts / sum_raw) * total_p4, 2) for pts in raw_points]
+    
+    diff = round(total_p4 - sum(allocated), 2)
+    if diff != 0:
+        allocated[-1] = round(allocated[-1] + diff, 2)
+        
+    for i, q in enumerate(part4_essay):
+        if isinstance(q, dict):
+            q["points"] = allocated[i]
+        else:
+            q.points = allocated[i]
+
+    return part4_essay
+
 class ExamStructure(BaseModel):
     title: str = 'ĐỀ KIỂM TRA ĐỊNH KỲ'
     subject: str = 'Toán học'
@@ -167,6 +214,17 @@ class ExamStructure(BaseModel):
     audit_report: Optional[AuditReport] = None
     scoring: Optional[ExamScoring] = None
 
+    def model_post_init(self, __context: Any) -> None:
+        if self.scoring is None and (self.part1_mcq or self.part2_tf or self.part3_short or self.part4_essay):
+            self.scoring = calculate_exam_scoring(
+                num_p1=len(self.part1_mcq),
+                num_p2=len(self.part2_tf),
+                num_p3=len(self.part3_short),
+                num_p4=len(self.part4_essay)
+            )
+        if self.scoring and self.part4_essay:
+            sync_part4_essay_points(self.part4_essay, self.scoring.part4_points)
+
 class ExamVariant(BaseModel):
     code: str
     exam: ExamStructure
@@ -174,6 +232,10 @@ class ExamVariant(BaseModel):
     part2_answers: Dict[int, Dict[str, str]] = Field(default_factory=dict) # {1: {'a': 'Đ', 'b': 'S', ...}}
     part3_answers: Dict[int, str] = Field(default_factory=dict)       # {1: '12', 2: '-4.5', ...}
     part4_answers: Dict[int, str] = Field(default_factory=dict)       # {1: 'Hướng dẫn chấm...'}
+
+    def model_post_init(self, __context: Any) -> None:
+        if self.exam and self.exam.scoring and self.exam.part4_essay:
+            sync_part4_essay_points(self.exam.part4_essay, self.exam.scoring.part4_points)
 
 class ShuffleRequest(BaseModel):
     exam: ExamStructure

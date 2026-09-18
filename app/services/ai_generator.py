@@ -9,7 +9,7 @@ try:
 except ImportError:
     pass
 
-from .models import ExamStructure, Option, Part1Question, Part2Question, Part3Question, Part4EssayQuestion, SubItem, GenerateRequest, AuditReport, ExamScoring, calculate_exam_scoring
+from .models import ExamStructure, Option, Part1Question, Part2Question, Part3Question, Part4EssayQuestion, SubItem, GenerateRequest, AuditReport, ExamScoring, calculate_exam_scoring, sync_part4_essay_points
 from .explanation_sync import (
     extract_concluded_letter,
     synchronize_mcq_explanation_with_answer,
@@ -1711,6 +1711,9 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc:
         num_p4=len(normalized.get("part4_essay", [])),
         p4_points_total=p4_total_pts
     ).model_dump()
+
+    if normalized.get("part4_essay"):
+        sync_part4_essay_points(normalized["part4_essay"], normalized["scoring"]["part4_points"])
 
     exam_obj = ExamStructure.model_validate(normalized)
     

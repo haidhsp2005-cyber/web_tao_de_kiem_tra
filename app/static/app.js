@@ -299,6 +299,47 @@ createApp({
       return formScoring.value;
     });
 
+    const formatPoints = (val) => {
+      if (val === undefined || val === null) return "0";
+      const num = typeof val === "number" ? val : parseFloat(String(val).replace(",", "."));
+      if (isNaN(num)) return String(val);
+      if (Math.floor(num) === num) return num.toString();
+      return (Math.round(num * 100) / 100).toFixed(2).replace(/\.?0+$/, "").replace(".", ",");
+    };
+
+    const getEssayPoints = (q, idx) => {
+      const essays = activeExam.value?.part4_essay || [];
+      if (!essays.length) return formatPoints(q?.points || 1.0);
+      
+      const s4Str = activeScoring.value?.part4_points || "0";
+      const totalS4 = parseFloat(String(s4Str).replace(',', '.')) || 0;
+      if (totalS4 <= 0) return formatPoints(q?.points || 1.0);
+      
+      const n = essays.length;
+      if (n === 1) return formatPoints(totalS4);
+      
+      const rawPoints = essays.map(item => (typeof item.points === 'number' && item.points > 0) ? item.points : 1.0);
+      const allEqual = rawPoints.every(v => v === rawPoints[0]);
+      
+      let allocated = [];
+      if (allEqual) {
+        const base = Math.round((totalS4 / n) * 100) / 100;
+        allocated = Array(n).fill(base);
+      } else {
+        const sumRaw = rawPoints.reduce((a, b) => a + b, 0);
+        allocated = rawPoints.map(pts => Math.round(((pts / sumRaw) * totalS4) * 100) / 100);
+      }
+      
+      const currentSum = Math.round(allocated.reduce((a, b) => a + b, 0) * 100) / 100;
+      const diff = Math.round((totalS4 - currentSum) * 100) / 100;
+      if (diff !== 0) {
+        allocated[allocated.length - 1] = Math.round((allocated[allocated.length - 1] + diff) * 100) / 100;
+      }
+      
+      const res = allocated[idx] !== undefined ? allocated[idx] : (q?.points || 1.0);
+      return formatPoints(res);
+    };
+
     const setActiveVariant = (code) => {
       activeVariantCode.value = code;
       nextTick(triggerKaTeX);
@@ -730,7 +771,9 @@ createApp({
       syncSchoolInfo,
       calculateScoring,
       formScoring,
-      activeScoring
+      activeScoring,
+      getEssayPoints,
+      formatPoints
     };
   }
 }).mount("#app");
