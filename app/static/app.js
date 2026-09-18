@@ -706,6 +706,31 @@ createApp({
       }
     };
 
+    // Export Word with Red Answers (Exam only with highlighted answers)
+    const exportRedAnswersDocx = async (code) => {
+      const current = variants.value.find(v => v.code === code) || { exam: exam.value, code: code };
+      showToast(`Đang xuất file Word có đáp án in đỏ (Mã ${code})...`);
+      try {
+        const res = await fetch("/api/export-docx", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            exam: current.exam,
+            variant_code: code,
+            include_answers: false,
+            include_explanations: false,
+            red_answers: true
+          })
+        });
+        if (!res.ok) throw new Error("Lỗi tải file Word in đỏ đáp án");
+        const blob = await res.blob();
+        downloadBlob(blob, `De_thi_${current.exam.subject}_Ma_${code}_Dap_an_in_do.docx`);
+        showToast(`Tải xuống file Word có đáp án in đỏ (Mã ${code}) thành công!`);
+      } catch (err) {
+        showToast(err.message, "error");
+      }
+    };
+
     // Export Master Combined Docx
     const exportMasterDocx = async () => {
       showToast("Đang xuất file Word tổng hợp...");
@@ -801,6 +826,7 @@ createApp({
       saveToEnvFile,
       loadFromEnvFile,
       exportSingleDocx,
+      exportRedAnswersDocx,
       exportMasterDocx,
       exportZipAll,
       syncSchoolInfo,

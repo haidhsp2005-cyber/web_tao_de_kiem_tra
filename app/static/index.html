@@ -385,6 +385,12 @@
               <span>Tải Word Mã {{ activeVariantCode }}</span>
             </button>
 
+            <!-- Export Word with Red Answers -->
+            <button @click="exportRedAnswersDocx(activeVariantCode)" class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-rose-600 text-white font-semibold text-xs hover:bg-rose-700 shadow-sm transition" title="Tải đề thi với các đáp án đúng được in màu đỏ, không kèm bảng đáp án/lời giải">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+              <span>Tải Word Có Đáp Án In Đỏ</span>
+            </button>
+
             <!-- Export Master Combined Docx -->
             <button @click="exportMasterDocx" class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 text-white font-semibold text-xs hover:bg-emerald-700 shadow-sm transition">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -983,6 +989,6 @@
 
   </div>
 
-  <script src="app.js?v=20260918_v2"></script>
+  <script src="app.js?v=20260918_v3"></script>
 </body>
 </html>

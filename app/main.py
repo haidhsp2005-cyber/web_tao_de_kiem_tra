@@ -204,14 +204,16 @@ async def api_export_docx(req: ExportDocxRequest):
             variant_code=req.variant_code,
             include_answers=req.include_answers,
             include_explanations=req.include_explanations,
-            all_variants=req.all_variants
+            all_variants=req.all_variants,
+            red_answers=req.red_answers
         )
         buffer = io.BytesIO()
         doc.save(buffer)
         buffer.seek(0)
         code = req.variant_code or req.exam.code or "101"
         sub_ascii = make_ascii_filename(req.exam.subject)
-        safe_filename = f"De_thi_{sub_ascii}_Ma_{code}.docx"
+        suffix = "_Dap_an_in_do" if req.red_answers else ""
+        safe_filename = f"De_thi_{sub_ascii}_Ma_{code}{suffix}.docx"
         return StreamingResponse(
             buffer,
             media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",

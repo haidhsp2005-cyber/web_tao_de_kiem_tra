@@ -331,3 +331,4 @@ class ExportDocxRequest(BaseModel):
     all_variants: Optional[List[ExamVariant]] = None
     include_answers: bool = True
     include_explanations: bool = True
+    red_answers: bool = False
