@@ -3,7 +3,7 @@ import re
 import io
 import docx
 from docx.shared import Inches, Pt, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.enum.text import WD_ALIGN_PARAGRAPH, WD_TAB_ALIGNMENT
 from docx.enum.table import WD_TABLE_ALIGNMENT, WD_ALIGN_VERTICAL
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn, nsdecls
@@ -137,6 +137,49 @@ def format_points(val: Any, decimals: int = 1) -> str:
     except Exception:
         return str(val)
 
+def setup_exam_footer(section, code: str):
+    """
+    Thiết lập chân trang chuẩn cho đề thi:
+    - Bên trái: Mã đề: {code}
+    - Bên phải: Trang {PAGE}/{NUMPAGES} (tự động cập nhật cho đến hết)
+    """
+    footer = section.footer
+    footer.is_linked_to_previous = False
+    p = footer.paragraphs[0]
+    p.text = ""
+    p.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    p.paragraph_format.space_before = Pt(4)
+    p.paragraph_format.space_after = Pt(0)
+    p.paragraph_format.tab_stops.add_tab_stop(Inches(6.77), WD_TAB_ALIGNMENT.RIGHT)
+    
+    # Bên trái: Mã đề
+    display_code = "Tổng hợp" if str(code).upper() == "TONG_HOP" else str(code)
+    r_code = p.add_run(f"Mã đề: {display_code}")
+    r_code.font.name = "Times New Roman"
+    r_code.font.size = Pt(9.5)
+    r_code.font.italic = True
+    r_code.font.color.rgb = RGBColor(100, 100, 100)
+    
+    # Tab sang sát lề phải
+    p.add_run("\t")
+    
+    # Bên phải: Trang PAGE/NUMPAGES
+    r_pfx = p.add_run("Trang ")
+    r_pfx.font.name = "Times New Roman"
+    r_pfx.font.size = Pt(9.5)
+    r_pfx.font.color.rgb = RGBColor(100, 100, 100)
+    
+    fld_page = parse_xml(r'<w:fldSimple xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:instr="PAGE"><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="19"/><w:color w:val="646464"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>')
+    p._p.append(fld_page)
+    
+    r_slash = p.add_run("/")
+    r_slash.font.name = "Times New Roman"
+    r_slash.font.size = Pt(9.5)
+    r_slash.font.color.rgb = RGBColor(100, 100, 100)
+    
+    fld_numpages = parse_xml(r'<w:fldSimple xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:instr="NUMPAGES"><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="19"/><w:color w:val="646464"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>')
+    p._p.append(fld_numpages)
+
 def create_exam_document(
     exam: ExamStructure,
     variant_code: Optional[str] = None,
@@ -164,6 +207,7 @@ def create_exam_document(
     section.right_margin = Inches(0.75)
     
     code = variant_code or exam.code or "101"
+    setup_exam_footer(section, code)
     
     scoring = exam.scoring
     if scoring is None:

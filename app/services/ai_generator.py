@@ -15,7 +15,7 @@ from .explanation_sync import (
     synchronize_mcq_explanation_with_answer,
     reconcile_tf_subitem
 )
-from .exam_auditor import heal_mcq_offline, audit_and_verify_exam
+from .exam_auditor import heal_mcq_offline, heal_tf_offline, audit_and_verify_exam
 
 SYSTEM_PROMPT = """Bạn là một chuyên gia khảo thí và biên soạn đề kiểm tra hàng đầu của Bộ Giáo dục & Đào tạo Việt Nam.
 Nhiệm vụ của bạn là biên soạn một đề kiểm tra chuẩn định dạng mới nhất (áp dụng theo chương trình GDPT mới 2025).
@@ -27,6 +27,11 @@ CẤU TRÚC ĐỀ THEO SỐ LƯỢNG YÊU CẦU:
     + TUYỆT ĐỐI KHÔNG TẠO PHƯƠNG ÁN THỨ 5 (E, F,...).
     + TUYỆT ĐỐI KHÔNG SỬ DỤNG các phương án dạng: "Tất cả các phương án trên đều đúng", "Tất cả các đáp án đều sai", "Không có đáp án nào đúng", "Cả A và B đều đúng" vì đề thi sẽ được xáo trộn ngẫu nhiên vị trí các phương án A, B, C, D. Tất cả 4 phương án phải là các mệnh đề hoặc giá trị độc lập, cụ thể.
 - PHẦN II: Câu trắc nghiệm Đúng / Sai. Mỗi câu gồm đoạn thông tin hoặc bài toán và 4 lệnh hỏi con a, b, c, d (mỗi lệnh chọn Đúng hoặc Sai). Số lượng yêu cầu: {num_part2} câu (khóa 'part2_tf'). Nếu {num_part2} = 0 thì để mảng rỗng [].
+  * QUY ĐỊNH BẮT BUỘC VỀ PHẦN II (ĐÚNG / SAI):
+    + Mỗi câu hỏi BẮT BUỘC có đề bài 'question' cụ thể và mảng 'sub_items' chứa ĐÚNG 4 Ý CON: "a", "b", "c", "d".
+    + Mỗi ý con BẮT BUỘC gồm: 'label' ('a', 'b', 'c', 'd'), 'statement' (mệnh đề khoa học thực tế, cụ thể), 'is_correct' (true hoặc false), và 'explanation' (giải thích).
+    + QUY TẮC PHÂN BỔ ĐÚNG/SAI BẮT BUỘC: Trong 4 ý con a, b, c, d của mỗi câu, BẮT BUỘC PHẢI CÓ TỪ 1 ĐẾN 3 Ý ĐÚNG (tức là luôn có ít nhất 1 ý Đúng và ít nhất 1 ý Sai). TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP TOÀN ĐÚNG (cả 4 ý đều true) HOẶC TOÀN SAI (cả 4 ý đều false)!
+    + TUYỆT ĐỐI KHÔNG để đề bài rỗng hoặc dùng các văn bản giữ chỗ/placeholder như 'Đang cập nhật...'.
 - PHẦN III: Câu trắc nghiệm trả lời ngắn (Điền số hoặc kết quả ngắn gọn). Số lượng yêu cầu: {num_part3} câu (khóa 'part3_short'). Nếu {num_part3} = 0 thì để mảng rỗng [].
 - PHẦN IV: Câu hỏi Tự luận (Thí sinh trình bày bài giải hoặc phân tích chi tiết). Số lượng yêu cầu: {num_essay} câu (khóa 'part4_essay').
   * QUY TẮC BẮT BUỘC CHO PHẦN TỰ LUẬN:
@@ -1306,8 +1311,28 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
             or item.get("cac_y")
             or item.get("cau_hoi_con")
             or item.get("menh_de")
+            or item.get("sub_questions")
+            or item.get("options")
+            or item.get("choices")
+            or item.get("propositions")
             or []
         )
+        if not raw_subs:
+            top_subs = []
+            for lbl in ["a", "b", "c", "d"]:
+                val = item.get(lbl) if item.get(lbl) is not None else item.get(lbl.upper())
+                if val is not None:
+                    if isinstance(val, dict):
+                        stmt = val.get("statement") or val.get("khang_dinh") or val.get("text") or str(val)
+                        is_c = val.get("is_correct")
+                        is_c = bool(is_c) if isinstance(is_c, bool) else str(is_c).lower() in ("true", "đúng", "1")
+                        exp = val.get("explanation") or ""
+                        top_subs.append({"label": lbl, "statement": stmt, "is_correct": is_c, "explanation": exp})
+                    else:
+                        top_subs.append({"label": lbl, "statement": str(val), "is_correct": True, "explanation": ""})
+            if len(top_subs) >= 2:
+                raw_subs = top_subs
+
         subs_list = []
         if isinstance(raw_subs, dict):
             for k, v in raw_subs.items():
@@ -1352,15 +1377,38 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
                         sub_exp = f"Khẳng định này là {'đúng' if is_correct else 'sai'}."
                     subs_list.append({"label": lbl, "statement": stmt, "is_correct": is_correct, "explanation": sub_exp})
 
-        while len(subs_list) < 4:
-            lbl = sub_labels_default[len(subs_list)]
-            subs_list.append({"label": lbl, "statement": "Đang cập nhật mệnh đề...", "is_correct": True, "explanation": "Khẳng định này là đúng."})
+        temp_q = Part2Question(
+            id=q_id,
+            question=question,
+            sub_items=[
+                SubItem(
+                    label=s["label"],
+                    statement=s["statement"],
+                    is_correct=s["is_correct"],
+                    explanation=s["explanation"]
+                ) for s in subs_list
+            ],
+            explanation=explanation
+        )
+        if len(subs_list) < 4 or any(len(s["statement"].strip()) < 5 or re.search(r"đang cập nhật", s["statement"], re.IGNORECASE) or re.match(r"^(?:mệnh đề|khẳng định)\s*[abcd]?\s*[\.:]?$", s["statement"].strip(), re.IGNORECASE) for s in subs_list):
+            temp_q = heal_tf_offline(temp_q, default_subject, idx - 1)
+
+        t_count = sum(1 for s in temp_q.sub_items if s.is_correct)
+        if t_count == 4:
+            temp_q.sub_items[3].is_correct = False
+            temp_q.sub_items[3].explanation = "Khẳng định này là sai. " + (temp_q.sub_items[3].explanation or "")
+        elif t_count == 0:
+            temp_q.sub_items[0].is_correct = True
+            temp_q.sub_items[0].explanation = "Khẳng định này là đúng. " + (temp_q.sub_items[0].explanation or "")
+
+        for s in temp_q.sub_items:
+            s.is_correct, s.explanation = reconcile_tf_subitem(s.is_correct, s.explanation or "")
 
         p2_list.append({
-            "id": q_id,
-            "question": question,
-            "sub_items": subs_list,
-            "explanation": explanation
+            "id": temp_q.id,
+            "question": temp_q.question,
+            "sub_items": [{"label": s.label, "statement": s.statement, "is_correct": s.is_correct, "explanation": s.explanation} for s in temp_q.sub_items],
+            "explanation": temp_q.explanation
         })
 
     # Part 3 Short Answer
@@ -1608,7 +1656,7 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
         print(f"[Exam Completion] Phần 2 hiện có {current_p2_count}/{num_p2_needed}, Phần 3 hiện có {current_p3_count}/{num_p3_needed}. Đang tự động gọi AI sinh bổ sung...")
         
         prompt_completion = f"""Bạn là chuyên gia biên soạn đề thi chuẩn Bộ GD&ĐT năm học 2026 - 2027. Hãy biên soạn bổ sung cho đề thi môn {request.subject}, khối {request.grade} (chủ đề: {request.topic or request.prompt or 'kiến thức trọng tâm'}):
-{f"- BẮT BUỘC TẠO {missing_p2} câu PHẦN II (Trắc nghiệm Đúng/Sai). Mỗi câu gồm đề bài và đúng 4 ý a, b, c, d (ghi rõ is_correct: true/false)." if missing_p2 > 0 else ""}
+{f"- BẮT BUỘC TẠO {missing_p2} câu PHẦN II (Trắc nghiệm Đúng/Sai). Mỗi câu gồm đề bài và đúng 4 ý a, b, c, d (ghi rõ is_correct: true/false). BẮT BUỘC trong 4 ý phải có từ 1 đến 3 ý đúng (không được toàn đúng hoặc toàn sai)." if missing_p2 > 0 else ""}
 {f"- BẮT BUỘC TẠO {missing_p3} câu PHẦN III (Trả lời ngắn). Điền đáp số ngắn gọn." if missing_p3 > 0 else ""}
 
 YÊU CẦU:
