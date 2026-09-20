@@ -1504,6 +1504,47 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
         user_prompt += f"\nChủ đề kiến thức trọng tâm: {request.topic}"
     if request.prompt:
         user_prompt += f"\nYêu cầu thêm của người dùng: {request.prompt}"
+
+    if request.matrix_spec:
+        ms = request.matrix_spec
+        matrix_details = []
+        matrix_details.append(f"TIÊU ĐỀ MA TRẬN: {ms.title}")
+        matrix_details.append(f"MÔN HỌC: {ms.subject} - KHỐI LỚP: {ms.grade} - THỜI GIAN: {ms.duration_minutes} PHÚT")
+        matrix_details.append(f"TỔNG CÂU HỎI: Phần I: {request.num_part1} câu | Phần II: {request.num_part2} câu | Phần III: {request.num_part3} câu | Tự luận: {request.num_essay} câu")
+        
+        cs = ms.cognitive_summary
+        matrix_details.append(f"PHÂN BỔ MỨC ĐỘ NHẬN THỨC (CÔNG VĂN 7991): Biết ({cs.biet_pct}%) - Hiểu ({cs.hieu_pct}%) - Vận dụng ({cs.vd_pct}%)")
+        
+        matrix_details.append("\nDANH MỤC CÁC CHỦ ĐỀ & BẢN ĐẶC TẢ YÊU CẦU CẦN ĐẠT (CÔNG VĂN 7991):")
+        for t in ms.topics:
+            topic_str = f"• {t.topic}"
+            if t.sub_topic:
+                topic_str += f" - Nội dung: {t.sub_topic}"
+            p1_c = t.part1_mcq.biet + t.part1_mcq.hieu + t.part1_mcq.vd
+            p2_c = t.part2_tf.biet + t.part2_tf.hieu + t.part2_tf.vd
+            p3_c = t.part3_short.biet + t.part3_short.hieu + t.part3_short.vd
+            p4_c = t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd
+            topic_str += f" [Số câu: P1: {p1_c} (Biết {t.part1_mcq.biet}, Hiểu {t.part1_mcq.hieu}, VD {t.part1_mcq.vd}) | P2: {p2_c} câu | P3: {p3_c} câu | Tự luận: {p4_c} câu]"
+            matrix_details.append(topic_str)
+            if t.requirements:
+                if t.requirements.recognition:
+                    matrix_details.append(f"  + Yêu cầu mức Biết: {t.requirements.recognition}")
+                if t.requirements.comprehension:
+                    matrix_details.append(f"  + Yêu cầu mức Hiểu: {t.requirements.comprehension}")
+                if t.requirements.application:
+                    matrix_details.append(f"  + Yêu cầu mức Vận dụng: {t.requirements.application}")
+                    
+        user_prompt += (
+            f"\n\nBẢNG MA TRẬN & ĐẶC TẢ CHI TIẾT (CHUẨN CÔNG VĂN 7991/BGDĐT-GDTrH):\n"
+            + "\n".join(matrix_details)
+            + "\n\nQUY TẮC BẮT BUỘC KHI TẠO ĐỀ THEO MA TRẬN & BẢN ĐẶC TẢ:\n"
+            "1. Từng câu hỏi phải bám sát 100% vào các chủ đề, đơn vị kiến thức và đúng số lượng câu hỏi được phân bổ ở trên.\n"
+            "2. BẮT BUỘC biên soạn các câu hỏi đáp ứng chuẩn xác các 'Yêu cầu mức Biết', 'Yêu cầu mức Hiểu', 'Yêu cầu mức Vận dụng' đã nêu trong Bản đặc tả.\n"
+            "3. Phần I (Trắc nghiệm nhiều lựa chọn): Ưu tiên các câu hỏi ở mức độ Biết và Hiểu theo tỷ lệ quy định.\n"
+            "4. Phần II (Đúng - Sai): Mỗi câu gồm 4 ý con a, b, c, d với độ khó phân hóa từ Biết đến Hiểu và Vận dụng, đúng với chủ đề được chỉ định.\n"
+            "5. Phần III (Trả lời ngắn) và Phần IV (Tự luận): Tập trung vào mức độ Vận dụng, giải quyết bài toán thực tế theo đúng yêu cầu cần đạt."
+        )
+
     if request.file_content:
         user_prompt += (
             f"\n\nNỘI DUNG TÀI LIỆU/GIÁO ÁN/ĐỀ CƯƠNG ĐÍNH KÈM (TOÀN VĂN):\n"

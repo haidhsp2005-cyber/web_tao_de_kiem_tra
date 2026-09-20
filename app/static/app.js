@@ -29,6 +29,14 @@ createApp({
     const extractedPreview = ref("");
     const fileInput = ref(null);
 
+    // Chuẩn Công văn 7991/BGDĐT-GDTrH Ma trận & Bản đặc tả
+    const matrixSpec = ref(null);
+    const matrixUploadedFileName = ref("");
+    const isAnalyzingMatrix = ref(false);
+    const matrixError = ref("");
+    const matrixFileInput = ref(null);
+    const showRawMatrixModal = ref(false);
+
     const isExtracting = ref(false);
     const isGenerating = ref(false);
     const isShuffling = ref(false);
@@ -518,6 +526,69 @@ createApp({
       if (file) uploadFile(file);
     };
 
+    // Xử lý tải lên và phân tích Ma trận theo chuẩn Công văn 7991/BGDĐT-GDTrH
+    const uploadMatrixFile = async (file) => {
+      if (!file) return;
+      matrixUploadedFileName.value = file.name;
+      isAnalyzingMatrix.value = true;
+      matrixError.value = "";
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/matrix/analyze", {
+          method: "POST",
+          body: fd
+        });
+        if (!res.ok) {
+          const err = await res.json();
+          throw new Error(err.detail || "Lỗi đọc file ma trận");
+        }
+        const data = await res.json();
+        matrixSpec.value = data.matrix;
+        
+        // Tự động đồng bộ các thông số vào form đề thi chính
+        if (data.matrix.subject) {
+          form.subject = data.matrix.subject;
+          const standardList = [
+            "Toán học", "Vật lý", "Hóa học", "Sinh học", "Tiếng Anh", "Lịch sử", "Địa lý",
+            "Giáo dục kinh tế & Pháp luật", "Tin học", "Giáo dục Quốc phòng & An ninh", "Công nghệ", "Ngữ văn"
+          ];
+          isCustomSubject.value = !standardList.includes(data.matrix.subject);
+        }
+        if (data.matrix.grade) form.grade = data.matrix.grade;
+        if (data.matrix.duration_minutes) form.duration_minutes = data.matrix.duration_minutes;
+        if (data.matrix.num_part1 !== undefined) form.num_part1 = data.matrix.num_part1;
+        if (data.matrix.num_part2 !== undefined) form.num_part2 = data.matrix.num_part2;
+        if (data.matrix.num_part3 !== undefined) form.num_part3 = data.matrix.num_part3;
+        if (data.matrix.num_essay !== undefined) form.num_essay = data.matrix.num_essay;
+        if (data.matrix.school_name && data.matrix.school_name.trim()) form.school_name = data.matrix.school_name;
+        if (data.matrix.academic_year && data.matrix.academic_year.trim()) form.academic_year = data.matrix.academic_year;
+        
+        const totalQ = (data.matrix.num_part1 || 0) + (data.matrix.num_part2 || 0) + (data.matrix.num_part3 || 0) + (data.matrix.num_essay || 0);
+        showToast(`Đã nhận dạng thành công ma trận môn ${data.matrix.subject} lớp ${data.matrix.grade} (${totalQ} câu hỏi)!`);
+      } catch (err) {
+        matrixError.value = err.message;
+        showToast("Lỗi phân tích ma trận: " + err.message, "error");
+      } finally {
+        isAnalyzingMatrix.value = false;
+      }
+    };
+
+    const handleMatrixFileSelect = (e) => {
+      const file = e.target.files[0];
+      if (file) uploadMatrixFile(file);
+    };
+
+    const handleMatrixFileDrop = (e) => {
+      const file = e.dataTransfer.files[0];
+      if (file) uploadMatrixFile(file);
+    };
+
+    const startGenerateFromMatrix = async () => {
+      inputMode.value = "matrix";
+      await startGenerate();
+    };
+
     // Sync custom school name and academic year across active exam and variants
     const syncSchoolInfo = () => {
       if (exam.value) {
@@ -583,6 +654,8 @@ createApp({
           topic: form.topic,
           prompt: form.prompt,
           file_content: form.file_content,
+          matrix_spec: inputMode.value === "matrix" ? matrixSpec.value : null,
+          matrix_mode: inputMode.value === "matrix",
           num_part1: form.num_part1,
           num_part2: form.num_part2,
           num_part3: form.num_part3,
@@ -794,6 +867,15 @@ createApp({
       uploadedFileName,
       extractedPreview,
       fileInput,
+      matrixSpec,
+      matrixUploadedFileName,
+      isAnalyzingMatrix,
+      matrixError,
+      matrixFileInput,
+      showRawMatrixModal,
+      handleMatrixFileSelect,
+      handleMatrixFileDrop,
+      startGenerateFromMatrix,
       isExtracting,
       isGenerating,
       isShuffling,

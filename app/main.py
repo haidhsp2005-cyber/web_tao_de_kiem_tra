@@ -14,9 +14,10 @@ from pydantic import BaseModel
 
 from .services.models import (
     ExamStructure, ExamVariant, ShuffleRequest, ShuffleResponse,
-    GenerateRequest, ExportDocxRequest
+    GenerateRequest, ExportDocxRequest, ExamMatrixSpec, MatrixAnalyzeResponse
 )
 from .services.extractor import extract_file_content
+from .services.matrix_analyzer import analyze_matrix_document
 from .services.ai_generator import (
     generate_exam, get_mock_math_exam, get_mock_physics_exam, get_mock_chemistry_exam, get_mock_gdqp_exam,
     get_env_api_keys, mask_key
@@ -155,6 +156,41 @@ async def api_extract(file: UploadFile = File(...)):
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=f"Lỗi đọc tệp: {str(e)}")
+
+# 1b. Phân tích Ma trận & Bản đặc tả theo chuẩn Công văn 7991/BGDĐT-GDTrH
+@app.post("/api/matrix/analyze", response_model=MatrixAnalyzeResponse)
+async def api_matrix_analyze(
+    file: Optional[UploadFile] = File(None),
+    raw_text: Optional[str] = Form(None)
+):
+    try:
+        file_bytes = None
+        filename = None
+        if file is not None:
+            file_bytes = await file.read()
+            filename = file.filename
+            
+        if not file_bytes and not raw_text:
+            raise HTTPException(
+                status_code=400,
+                detail="Vui lòng tải lên tệp ma trận (.docx, .pdf) hoặc dán nội dung văn bản."
+            )
+            
+        matrix_spec = await analyze_matrix_document(
+            file_bytes=file_bytes,
+            filename=filename,
+            raw_text=raw_text
+        )
+        return MatrixAnalyzeResponse(
+            success=True,
+            message="Đã phân tích ma trận & bản đặc tả thành công!",
+            matrix=matrix_spec
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Lỗi phân tích ma trận: {str(e)}")
 
 # 2. Sinh đề thi (AI hoặc Mẫu)
 @app.post("/api/generate", response_model=ExamStructure)

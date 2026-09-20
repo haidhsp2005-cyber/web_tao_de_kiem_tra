@@ -221,16 +221,19 @@
             </div>
           </div>
 
-          <!-- INPUT METHOD TABS -->
-          <div class="border-t border-slate-100 pt-4">
             <div class="flex border-b border-slate-200">
-              <button @click="inputMode = 'prompt'" :class="{'border-brand-600 text-brand-600 font-bold': inputMode === 'prompt', 'border-transparent text-slate-500 hover:text-slate-700': inputMode !== 'prompt'}" class="py-2.5 px-5 border-b-2 text-sm transition flex items-center space-x-2">
+              <button @click="inputMode = 'prompt'" :class="{'border-brand-600 text-brand-600 font-bold': inputMode === 'prompt', 'border-transparent text-slate-500 hover:text-slate-700': inputMode !== 'prompt'}" class="py-2.5 px-4 sm:px-5 border-b-2 text-sm transition flex items-center space-x-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                <span>Tạo tự động bằng Prompt</span>
+                <span>Tạo từ Prompt</span>
               </button>
-              <button @click="inputMode = 'file'" :class="{'border-brand-600 text-brand-600 font-bold': inputMode === 'file', 'border-transparent text-slate-500 hover:text-slate-700': inputMode !== 'file'}" class="py-2.5 px-5 border-b-2 text-sm transition flex items-center space-x-2">
+              <button @click="inputMode = 'file'" :class="{'border-brand-600 text-brand-600 font-bold': inputMode === 'file', 'border-transparent text-slate-500 hover:text-slate-700': inputMode !== 'file'}" class="py-2.5 px-4 sm:px-5 border-b-2 text-sm transition flex items-center space-x-2">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                <span>Tạo từ File PDF hoặc Word (.docx)</span>
+                <span>Tạo từ Giáo án / Đề cương</span>
+              </button>
+              <button @click="inputMode = 'matrix'" :class="{'border-indigo-600 text-indigo-700 font-bold bg-indigo-50/50': inputMode === 'matrix', 'border-transparent text-slate-500 hover:text-slate-700': inputMode !== 'matrix'}" class="py-2.5 px-4 sm:px-5 border-b-2 text-sm transition flex items-center space-x-2 relative">
+                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                <span class="font-bold">✨ Nhập Ma trận & Bản đặc tả (CV 7991)</span>
+                <span class="ml-1.5 px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[9px] font-black uppercase tracking-wider hidden md:inline-block animate-pulse">Mới</span>
               </button>
             </div>
 
@@ -256,7 +259,7 @@
                   </div>
                   <div class="text-sm font-semibold text-slate-700">
                     <span v-if="uploadedFileName" class="text-brand-600">{{ uploadedFileName }}</span>
-                    <span v-else>Kéo thả tập tin vào đây hoặc <span class="text-brand-600 underline">bấm để chọn file</span></span>
+                    <span v-else>Kéo thả tập tin giáo án/đề cương vào đây hoặc <span class="text-brand-600 underline">bấm để chọn file</span></span>
                   </div>
                   <p class="text-xs text-slate-400">Hỗ trợ các tệp: Microsoft Word (.docx), PDF (.pdf), Text (.txt)</p>
                 </div>
@@ -279,6 +282,180 @@
                     <svg v-if="isGenerating" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                     <span>{{ isGenerating ? 'Đang tạo đề từ tài liệu...' : 'BẮT ĐẦU TẠO ĐỀ TỪ TÀI LIỆU NÀY' }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Content: Matrix Upload & Preview (Chuẩn Công văn 7991/BGDĐT-GDTrH) -->
+            <div v-if="inputMode === 'matrix'" class="pt-4 space-y-5">
+              <!-- Upload Box -->
+              <div class="border-2 border-dashed border-indigo-300 rounded-2xl p-6 text-center hover:border-indigo-500 transition bg-indigo-50/30 relative cursor-pointer" @dragover.prevent @drop.prevent="handleMatrixFileDrop">
+                <input type="file" ref="matrixFileInput" @change="handleMatrixFileSelect" accept=".docx,.doc,.pdf,.txt" class="absolute inset-0 opacity-0 cursor-pointer">
+                <div class="flex flex-col items-center justify-center space-y-2">
+                  <div class="w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shadow-xs">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  </div>
+                  <div class="text-sm font-bold text-slate-800">
+                    <span v-if="matrixUploadedFileName" class="text-indigo-600 flex items-center justify-center space-x-1">
+                      <span>📄 {{ matrixUploadedFileName }}</span>
+                    </span>
+                    <span v-else>Kéo thả tệp <b>Ma trận</b> hoặc <b>Bản đặc tả</b> vào đây hoặc <span class="text-indigo-600 underline">bấm để chọn tệp</span></span>
+                  </div>
+                  <p class="text-xs text-slate-500">Tương thích hoàn hảo biểu mẫu <b>Công văn 7991/BGDĐT-GDTrH ngày 17/12/2024</b> (file Word .docx hoặc PDF .pdf)</p>
+                </div>
+              </div>
+
+              <!-- Loading State -->
+              <div v-if="isAnalyzingMatrix" class="p-5 bg-indigo-50 border border-indigo-200 rounded-2xl flex items-center space-x-4 shadow-sm animate-pulse">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center flex-shrink-0">
+                  <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-indigo-950">AI đang phân tích Ma trận & Bản đặc tả theo chuẩn Công văn 7991...</h4>
+                  <p class="text-xs text-indigo-700 mt-0.5">Tự động bóc tách số lượng câu hỏi, 3 mức độ nhận thức (Biết - Hiểu - Vận dụng) và Yêu cầu cần đạt từng bài.</p>
+                </div>
+              </div>
+
+              <!-- Matrix Error Banner -->
+              <div v-if="matrixError" class="p-4 bg-rose-50 border border-rose-200 rounded-xl flex items-start justify-between text-xs text-rose-800">
+                <div class="flex items-start space-x-2">
+                  <svg class="w-4 h-4 text-rose-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  <span>{{ matrixError }}</span>
+                </div>
+                <button @click="matrixError = ''" class="text-rose-500 hover:text-rose-700 font-bold ml-2">✕</button>
+              </div>
+
+              <!-- MATRIX PREVIEW DASHBOARD (Khi đã nhận diện thành công) -->
+              <div v-if="matrixSpec" class="bg-gradient-to-br from-slate-50 to-indigo-50/30 rounded-2xl p-5 border border-indigo-200 shadow-sm space-y-4">
+                <!-- Header Badge -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-indigo-100">
+                  <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 text-xs font-bold border border-emerald-300">
+                      ✓ ĐÃ NHẬN DẠNG MA TRẬN THÀNH CÔNG
+                    </span>
+                    <span class="text-xs font-semibold text-slate-600">Chuẩn Phụ lục Công văn 7991/BGDĐT-GDTrH</span>
+                  </div>
+                  <div class="flex items-center space-x-2 text-xs">
+                    <span class="px-2 py-0.5 rounded bg-white font-bold text-slate-700 border border-slate-200">Môn: {{ matrixSpec.subject }}</span>
+                    <span class="px-2 py-0.5 rounded bg-white font-bold text-slate-700 border border-slate-200">Lớp: {{ matrixSpec.grade }}</span>
+                    <span class="px-2 py-0.5 rounded bg-white font-bold text-slate-700 border border-slate-200">{{ matrixSpec.duration_minutes }} phút</span>
+                  </div>
+                </div>
+
+                <!-- Cognitive Levels Progress Bar (Biết - Hiểu - Vận dụng) -->
+                <div class="bg-white rounded-xl p-3.5 border border-indigo-100 shadow-2xs space-y-2">
+                  <div class="flex items-center justify-between text-xs font-bold text-slate-700">
+                    <span class="flex items-center space-x-1.5">
+                      <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                      <span>Mức độ đánh giá (3 mức độ nhận thức theo Công văn 7991):</span>
+                    </span>
+                    <span class="text-[11px] text-slate-500 font-semibold">Tổng: {{ matrixSpec.cognitive_summary.biet_count + matrixSpec.cognitive_summary.hieu_count + matrixSpec.cognitive_summary.vd_count }} câu / 10,0 điểm</span>
+                  </div>
+                  
+                  <!-- Visual Multi-segment Progress Bar -->
+                  <div class="w-full h-3.5 rounded-full bg-slate-100 overflow-hidden flex shadow-inner">
+                    <div :style="{width: matrixSpec.cognitive_summary.biet_pct + '%'}" class="bg-blue-500 h-full transition-all duration-500" title="Biết (Nhận biết)"></div>
+                    <div :style="{width: matrixSpec.cognitive_summary.hieu_pct + '%'}" class="bg-emerald-500 h-full transition-all duration-500" title="Hiểu (Thông hiểu)"></div>
+                    <div :style="{width: matrixSpec.cognitive_summary.vd_pct + '%'}" class="bg-amber-500 h-full transition-all duration-500" title="Vận dụng (VD & VDC)"></div>
+                  </div>
+
+                  <!-- Legend Badges -->
+                  <div class="grid grid-cols-3 gap-2 pt-1 text-center">
+                    <div class="p-2 rounded-lg bg-blue-50 border border-blue-200">
+                      <div class="text-[10px] uppercase tracking-wider font-bold text-blue-700">1. Biết (Nhận biết)</div>
+                      <div class="text-sm font-black text-blue-900 mt-0.5">{{ matrixSpec.cognitive_summary.biet_count }} câu <span class="text-xs font-semibold text-blue-600">({{ matrixSpec.cognitive_summary.biet_pct }}%)</span></div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-emerald-50 border border-emerald-200">
+                      <div class="text-[10px] uppercase tracking-wider font-bold text-emerald-700">2. Hiểu (Thông hiểu)</div>
+                      <div class="text-sm font-black text-emerald-900 mt-0.5">{{ matrixSpec.cognitive_summary.hieu_count }} câu <span class="text-xs font-semibold text-emerald-600">({{ matrixSpec.cognitive_summary.hieu_pct }}%)</span></div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-amber-50 border border-amber-200">
+                      <div class="text-[10px] uppercase tracking-wider font-bold text-amber-700">3. Vận dụng (VD / VDC)</div>
+                      <div class="text-sm font-black text-amber-900 mt-0.5">{{ matrixSpec.cognitive_summary.vd_count }} câu <span class="text-xs font-semibold text-amber-600">({{ matrixSpec.cognitive_summary.vd_pct }}%)</span></div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 4 Sections Badges (Chuẩn 4 hình thức thi 2025) -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase">Phần I (Nhiều lựa chọn)</div>
+                    <div class="text-base font-black text-blue-700">{{ matrixSpec.num_part1 }} <span class="text-xs font-semibold text-slate-500">câu</span></div>
+                    <div class="text-[10px] text-slate-400">0,25 đ/câu</div>
+                  </div>
+                  <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase">Phần II ("Đúng - Sai")</div>
+                    <div class="text-base font-black text-emerald-700">{{ matrixSpec.num_part2 }} <span class="text-xs font-semibold text-slate-500">câu</span></div>
+                    <div class="text-[10px] text-slate-400">1,0 đ/câu (4 ý con)</div>
+                  </div>
+                  <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase">Phần III (Trả lời ngắn)</div>
+                    <div class="text-base font-black text-amber-700">{{ matrixSpec.num_part3 }} <span class="text-xs font-semibold text-slate-500">câu</span></div>
+                    <div class="text-[10px] text-slate-400">Điền đáp số</div>
+                  </div>
+                  <div class="bg-white p-2.5 rounded-xl border border-slate-200 text-center">
+                    <div class="text-[10px] font-bold text-purple-700 uppercase">Phần IV (Tự luận)</div>
+                    <div class="text-base font-black text-purple-800">{{ matrixSpec.num_essay }} <span class="text-xs font-semibold text-purple-600">câu</span></div>
+                    <div class="text-[10px] text-purple-400">{{ matrixSpec.num_essay > 0 ? 'Tự luận tự do' : 'Không có' }}</div>
+                  </div>
+                </div>
+
+                <!-- Danh mục Chủ đề & Bản đặc tả Yêu cầu cần đạt -->
+                <div v-if="matrixSpec.topics && matrixSpec.topics.length" class="space-y-2">
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold text-slate-800 flex items-center space-x-1.5">
+                      <span>📋 Chi tiết các Chủ đề & Bản đặc tả Yêu cầu cần đạt ({{ matrixSpec.topics.length }} chủ đề):</span>
+                    </span>
+                    <button @click="showRawMatrixModal = true" class="text-[11px] text-indigo-600 hover:underline flex items-center space-x-1">
+                      <span>Xem bảng gốc trích xuất</span>
+                    </button>
+                  </div>
+
+                  <div class="max-h-60 overflow-y-auto space-y-2 pr-1">
+                    <div v-for="(t, idx) in matrixSpec.topics" :key="idx" class="bg-white p-3 rounded-xl border border-slate-200 space-y-1.5 shadow-2xs">
+                      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <div class="font-bold text-xs text-slate-900">
+                          <span class="text-indigo-600 font-extrabold mr-1">#{{ t.id || (idx+1) }}</span>
+                          <span>{{ t.topic }}</span>
+                          <span v-if="t.sub_topic" class="text-slate-500 font-normal ml-1">({{ t.sub_topic }})</span>
+                        </div>
+                        <div class="flex items-center space-x-1.5 text-[10px] font-bold text-slate-600">
+                          <span v-if="t.part1_mcq && (t.part1_mcq.biet + t.part1_mcq.hieu + t.part1_mcq.vd) > 0" class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">P1: {{ t.part1_mcq.biet + t.part1_mcq.hieu + t.part1_mcq.vd }}</span>
+                          <span v-if="t.part2_tf && (t.part2_tf.biet + t.part2_tf.hieu + t.part2_tf.vd) > 0" class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">P2: {{ t.part2_tf.biet + t.part2_tf.hieu + t.part2_tf.vd }}</span>
+                          <span v-if="t.part3_short && (t.part3_short.biet + t.part3_short.hieu + t.part3_short.vd) > 0" class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">P3: {{ t.part3_short.biet + t.part3_short.hieu + t.part3_short.vd }}</span>
+                          <span v-if="t.part4_essay && (t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd) > 0" class="px-1.5 py-0.5 rounded bg-purple-50 text-purple-700 border border-purple-200">TL: {{ t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd }}</span>
+                        </div>
+                      </div>
+
+                      <!-- Yêu cầu cần đạt chi tiết -->
+                      <div v-if="t.requirements && (t.requirements.recognition || t.requirements.comprehension || t.requirements.application)" class="text-[11px] space-y-0.5 pt-1 border-t border-slate-100 text-slate-600">
+                        <div v-if="t.requirements.recognition" class="flex items-start space-x-1">
+                          <span class="font-bold text-blue-700 flex-shrink-0">• Biết:</span>
+                          <span class="text-slate-700">{{ t.requirements.recognition }}</span>
+                        </div>
+                        <div v-if="t.requirements.comprehension" class="flex items-start space-x-1">
+                          <span class="font-bold text-emerald-700 flex-shrink-0">• Hiểu:</span>
+                          <span class="text-slate-700">{{ t.requirements.comprehension }}</span>
+                        </div>
+                        <div v-if="t.requirements.application" class="flex items-start space-x-1">
+                          <span class="font-bold text-amber-700 flex-shrink-0">• Vận dụng:</span>
+                          <span class="text-slate-700">{{ t.requirements.application }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Button -->
+                <div class="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-indigo-100">
+                  <div class="text-xs text-slate-500 italic">
+                    Các thông số Môn, Khối lớp, Số câu đã được tự động đồng bộ vào cấu hình đề thi ở trên.
+                  </div>
+                  <button @click="startGenerateFromMatrix" :disabled="isGenerating || isAnalyzingMatrix" class="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-600 via-brand-600 to-purple-600 text-white font-black text-xs sm:text-sm shadow-md shadow-indigo-500/25 hover:from-indigo-700 hover:to-purple-700 active:scale-95 transition disabled:opacity-50 cursor-pointer">
+                    <svg v-if="isGenerating" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
+                    <span>{{ isGenerating ? 'Đang biên soạn đề theo ma trận...' : 'BẮT ĐẦU TẠO ĐỀ THEO MA TRẬN NÀY' }}</span>
                   </button>
                 </div>
               </div>
@@ -980,6 +1157,25 @@
           </div>
         </div>
       </div>
+    <!-- RAW MATRIX MODAL -->
+    <div v-if="showRawMatrixModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+      <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 flex-shrink-0">
+          <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center space-x-2">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>Dữ liệu bảng Ma trận gốc trích xuất từ tệp</span>
+          </h3>
+          <button @click="showRawMatrixModal = false" class="text-slate-400 hover:text-slate-600 font-bold text-base">✕</button>
+        </div>
+        <div class="flex-1 overflow-y-auto bg-slate-900 text-slate-100 p-4 rounded-xl text-xs font-mono whitespace-pre-wrap leading-relaxed select-all">
+          {{ matrixSpec?.raw_markdown_table || 'Không có dữ liệu văn bản thô.' }}
+        </div>
+        <div class="pt-2 flex justify-end flex-shrink-0">
+          <button @click="showRawMatrixModal = false" class="px-4 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold text-xs hover:bg-slate-200 transition">
+            Đóng
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- TOAST NOTIFICATION -->
@@ -989,6 +1185,6 @@
 
   </div>
 
-  <script src="app.js?v=20260918_v3"></script>
+  <script src="app.js?v=20260920_v1"></script>
 </body>
 </html>

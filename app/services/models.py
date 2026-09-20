@@ -309,8 +309,60 @@ class ShuffleResponse(BaseModel):
     variants: List[ExamVariant]
     matrix: Dict[str, Any]
 
+class CognitiveBreakdown(BaseModel):
+    biet: int = 0
+    hieu: int = 0
+    vd: int = 0
+
+class TopicRequirements(BaseModel):
+    recognition: Optional[str] = ''   # - Biết: ...
+    comprehension: Optional[str] = '' # - Hiểu: ...
+    application: Optional[str] = ''   # - VD: ...
+
+class Cv7991TopicItem(BaseModel):
+    id: int = 1
+    topic: str                        # Chủ đề / Chương
+    sub_topic: Optional[str] = ''     # Nội dung / đơn vị kiến thức
+    requirements: Optional[TopicRequirements] = None
+    part1_mcq: CognitiveBreakdown = Field(default_factory=CognitiveBreakdown)     # Nhiều lựa chọn
+    part2_tf: CognitiveBreakdown = Field(default_factory=CognitiveBreakdown)      # Đúng - Sai
+    part3_short: CognitiveBreakdown = Field(default_factory=CognitiveBreakdown)   # Trả lời ngắn
+    part4_essay: CognitiveBreakdown = Field(default_factory=CognitiveBreakdown)   # Tự luận
+    total_questions: int = 0
+    points: float = 0.0
+
+class CognitiveSummary(BaseModel):
+    biet_count: int = 0
+    biet_pct: float = 40.0
+    hieu_count: int = 0
+    hieu_pct: float = 30.0
+    vd_count: int = 0
+    vd_pct: float = 30.0
+
+class ExamMatrixSpec(BaseModel):
+    title: str = 'MA TRẬN & BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KÌ'
+    subject: str = 'Toán học'
+    grade: str = '12'
+    duration_minutes: int = 50
+    school_name: Optional[str] = 'SỞ GD&ĐT ... - TRƯỜNG THPT ...'
+    academic_year: Optional[str] = 'NĂM HỌC 2026 - 2027'
+    num_part1: int = 12
+    num_part2: int = 4
+    num_part3: int = 6
+    num_essay: int = 0
+    total_points: float = 10.0
+    scoring_summary: Optional[Dict[str, float]] = None
+    cognitive_summary: CognitiveSummary = Field(default_factory=CognitiveSummary)
+    topics: List[Cv7991TopicItem] = Field(default_factory=list)
+    raw_markdown_table: Optional[str] = ''
+
+class MatrixAnalyzeResponse(BaseModel):
+    success: bool = True
+    message: str = ''
+    matrix: ExamMatrixSpec
+
 class GenerateRequest(BaseModel):
-    mode: str = 'prompt'  # prompt, file, mock
+    mode: str = 'prompt'  # prompt, file, mock, matrix
     prompt: Optional[str] = None
     subject: str = 'Toán học'
     grade: str = '12'
@@ -320,6 +372,8 @@ class GenerateRequest(BaseModel):
     num_part3: int = 6
     num_essay: int = 0  # Số câu tự luận (mặc định 0 - nếu là 0 thì không tạo câu tự luận)
     file_content: Optional[str] = None
+    matrix_spec: Optional[ExamMatrixSpec] = None
+    matrix_mode: bool = False
     api_provider: str = 'gemini'  # gemini, openai, mock
     api_key: Optional[str] = None
     api_keys: Optional[List[str]] = Field(default_factory=list)
@@ -332,3 +386,4 @@ class ExportDocxRequest(BaseModel):
     include_answers: bool = True
     include_explanations: bool = True
     red_answers: bool = False
+
