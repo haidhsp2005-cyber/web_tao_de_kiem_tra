@@ -219,21 +219,23 @@
               <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Năm học</label>
               <input type="text" v-model="form.academic_year" @input="syncSchoolInfo" placeholder="Ví dụ: NĂM HỌC 2026 - 2027" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-semibold text-slate-800 focus:ring-2 focus:ring-brand-500 focus:outline-none shadow-xs">
             </div>
-          <!-- INPUT METHOD TABS -->
+          </div>
+
+          <!-- INPUT METHOD TABS (CÂN XỨNG TOÀN KHUNG) -->
           <div class="border-t border-slate-100 pt-4">
-            <div class="flex border-b border-slate-200">
-              <button @click="inputMode = 'prompt'" :class="{'border-brand-600 text-brand-600 font-bold': inputMode === 'prompt', 'border-transparent text-slate-500 hover:text-slate-700': inputMode !== 'prompt'}" class="py-2.5 px-4 sm:px-5 border-b-2 text-sm transition flex items-center space-x-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <div class="grid grid-cols-1 sm:grid-cols-3 border-b border-slate-200">
+              <button @click="inputMode = 'prompt'" :class="{'border-brand-600 text-brand-600 font-bold bg-brand-50/40': inputMode === 'prompt', 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50': inputMode !== 'prompt'}" class="py-3 px-4 border-b-2 text-xs sm:text-sm transition flex items-center justify-center space-x-2 cursor-pointer">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                 <span>Tạo từ Prompt</span>
               </button>
-              <button @click="inputMode = 'file'" :class="{'border-brand-600 text-brand-600 font-bold': inputMode === 'file', 'border-transparent text-slate-500 hover:text-slate-700': inputMode !== 'file'}" class="py-2.5 px-4 sm:px-5 border-b-2 text-sm transition flex items-center space-x-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+              <button @click="inputMode = 'file'" :class="{'border-brand-600 text-brand-600 font-bold bg-brand-50/40': inputMode === 'file', 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50': inputMode !== 'file'}" class="py-3 px-4 border-b-2 text-xs sm:text-sm transition flex items-center justify-center space-x-2 cursor-pointer">
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                 <span>Tạo từ Giáo án / Đề cương</span>
               </button>
-              <button @click="inputMode = 'matrix'" :class="{'border-indigo-600 text-indigo-700 font-bold bg-indigo-50/50': inputMode === 'matrix', 'border-transparent text-slate-500 hover:text-slate-700': inputMode !== 'matrix'}" class="py-2.5 px-4 sm:px-5 border-b-2 text-sm transition flex items-center space-x-2 relative">
-                <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              <button @click="inputMode = 'matrix'" :class="{'border-indigo-600 text-indigo-700 font-bold bg-indigo-50/60': inputMode === 'matrix', 'border-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-50': inputMode !== 'matrix'}" class="py-3 px-4 border-b-2 text-xs sm:text-sm transition flex items-center justify-center space-x-2 relative cursor-pointer">
+                <svg class="w-4 h-4 text-indigo-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                 <span class="font-bold">✨ Nhập Ma trận & Bản đặc tả (CV 7991)</span>
-                <span class="ml-1.5 px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[9px] font-black uppercase tracking-wider hidden md:inline-block animate-pulse">Mới</span>
+                <span class="ml-1.5 px-1.5 py-0.2 rounded-full bg-rose-500 text-white text-[9px] font-black uppercase tracking-wider hidden sm:inline-block animate-pulse">Mới</span>
               </button>
             </div>
 
@@ -484,17 +486,16 @@
             </div>
           </div>
 
-          <!-- GENERATE BUTTON -->
-          <div class="pt-2 flex justify-end">
-            <button @click="startGenerate" :disabled="isGenerating || isExtracting" class="inline-flex items-center space-x-2 px-6 py-3 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-sm shadow-md shadow-brand-500/25 hover:from-brand-700 hover:to-indigo-700 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed">
+          <!-- GENERATE BUTTON (GỌN GÀNG, CÂN ĐỐI) -->
+          <div class="pt-4 flex items-center justify-end border-t border-slate-100">
+            <button @click="startGenerate" :disabled="isGenerating || isExtracting" class="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-xs sm:text-sm shadow-sm hover:from-brand-700 hover:to-indigo-700 active:scale-95 transition disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
               <svg v-if="isGenerating || isExtracting" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"/></svg>
-              <span>{{ isGenerating ? 'Đang khởi tạo đề kiểm tra...' : (isExtracting ? 'Đang trích xuất file...' : 'TẠO ĐỀ KIỂM TRA') }}</span>
+              <span>{{ isGenerating ? 'Đang khởi tạo đề...' : (isExtracting ? 'Đang trích xuất file...' : 'Tạo đề kiểm tra') }}</span>
             </button>
           </div>
         </div>
       </div>
-    </div>
 
       <!-- STEP 2: EXAM SHUFFLING TOOLBAR (VISIBLE ONCE EXAM IS LOADED) -->
       <div v-if="exam" class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
@@ -1189,6 +1190,6 @@
 
   </div>
 
-  <script src="app.js?v=20260920_v3"></script>
+  <script src="app.js?v=20260920_v4"></script>
 </body>
 </html>
