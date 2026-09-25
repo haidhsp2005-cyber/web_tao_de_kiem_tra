@@ -110,10 +110,10 @@ def add_formatted_text_with_math(paragraph, text: str, bold=False, italic=False,
                         r_node.insert(0, rPr)
                 paragraph._p.append(docx_math_element)
             else:
-                # Fallback to plain italic run
+                # Fallback to plain run
                 run = paragraph.add_run(raw_math)
                 run.bold = bold
-                run.italic = True
+                run.italic = italic
                 run.font.name = font_name
                 run.font.size = Pt(font_size)
                 if color:
@@ -347,15 +347,17 @@ def create_exam_document(
                     
                     is_correct = (red_answers and opt.label.strip().upper() == q.answer.strip().upper())
                     opt_color = red_color if is_correct else None
-                    opt_bold = True if is_correct else False
+                    opt_bold = False
+                    opt_italic = False
                     
                     run_lbl = p_opt.add_run(f"{opt.label}. ")
-                    run_lbl.bold = True
+                    run_lbl.bold = False if red_answers else True
+                    run_lbl.italic = False
                     run_lbl.font.name = "Times New Roman"
                     run_lbl.font.size = Pt(11)
                     if is_correct:
                         run_lbl.font.color.rgb = red_color
-                    add_formatted_text_with_math(p_opt, opt.text, bold=opt_bold, font_size=11, color=opt_color)
+                    add_formatted_text_with_math(p_opt, opt.text, bold=opt_bold, italic=opt_italic, font_size=11, color=opt_color)
             elif total_opt_len > 60:
                 # 2 columns (2x2 table)
                 t2 = doc.add_table(rows=2, cols=2)
@@ -373,15 +375,17 @@ def create_exam_document(
                     
                     is_correct = (red_answers and opt.label.strip().upper() == q.answer.strip().upper())
                     opt_color = red_color if is_correct else None
-                    opt_bold = True if is_correct else False
+                    opt_bold = False
+                    opt_italic = False
                     
                     run_lbl = p_cell.add_run(f"{opt.label}. ")
-                    run_lbl.bold = True
+                    run_lbl.bold = False if red_answers else True
+                    run_lbl.italic = False
                     run_lbl.font.name = "Times New Roman"
                     run_lbl.font.size = Pt(11)
                     if is_correct:
                         run_lbl.font.color.rgb = red_color
-                    add_formatted_text_with_math(p_cell, opt.text, bold=opt_bold, font_size=11, color=opt_color)
+                    add_formatted_text_with_math(p_cell, opt.text, bold=opt_bold, italic=opt_italic, font_size=11, color=opt_color)
             else:
                 # 4 columns (1x4 table)
                 opt_table = doc.add_table(rows=1, cols=4)
@@ -396,15 +400,17 @@ def create_exam_document(
                     
                     is_correct = (red_answers and opt.label.strip().upper() == q.answer.strip().upper())
                     opt_color = red_color if is_correct else None
-                    opt_bold = True if is_correct else False
+                    opt_bold = False
+                    opt_italic = False
                     
                     run_lbl = p_cell.add_run(f"{opt.label}. ")
-                    run_lbl.bold = True
+                    run_lbl.bold = False if red_answers else True
+                    run_lbl.italic = False
                     run_lbl.font.name = "Times New Roman"
                     run_lbl.font.size = Pt(11)
                     if is_correct:
                         run_lbl.font.color.rgb = red_color
-                    add_formatted_text_with_math(p_cell, opt.text, bold=opt_bold, font_size=11, color=opt_color)
+                    add_formatted_text_with_math(p_cell, opt.text, bold=opt_bold, italic=opt_italic, font_size=11, color=opt_color)
     
     # -------------------------------------------------------------
     # SECTION 1: ĐỀ THI - PHẦN II (TRẮC NGHIỆM ĐÚNG SAI)
@@ -440,15 +446,17 @@ def create_exam_document(
                 
                 is_sub_correct = (red_answers and sub.is_correct is True)
                 sub_color = red_color if is_sub_correct else None
-                sub_bold = True if is_sub_correct else False
+                sub_bold = False
+                sub_italic = False
                 
                 run_lbl = p_sub.add_run(f"{sub.label}) ")
-                run_lbl.bold = True
+                run_lbl.bold = False if red_answers else True
+                run_lbl.italic = False
                 run_lbl.font.name = "Times New Roman"
                 run_lbl.font.size = Pt(11)
                 if is_sub_correct:
                     run_lbl.font.color.rgb = red_color
-                add_formatted_text_with_math(p_sub, sub.statement, bold=sub_bold, font_size=11, color=sub_color)
+                add_formatted_text_with_math(p_sub, sub.statement, bold=sub_bold, italic=sub_italic, font_size=11, color=sub_color)
     
     # -------------------------------------------------------------
     # SECTION 1: ĐỀ THI - PHẦN III (TRẢ LỜI NGẮN)
@@ -482,10 +490,11 @@ def create_exam_document(
                 p_ans.paragraph_format.space_after = Pt(4)
                 p_ans.paragraph_format.line_spacing = 1.15
                 r_ans_lbl = p_ans.add_run("Đáp án: ")
-                r_ans_lbl.bold = True
+                r_ans_lbl.bold = False
+                r_ans_lbl.italic = False
                 r_ans_lbl.font.name = "Times New Roman"
                 r_ans_lbl.font.size = Pt(11)
-                add_formatted_text_with_math(p_ans, q.answer, bold=True, font_size=11, color=red_color)
+                add_formatted_text_with_math(p_ans, q.answer, bold=False, italic=False, font_size=11, color=red_color)
     
     # -------------------------------------------------------------
     # SECTION 1: ĐỀ THI - PHẦN IV (CÂU HỎI TỰ LUẬN)
@@ -519,7 +528,8 @@ def create_exam_document(
                 p_hd.paragraph_format.space_before = Pt(2)
                 p_hd.paragraph_format.space_after = Pt(1)
                 r_hd = p_hd.add_run("Hướng dẫn chấm:")
-                r_hd.italic = True
+                r_hd.bold = False
+                r_hd.italic = False
                 r_hd.font.name = "Times New Roman"
                 r_hd.font.size = Pt(10.5)
                 
@@ -531,7 +541,7 @@ def create_exam_document(
                         p_bullet.paragraph_format.left_indent = Inches(0.35)
                         p_bullet.paragraph_format.space_before = Pt(1)
                         p_bullet.paragraph_format.space_after = Pt(1)
-                        add_formatted_text_with_math(p_bullet, line_str, bold=False, font_size=10.5, color=red_color)
+                        add_formatted_text_with_math(p_bullet, line_str, bold=False, italic=False, font_size=10.5, color=red_color)
     
     # End of exam marker
     p_end = doc.add_paragraph()
