@@ -394,10 +394,36 @@ createApp({
       if (typeof window.katex === "undefined") return escapeHtml(text);
       
       try {
+        let sanitized = text;
+        // 1. Normalize fragile matrix syntax into robust cases
+        sanitized = sanitized.replace(/\\left\\{\s*\\begin\{(?:matrix|array)\}/g, "\\begin{cases}");
+        sanitized = sanitized.replace(/\\end\{(?:matrix|array)\}\s*\\right\.?/g, "\\end{cases}");
+        sanitized = sanitized.replace(/\\end\{(?:matrix|array)\}/g, "\\end{cases}");
+        if (sanitized.includes("\\left\\{") && !sanitized.includes("\\right")) {
+          sanitized = sanitized.replace(/\\left\\{/g, "\\{");
+        }
+
+        // 2. Heal unclosed $ if odd count
+        const dollarCount = (sanitized.match(/\$/g) || []).length;
+        if (dollarCount % 2 !== 0) {
+          sanitized = sanitized.trim() + "$";
+        }
+
         // Replace $$...$$ and $...$ with KaTeX rendered HTML
-        return text.replace(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g, (match) => {
+        return sanitized.replace(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g, (match) => {
           const isBlock = match.startsWith("$$");
-          const formula = isBlock ? match.slice(2, -2) : match.slice(1, -1);
+          let formula = isBlock ? match.slice(2, -2) : match.slice(1, -1);
+
+          // Extra safety inside formula
+          formula = formula.replace(/\\left\\{\s*\\begin\{(?:matrix|array)\}/g, "\\begin{cases}");
+          formula = formula.replace(/\\end\{(?:matrix|array)\}\s*\\right\.?/g, "\\end{cases}");
+          if (formula.includes("\\begin{cases}") && !formula.includes("\\end{cases}")) {
+            formula = formula.trim() + " \\end{cases}";
+          }
+          if (formula.includes("\\left\\{") && !formula.includes("\\right")) {
+            formula = formula.trim() + " \\right.";
+          }
+
           try {
             return window.katex.renderToString(formula, {
               displayMode: isBlock,

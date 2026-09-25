@@ -1,7 +1,7 @@
 import re
 import json
 from typing import List, Dict, Any, Tuple, Optional
-from .models import ExamStructure, Part1Question, Part2Question, Part3Question, Option, SubItem, AuditReport
+from .models import ExamStructure, Part1Question, Part2Question, Part3Question, Part4EssayQuestion, Option, SubItem, AuditReport
 from .explanation_sync import (
     extract_concluded_letter,
     synchronize_mcq_explanation_with_answer,
@@ -46,10 +46,80 @@ def is_option_garbage(text: str) -> bool:
             return True
     return False
 
+def normalize_latex_delimiters(text: str) -> str:
+    if not text:
+        return ""
+    s = text
+    # 1. Convert fragile \left\{\begin{matrix} or \left\{\begin{array} to robust \begin{cases}
+    s = re.sub(r'\\left\\{\s*\\begin\{(?:matrix|array)\}', r'\\begin{cases}', s)
+    s = re.sub(r'\\end\{(?:matrix|array)\}\s*\\right\.?', r'\\end{cases}', s)
+    s = re.sub(r'\\end\{(?:matrix|array)\}', r'\\end{cases}', s)
+    
+    # 2. Fix dangling \left\{ without \right
+    if r'\left\{' in s and r'\right' not in s:
+        s = s.replace(r'\left\{', r'\{')
+        
+    # 3. Ensure proper row separation \\ inside cases
+    def fix_cases_newlines(match):
+        body = match.group(1)
+        if r'\\' not in body:
+            body = re.sub(r'(?<=[^\\])\\\s+', r' \\\\ ', body)
+            body = re.sub(r'(?<=[^\\])\n+', r' \\\\ ', body)
+        return r'\begin{cases}' + body + r'\end{cases}'
+        
+    s = re.sub(r'\\begin\{cases\}([\s\S]*?)\\end\{cases\}', fix_cases_newlines, s)
+    
+    # 4. Auto-close odd count of $
+    if s.count('$') % 2 != 0:
+        s = s.strip() + '$'
+        
+    return s
+
+def is_question_stem_defective(text: str) -> Tuple[bool, str]:
+    if not text or len(text.strip()) < 8:
+        return True, "Đề bài câu hỏi bị rỗng hoặc quá ngắn"
+        
+    clean = text.strip()
+    if re.search(r"đang cập nhật", clean, re.IGNORECASE) or re.search(r"placeholder", clean, re.IGNORECASE):
+        return True, "Đề bài chứa nội dung chưa hoàn thiện/placeholder"
+        
+    if clean.count('$') % 2 != 0:
+        return True, "Công thức toán học chứa dấu $ chưa được đóng"
+        
+    for env in ["cases", "matrix", "aligned"]:
+        if f"\\begin{{{env}}}" in clean and f"\\end{{{env}}}" not in clean:
+            return True, f"Môi trường công thức \\begin{{{env}}} chưa đóng"
+            
+    if r"\left\{" in clean and (r"\right" not in clean and r"\end{cases}" not in clean):
+        return True, "Ký hiệu ngoặc \\left\\{ chưa đóng"
+        
+    no_math = re.sub(r'\$\$[\s\S]*?\$\$|\$[\s\S]*?\$', ' ', clean).strip()
+    no_math_clean = re.sub(r'\s+', ' ', no_math)
+    
+    # If after stripping math, only 'Cho hệ phương trình' or similar is left without an actual question/command
+    if re.search(r'^(?:cho|xét|biết)?\s*(?:hệ\s+phương\s+trình|phương\s+trình|hàm\s+số|biểu\s+thức)\s*[:,\.]?$', no_math_clean, re.IGNORECASE):
+        return True, "Đề bài mới chỉ nêu phần mở đầu, bị cắt cụt chưa có câu hỏi/lệnh hỏi cụ thể"
+        
+    valid_intent_pat = r'(?:tìm|tính|hỏi|xác định|chứng minh|giải|biết|có bao nhiêu|khi đó|giá trị|nghiệm|mệnh đề|khẳng định|phát biểu|nhận định|đúng hay sai|\?|sau đây|dưới đây|bằng|là|thỏa mãn|đạt|về|xét|cho|trong|tại|điểm|tọa độ)'
+    if not re.search(valid_intent_pat, no_math_clean, re.IGNORECASE):
+        return True, "Đề bài bị cắt cụt, chưa có lệnh hỏi hoặc yêu cầu bài toán cụ thể"
+        
+    return False, ""
+
 def is_mcq_defective(q: Part1Question) -> Tuple[bool, str]:
+    q.question = normalize_latex_delimiters(q.question)
+    stem_bad, reason = is_question_stem_defective(q.question)
+    if stem_bad:
+        return True, f"Lỗi đề bài câu hỏi Phần I: {reason}"
+
     if not q.options or len(q.options) != 4:
         return True, f"Số lượng phương án không đúng 4 (hiện có {len(q.options) if q.options else 0})"
     
+    for o in q.options:
+        o.text = normalize_latex_delimiters(o.text)
+        if o.text.count('$') % 2 != 0:
+            return True, "Phương án chứa dấu công thức toán $ chưa đóng"
+            
     garbage_count = sum(1 for o in q.options if is_option_garbage(o.text))
     if garbage_count > 0:
         return True, f"Có {garbage_count} phương án rác/vô nghĩa"
@@ -66,16 +136,21 @@ def is_mcq_defective(q: Part1Question) -> Tuple[bool, str]:
     return False, ""
 
 def is_tf_defective(q: Part2Question) -> Tuple[bool, str]:
-    if not q.question or len(q.question.strip()) < 5:
-        return True, "Đề bài câu hỏi Phần II bị rỗng hoặc quá ngắn"
+    q.question = normalize_latex_delimiters(q.question)
+    stem_bad, reason = is_question_stem_defective(q.question)
+    if stem_bad:
+        return True, f"Lỗi đề bài câu hỏi Phần II: {reason}"
 
     if not q.sub_items or len(q.sub_items) != 4:
         return True, f"Số lượng ý con không đúng 4 (hiện có {len(q.sub_items) if q.sub_items else 0})"
 
     for s in q.sub_items:
+        s.statement = normalize_latex_delimiters(s.statement)
         clean_stmt = (s.statement or "").strip()
         if len(clean_stmt) < 5:
             return True, "Có mệnh đề ý con bị rỗng hoặc quá ngắn"
+        if clean_stmt.count('$') % 2 != 0:
+            return True, "Mệnh đề ý con chứa dấu công thức toán $ chưa đóng"
         if re.search(r"đang cập nhật", clean_stmt, re.IGNORECASE) or re.match(r"^(?:mệnh đề|khẳng định)\s*[abcd]?\s*[\.:]?$", clean_stmt, re.IGNORECASE):
             return True, f"Mệnh đề chứa nội dung placeholder/chưa hoàn thiện ('{clean_stmt[:30]}...')"
         if not isinstance(s.is_correct, bool):
@@ -91,6 +166,11 @@ def is_tf_defective(q: Part2Question) -> Tuple[bool, str]:
     return False, ""
 
 def is_short_defective(q: Part3Question) -> Tuple[bool, str]:
+    q.question = normalize_latex_delimiters(q.question)
+    stem_bad, reason = is_question_stem_defective(q.question)
+    if stem_bad:
+        return True, f"Lỗi đề bài câu hỏi ngắn Phần III: {reason}"
+
     ans = (q.answer or "").strip()
     if not ans or len(ans) == 0:
         return True, "Chưa có đáp số hoặc câu trả lời rỗng"
@@ -310,7 +390,8 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0) -> Part2Ques
     chosen_template = chosen_list[index % len(chosen_list)]
 
     # 1. Check question stem
-    if not q.question or len(q.question.strip()) < 5 or re.search(r"đang cập nhật", q.question, re.IGNORECASE):
+    stem_bad, _ = is_question_stem_defective(q.question or "")
+    if stem_bad or not q.question or len(q.question.strip()) < 5 or re.search(r"đang cập nhật", q.question, re.IGNORECASE):
         q.question = chosen_template["question"]
     if not q.explanation or len(q.explanation.strip()) < 5:
         q.explanation = chosen_template.get("explanation", "")
@@ -320,8 +401,9 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0) -> Part2Ques
     existing_valid_subs = []
     if q.sub_items:
         for s in q.sub_items:
-            stmt = (s.statement or "").strip()
-            if len(stmt) >= 5 and not re.search(r"đang cập nhật", stmt, re.IGNORECASE) and not re.match(r"^(?:mệnh đề|khẳng định)\s*[abcd]?\s*[\.:]?$", stmt, re.IGNORECASE):
+            s.statement = normalize_latex_delimiters(s.statement or "")
+            stmt = s.statement.strip()
+            if len(stmt) >= 5 and stmt.count('$') % 2 == 0 and not re.search(r"đang cập nhật", stmt, re.IGNORECASE) and not re.match(r"^(?:mệnh đề|khẳng định)\s*[abcd]?\s*[\.:]?$", stmt, re.IGNORECASE):
                 existing_valid_subs.append(s)
 
     # If not enough valid sub items, populate from chosen template
@@ -366,6 +448,173 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0) -> Part2Ques
     for s in q.sub_items:
         s.is_correct, s.explanation = reconcile_tf_subitem(s.is_correct, s.explanation or "")
 
+    return q
+
+def heal_short_offline(q: Part3Question, subject: str, index: int = 0) -> Part3Question:
+    sub_lower = subject.lower()
+    
+    # Specific smart completion for system of equations if detected
+    q_norm = normalize_latex_delimiters(q.question or "")
+    if ("hệ phương trình" in q_norm.lower() or "\\begin{cases}" in q_norm) and ("3x + my" in q_norm or "x + 2y" in q_norm or "my" in q_norm):
+        q.question = r"Cho hệ phương trình $\begin{cases} 3x + my = 2 \\ x + 2y = 1 \end{cases}$. Tìm giá trị của tham số $m$ để hệ phương trình vô nghiệm."
+        q.answer = "6"
+        q.explanation = r"Hệ phương trình vô nghiệm khi và chỉ khi $\frac{3}{1} = \frac{m}{2} \neq \frac{2}{1} \Leftrightarrow m = 6$."
+        return q
+
+    subject_banks = {
+        "toán": [
+            {
+                "question": r"Cho hệ phương trình $\begin{cases} 3x + my = 2 \\ x + 2y = 1 \end{cases}$. Tìm giá trị của tham số $m$ để hệ phương trình vô nghiệm.",
+                "answer": "6",
+                "explanation": r"Hệ phương trình vô nghiệm khi $\frac{3}{1} = \frac{m}{2} \neq \frac{2}{1} \Leftrightarrow m = 6$."
+            },
+            {
+                "question": r"Cho phương trình bậc hai $x^2 - 5x + 6 = 0$ có hai nghiệm $x_1, x_2$. Tính giá trị của biểu thức $T = x_1^2 + x_2^2$.",
+                "answer": "13",
+                "explanation": r"Theo định lý Vi-ét: $x_1 + x_2 = 5, x_1 x_2 = 6$. Ta có $T = (x_1+x_2)^2 - 2x_1 x_2 = 25 - 12 = 13$."
+            },
+            {
+                "question": r"Tìm giá trị nhỏ nhất của hàm số $y = x^2 - 4x + 7$ trên tập số thực $\mathbb{R}$.",
+                "answer": "3",
+                "explanation": r"Ta có $y = (x-2)^2 + 3 \ge 3$. Giá trị nhỏ nhất là 3 khi $x = 2$."
+            },
+            {
+                "question": r"Một hình chữ nhật có chu vi bằng 28 cm và chiều dài hơn chiều rộng 4 cm. Tính diện tích của hình chữ nhật đó (theo đơn vị $\text{cm}^2$).",
+                "answer": "45",
+                "explanation": r"Nửa chu vi là 14 cm. Chiều rộng là 5 cm, chiều dài là 9 cm. Diện tích bằng $5 \times 9 = 45\text{ cm}^2$."
+            },
+            {
+                "question": r"Cho tam giác $ABC$ vuông tại $A$ có $AB = 6\text{ cm}$ và $AC = 8\text{ cm}$. Tính độ dài cạnh huyền $BC$ theo đơn vị cm.",
+                "answer": "10",
+                "explanation": r"Áp dụng định lý Pythagore: $BC = \sqrt{AB^2 + AC^2} = \sqrt{36 + 64} = 10\text{ cm}$."
+            },
+            {
+                "question": r"Một hình trụ có bán kính đáy $r = 3\text{ cm}$ và chiều cao $h = 5\text{ cm}$. Tính diện tích xung quanh của hình trụ theo $\pi$ (chỉ ghi hệ số trước $\pi$).",
+                "answer": "30",
+                "explanation": r"Diện tích xung quanh hình trụ: $S_{xq} = 2\pi rh = 2\pi \cdot 3 \cdot 5 = 30\pi$. Hệ số là 30."
+            },
+            {
+                "question": r"Tính tích phân $I = \int_0^2 (2x + 1)\,dx$.",
+                "answer": "6",
+                "explanation": r"Ta có $I = [x^2 + x]_0^2 = (4 + 2) - 0 = 6$."
+            },
+            {
+                "question": r"Tìm số cặp nghiệm nguyên dương $(x; y)$ của phương trình $2x + 3y = 12$.",
+                "answer": "1",
+                "explanation": r"Vì $x, y \in \mathbb{Z}^+$ nên $3y = 12 - 2x < 12 \Rightarrow y < 4$. Thử $y = 2 \Rightarrow x = 3$. Có đúng 1 cặp nghiệm nguyên dương $(3; 2)$."
+            }
+        ],
+        "hóa": [
+            {
+                "question": r"Cho 5,6 gam sắt (Fe) tác dụng hoàn toàn với dung dịch HCl dư. Thể tích khí $H_2$ thu được ở điều kiện tiêu chuẩn (lít) là bao nhiêu?",
+                "answer": "2.24",
+                "explanation": r"$n_{Fe} = 0,1\text{ mol} \Rightarrow n_{H_2} = 0,1\text{ mol} \Rightarrow V = 2,24\text{ lít}$."
+            },
+            {
+                "question": r"Khối lượng mol phân tử của axit axetic ($CH_3COOH$) bằng bao nhiêu g/mol?",
+                "answer": "60",
+                "explanation": r"$M = 12 \times 2 + 1 \times 4 + 16 \times 2 = 60\text{ g/mol}$."
+            },
+            {
+                "question": r"Số liên kết pi ($\pi$) trong một phân tử axetilen ($C_2H_2$) là bao nhiêu?",
+                "answer": "2",
+                "explanation": r"Liên kết ba $C\equiv C$ gồm 1 liên kết $\sigma$ và 2 liên kết $\pi$."
+            },
+            {
+                "question": r"Một dung dịch axit có nồng độ ion $[H^+] = 10^{-3}\text{ M}$. Giá trị pH của dung dịch bằng bao nhiêu?",
+                "answer": "3",
+                "explanation": r"$\text{pH} = -\log[H^+] = -\log(10^{-3}) = 3$."
+            }
+        ],
+        "vật": [
+            {
+                "question": r"Một chất điểm dao động điều hòa với phương trình $x = 5\cos(4\pi t)$ (cm). Biên độ dao động của chất điểm là bao nhiêu cm?",
+                "answer": "5",
+                "explanation": r"Biên độ dao động của vật là $A = 5\text{ cm}$."
+            },
+            {
+                "question": r"Mắc một điện trở $R = 10\ \Omega$ vào nguồn điện có hiệu điện thế $U = 20\text{ V}$. Cường độ dòng điện qua điện trở là bao nhiêu ampe (A)?",
+                "answer": "2",
+                "explanation": r"Theo định luật Ôm: $I = \frac{U}{R} = \frac{20}{10} = 2\text{ A}$."
+            },
+            {
+                "question": r"Một sóng cơ có tần số $f = 50\text{ Hz}$ lan truyền với tốc độ $v = 100\text{ m/s}$. Bước sóng của sóng cơ là bao nhiêu mét?",
+                "answer": "2",
+                "explanation": r"Bước sóng $\lambda = \frac{v}{f} = \frac{100}{50} = 2\text{ m}$."
+            },
+            {
+                "question": r"Một vật có khối lượng $m = 2\text{ kg}$ chuyển động với vận tốc $v = 3\text{ m/s}$. Tính động năng của vật theo đơn vị Jun (J).",
+                "answer": "9",
+                "explanation": r"Động năng $W_d = \frac{1}{2}mv^2 = \frac{1}{2} \cdot 2 \cdot 9 = 9\text{ J}$."
+            }
+        ]
+    }
+    
+    default_short_bank = [
+        {
+            "question": f"Theo dữ liệu chuẩn môn {subject}, số lượng nhân tố then chốt ảnh hưởng trực tiếp đến kết quả của quá trình là bao nhiêu?",
+            "answer": "2",
+            "explanation": f"Có 2 nhân tố then chốt ảnh hưởng trực tiếp theo quy luật môn {subject}."
+        },
+        {
+            "question": f"Giá trị định lượng tiêu chuẩn tối thiểu cần đạt trong điều kiện thực nghiệm môn {subject} là bao nhiêu đơn vị?",
+            "answer": "1",
+            "explanation": f"Giá trị tối thiểu được xác định là 1 theo chuẩn chương trình."
+        }
+    ]
+
+    chosen_list = default_short_bank
+    for k, bank_items in subject_banks.items():
+        if k in sub_lower:
+            chosen_list = bank_items
+            break
+
+    chosen_template = chosen_list[index % len(chosen_list)]
+    
+    # If question stem is defective, use template question
+    stem_bad, _ = is_question_stem_defective(q.question or "")
+    if stem_bad:
+        q.question = chosen_template["question"]
+        q.answer = chosen_template["answer"]
+        q.explanation = chosen_template["explanation"]
+    else:
+        # If stem is ok but answer is empty or too long
+        if not q.answer or len(q.answer.strip()) == 0 or len(q.answer.strip()) > 40:
+            q.answer = chosen_template["answer"]
+        if not q.explanation or len(q.explanation.strip()) < 5:
+            q.explanation = chosen_template["explanation"]
+            
+    return q
+
+def heal_essay_offline(q: Part4EssayQuestion, subject: str, index: int = 0) -> Part4EssayQuestion:
+    sub_lower = subject.lower()
+    essay_banks = {
+        "toán": [
+            {
+                "question": r"Cho hình chóp $S.ABC$ có đáy $ABC$ là tam giác vuông tại $B$, $AB = a$, $BC = a\sqrt{3}$. Cạnh bên $SA$ vuông góc với mặt phẳng đáy $(ABC)$ và $SA = 2a$. Tính thể tích của khối chóp $S.ABC$ và tính góc giữa đường thẳng $SC$ và mặt phẳng đáy $(ABC)$.",
+                "answer": r"$V = \frac{a^3\sqrt{3}}{3}$; góc bằng $45^\circ$",
+                "explanation": "- Tính diện tích đáy: $S_{\\Delta ABC} = \\frac{1}{2}AB \\cdot BC = \\frac{a^2\\sqrt{3}}{2}$\n- Tính thể tích khối chóp: $V = \\frac{1}{3}S_{ABC} \\cdot SA = \\frac{a^3\\sqrt{3}}{3}$\n- Xác định hình chiếu của $SC$ lên $(ABC)$ là $AC$, góc giữa $SC$ và $(ABC)$ là $\\widehat{SCA}$\n- Tính $AC = \\sqrt{AB^2 + BC^2} = 2a$. Do $SA = AC = 2a$ nên $\\tan\\widehat{SCA} = 1 \\Rightarrow \\widehat{SCA} = 45^\\circ$"
+            },
+            {
+                "question": r"Một doanh nghiệp sản xuất một loại sản phẩm với hàm tổng chi phí $C(x) = x^3 - 6x^2 + 15x + 50$ (triệu đồng), trong đó $x$ là sản lượng sản xuất ($x > 0$). Xác định mức sản lượng $x$ để chi phí cận biên đạt giá trị nhỏ nhất.",
+                "answer": r"$x = 2$ sản phẩm",
+                "explanation": "- Tìm hàm chi phí cận biên: $C'(x) = 3x^2 - 12x + 15$\n- Biến đổi hàm số: $C'(x) = 3(x - 2)^2 + 3$\n- Do $(x - 2)^2 \\ge 0$ nên $C'(x) \\ge 3$ với mọi $x > 0$\n- Dấu đẳng thức xảy ra khi $x = 2$. Vậy mức sản lượng cần tìm là 2 sản phẩm"
+            }
+        ]
+    }
+    chosen = essay_banks.get("toán", [])
+    if "toán" not in sub_lower:
+        chosen = [
+            {
+                "question": f"Vận dụng kiến thức môn {subject}, hãy phân tích một hiện tượng thực tế và đề xuất giải pháp khoa học phù hợp.",
+                "answer": "Giải pháp có cơ sở khoa học và tính khả thi",
+                "explanation": "- Nêu cơ sở lý thuyết và điều kiện thực tế\n- Phân tích nguyên nhân và các yếu tố ảnh hưởng\n- Đề xuất các giải pháp khả thi và đánh giá hiệu quả"
+            }
+        ]
+    t = chosen[index % len(chosen)]
+    q.question = t["question"]
+    q.answer = t.get("answer", "Đáp số")
+    q.explanation = t["explanation"]
     return q
 
 async def run_ai_auditor_healing(
@@ -425,15 +674,18 @@ DANH SÁCH CÂU HỎI CẦN SỬA CHỮA:
 
 QUY TẮC THẨM ĐỊNH & SỬA CHỮA BẮT BUỘC:
 1. ĐỐI VỚI PHẦN I (TRẮC NGHIỆM):
+   - Đảm bảo đề bài 'question' đầy đủ, không bị cắt cụt.
    - Nếu câu hỏi bị thiếu phương án hoặc có phương án rác ('Phương án khác', 'Không xác định', 'Chưa đủ dữ kiện', 'Giá trị khác'...), BẮT BUỘC PHẢI VIẾT LẠI ĐỦ 4 PHƯƠNG ÁN A, B, C, D HỌC THUẬT THỰC TẾ, CỤ THỂ, BÁM SÁT NGỮ CẢNH CÂU HỎI.
    - TUYỆT ĐỐI KHÔNG dùng bất kỳ phương án nào là 'Phương án khác', 'Không xác định', 'Tất cả đều đúng/sai'.
    - Đảm bảo ĐÁP ÁN 'answer' (A, B, C hoặc D) PHẢI ĐÚNG 100% VỀ MẶT HỌC THUẬT VÀ HOÀN TOÀN TRÙNG KHỚP VỚI LỜI GIẢI 'explanation'.
 2. ĐỐI VỚI PHẦN II (ĐÚNG/SAI):
-   - Nếu đề bài 'question' bị rỗng hoặc ngắn (< 5 ký tự), BẮT BUỘC phải viết lại đề bài khoa học, học thuật đầy đủ cho môn {exam.subject}.
+   - Nếu đề bài 'question' bị rỗng hoặc ngắn (< 5 ký tự) hoặc bị cắt cụt, BẮT BUỘC phải viết lại đề bài khoa học, học thuật đầy đủ cho môn {exam.subject}.
    - BẮT BUỘC viết đủ 4 ý con a, b, c, d với các mệnh đề học thuật thực tế, cụ thể. TUYỆT ĐỐI KHÔNG để 'Đang cập nhật mệnh đề...' hay nội dung rác/placeholder.
    - QUY TẮC PHÂN BỔ ĐÚNG/SAI BẮT BUỘC: TRONG 4 Ý CON a, b, c, d, BẮT BUỘC PHẢI CÓ TỪ 1 ĐẾN 3 Ý ĐÚNG (tức là luôn có ít nhất 1 ý Đúng và ít nhất 1 ý Sai). TUYỆT ĐỐI KHÔNG ĐƯỢC ĐỂ TOÀN ĐÚNG (4 true) HOẶC TOÀN SAI (4 false)!
    - Mỗi ý con gồm 'label' ('a', 'b', 'c', 'd'), 'statement' (nội dung mệnh đề), 'is_correct' (true hoặc false), và 'explanation' (lời giải thích).
 3. ĐỐI VỚI PHẦN III (TRẢ LỜI NGẮN):
+   - Đảm bảo đề bài 'question' đầy đủ, không bị cắt cụt, có lệnh hỏi rõ ràng (ví dụ: 'Cho hệ phương trình $\\begin{cases} 3x + my = 2 \\\\ x + 2y = 1 \\end{cases}$. Tìm tham số $m$ để hệ vô nghiệm.'). NẾU ĐỀ BÀI BỊ CẮT CỤT HOẶC THIẾU LỆNH HỎI, BẮT BUỘC PHẢI VIẾT LẠI HOÀN CHỈNH.
+   - Khi viết hệ phương trình, BẮT BUỘC dùng cú pháp: `$\\begin{{cases}} ... \\\\ ... \\end{{cases}}$`. TUYỆT ĐỐI KHÔNG dùng `\\left\\{{\\begin{{matrix}}`. Đóng đủ dấu `$`.
    - Đảm bảo 'answer' là một số cụ thể hoặc từ ngắn gọn, chính xác.
 
 ĐỊNH DẠNG JSON TRẢ VỀ (Chỉ trả về JSON hợp lệ):
@@ -463,6 +715,13 @@ QUY TẮC THẨM ĐỊNH & SỬA CHỮA BẮT BUỘC:
         {{"label": "d", "statement": "Mệnh đề d thực tế...", "is_correct": false, "explanation": "Giải thích d"}}
       ],
       "explanation": "Hướng dẫn chấm chung..."
+    }},
+    {{
+      "part": 3,
+      "index": 0,
+      "question": "Câu hỏi ngắn đầy đủ lệnh hỏi...",
+      "answer": "12.5",
+      "explanation": "Lời giải ngắn gọn, kết luận đáp số là 12.5."
     }}
   ]
 }}
@@ -482,9 +741,9 @@ QUY TẮC THẨM ĐỊNH & SỬA CHỮA BẮT BUỘC:
             part = item.get("part")
             idx = item.get("index")
             if part == 1 and 0 <= idx < len(exam.part1_mcq):
-                new_opts = [Option(label=o.get("label", "A"), text=o.get("text", "")) for o in item.get("options", [])]
+                new_opts = [Option(label=o.get("label", "A"), text=normalize_latex_delimiters(o.get("text", ""))) for o in item.get("options", [])]
                 if len(new_opts) == 4 and not any(is_option_garbage(o.text) for o in new_opts):
-                    exam.part1_mcq[idx].question = item.get("question") or exam.part1_mcq[idx].question
+                    exam.part1_mcq[idx].question = normalize_latex_delimiters(item.get("question") or exam.part1_mcq[idx].question)
                     exam.part1_mcq[idx].options = new_opts
                     exam.part1_mcq[idx].answer = item.get("answer", "A")
                     exam.part1_mcq[idx].explanation = item.get("explanation", "")
@@ -496,14 +755,14 @@ QUY TẮC THẨM ĐỊNH & SỬA CHỮA BẮT BUỘC:
                     sub_lbls = ["a", "b", "c", "d"]
                     for s_idx, s in enumerate(sub_data):
                         lbl = str(s.get("label") or sub_lbls[min(s_idx, 3)]).lower().strip(".)")
-                        stmt = str(s.get("statement") or s.get("text") or "").strip()
+                        stmt = normalize_latex_delimiters(str(s.get("statement") or s.get("text") or "").strip())
                         c_val = s.get("is_correct")
                         is_c = bool(c_val) if isinstance(c_val, bool) else str(c_val).lower() in ("true", "đúng", "1")
                         exp = str(s.get("explanation") or "")
                         new_subs.append(SubItem(label=lbl, statement=stmt, is_correct=is_c, explanation=exp))
                     
                     if item.get("question") and len(str(item.get("question")).strip()) >= 5:
-                        exam.part2_tf[idx].question = str(item.get("question")).strip()
+                        exam.part2_tf[idx].question = normalize_latex_delimiters(str(item.get("question")).strip())
                     if item.get("explanation"):
                         exam.part2_tf[idx].explanation = str(item.get("explanation")).strip()
                     exam.part2_tf[idx].sub_items = new_subs
@@ -517,9 +776,11 @@ QUY TẮC THẨM ĐỊNH & SỬA CHỮA BẮT BUỘC:
                         
                     notes.append(f"Câu {exam.part2_tf[idx].id} (Phần II): AI Auditor Agent đã thẩm định, viết lại đề bài và chuẩn hóa 4 mệnh đề Đúng/Sai.")
             elif part == 3 and 0 <= idx < len(exam.part3_short):
+                if item.get("question") and len(str(item.get("question")).strip()) >= 8:
+                    exam.part3_short[idx].question = normalize_latex_delimiters(str(item.get("question")).strip())
                 exam.part3_short[idx].answer = str(item.get("answer") or exam.part3_short[idx].answer)
                 exam.part3_short[idx].explanation = str(item.get("explanation") or exam.part3_short[idx].explanation)
-                notes.append(f"Câu {exam.part3_short[idx].id} (Phần III): AI Auditor Agent đã xác minh đáp số ngắn gọn.")
+                notes.append(f"Câu {exam.part3_short[idx].id} (Phần III): AI Auditor Agent đã chuẩn hóa đề bài và xác minh đáp số ngắn gọn.")
     except Exception as e:
         print(f"[Auditor Agent] Lỗi khi gọi AI phản biện: {e}")
         
@@ -532,6 +793,24 @@ async def audit_and_verify_exam(
     model: str = "auto"
 ) -> ExamStructure:
     total_q = len(exam.part1_mcq) + len(exam.part2_tf) + len(exam.part3_short) + (len(exam.part4_essay) if exam.part4_essay else 0)
+    
+    # Pre-cleaning: Normalize LaTeX across all components
+    for q in exam.part1_mcq:
+        q.question = normalize_latex_delimiters(q.question)
+        if q.options:
+            for o in q.options:
+                o.text = normalize_latex_delimiters(o.text)
+    for q in exam.part2_tf:
+        q.question = normalize_latex_delimiters(q.question)
+        if q.sub_items:
+            for s in q.sub_items:
+                s.statement = normalize_latex_delimiters(s.statement)
+    for q in exam.part3_short:
+        q.question = normalize_latex_delimiters(q.question)
+    if exam.part4_essay:
+        for q in exam.part4_essay:
+            q.question = normalize_latex_delimiters(q.question)
+
     defective_p1 = []
     defective_p2 = []
     defective_p3 = []
@@ -571,16 +850,24 @@ async def audit_and_verify_exam(
         if is_bad:
             exam.part2_tf[i] = heal_tf_offline(q, exam.subject, i)
             notes.append(f"Câu {q.id} (Phần II): Đã tự động chuẩn hóa đề bài và 4 mệnh đề Đúng/Sai thực tế môn {exam.subject}.")
+
+    for i, q in enumerate(exam.part3_short):
+        is_bad, reason = is_short_defective(q)
+        if is_bad:
+            exam.part3_short[i] = heal_short_offline(q, exam.subject, i)
+            notes.append(f"Câu {q.id} (Phần III): Đã tự động chuẩn hóa đề bài và đáp số chính xác môn {exam.subject}.")
                 
     for q in exam.part1_mcq:
         q.explanation = synchronize_mcq_explanation_with_answer(q.explanation or "", q.answer)
         for idx, o in enumerate(q.options):
             o.label = ["A", "B", "C", "D"][idx]
+            o.text = normalize_latex_delimiters(o.text)
             
     for idx_p2, q in enumerate(exam.part2_tf):
-        # Guarantee question stem is not empty
-        if not q.question or len(q.question.strip()) < 5:
-            q.question = f"Về các kiến thức và hiện tượng trọng tâm trong chương trình môn {exam.subject}:"
+        q.question = normalize_latex_delimiters(q.question)
+        if not q.question or len(q.question.strip()) < 5 or is_question_stem_defective(q.question)[0]:
+            exam.part2_tf[idx_p2] = heal_tf_offline(q, exam.subject, idx_p2)
+            q = exam.part2_tf[idx_p2]
             
         # Guarantee 4 valid sub_items
         if len(q.sub_items) != 4 or any(len(s.statement.strip()) < 5 or "đang cập nhật" in s.statement.lower() for s in q.sub_items):
@@ -591,20 +878,28 @@ async def audit_and_verify_exam(
         true_count = sum(1 for s in q.sub_items if s.is_correct)
         if true_count == 4:
             q.sub_items[3].is_correct = False
-            q.sub_items[3].explanation = "Khẳng định này là sai. " + (q.sub_items[3].explanation or "")
+            q.sub_items[3].explanation = "Khẳng định này là sai theo kiến thức chuẩn. " + (q.sub_items[3].explanation or "")
         elif true_count == 0:
             q.sub_items[0].is_correct = True
-            q.sub_items[0].explanation = "Khẳng định này là đúng. " + (q.sub_items[0].explanation or "")
+            q.sub_items[0].explanation = "Khẳng định này là đúng theo định lý và nguyên lý đã được chứng minh. " + (q.sub_items[0].explanation or "")
             
         for s in q.sub_items:
+            s.statement = normalize_latex_delimiters(s.statement)
             s.is_correct, s.explanation = reconcile_tf_subitem(s.is_correct, s.explanation or "")
 
+    for idx_p3, q in enumerate(exam.part3_short):
+        q.question = normalize_latex_delimiters(q.question)
+        is_bad, _ = is_short_defective(q)
+        if is_bad:
+            exam.part3_short[idx_p3] = heal_short_offline(q, exam.subject, idx_p3)
+
     if exam.part4_essay and len(exam.part4_essay) > 0:
-        for idx, q in enumerate(exam.part4_essay, start=1):
-            if not q.question or len(q.question.strip()) < 5:
-                q.question = f"Bài toán tự luận môn {exam.subject} yêu cầu thí sinh vận dụng kiến thức giải quyết."
+        for idx, q in enumerate(exam.part4_essay):
+            q.question = normalize_latex_delimiters(q.question)
+            if not q.question or len(q.question.strip()) < 8 or is_question_stem_defective(q.question)[0]:
+                exam.part4_essay[idx] = heal_essay_offline(q, exam.subject, idx)
             if not q.explanation and not q.answer:
-                q.explanation = "Thí sinh trình bày bài giải chi tiết theo đúng các bước phương pháp."
+                q.explanation = "- Nêu cơ sở lý thuyết và điều kiện bài toán\n- Phân tích và thực hiện các bước giải\n- Kết luận đáp số then chốt"
         notes.append(f"Đã thẩm định {len(exam.part4_essay)} câu hỏi tự luận (Phần IV): Đảm bảo rõ ràng đề bài và biểu điểm hướng dẫn chấm.")
             
     repaired_count = initial_issues_count

@@ -47,6 +47,10 @@ QUY TẮC BẮT BUỘC ĐỂ KHÔNG BỊ TRÀN TOKEN HOẶC THIẾU CÂU HỎI:
 3. TUYỆT ĐỐI KHÔNG sử dụng dấu ngoặc kép đôi "..." bên trong nội dung văn bản (dùng dấu nháy đơn '...' thay vì "..." để đảm bảo tính hợp lệ của JSON).
 4. Mọi công thức toán học, ký hiệu khoa học, phương trình phản ứng BẮT BUỘC phải đặt trong dấu $...$ (nội dòng) hoặc $$...$$ (khối).
    Ví dụ: $x^2 + 2x - 3 = 0$, $\\int_0^1 x dx$, $\\vec{F} = m\\vec{a}$, $CH_3COOH + C_2H_5OH \\rightleftharpoons CH_3COOC_2H_5 + H_2O$.
+   * QUY TẮC BẮT BUỘC CHO HỆ PHƯƠNG TRÌNH & ĐỀ BÀI:
+     + Khi viết hệ phương trình, BẮT BUỘC DÙNG CÚ PHÁP: $\\begin{cases} phương_trình_1 \\\\ phương_trình_2 \\end{cases}$ (TUYỆT ĐỐI KHÔNG DÙNG \\left\\{\\begin{matrix}).
+     + BẮT BUỘC CÂU HỎI PHẢI HOÀN CHỈNH, ĐẦY ĐỦ LỆNH HỎI: Ví dụ: 'Cho hệ phương trình $\\begin{cases} 3x + my = 2 \\\\ x + 2y = 1 \\end{cases}$. Tìm giá trị của $m$ để hệ có nghiệm duy nhất.'. TUYỆT ĐỐI KHÔNG DỪNG NGANG SAU CÔNG THỨC MÀ KHÔNG HỎI GÌ.
+     + BẮT BUỘC đóng đủ cặp dấu $...$ và các cặp ngoặc nhọn {}.
 5. TÍNH ĐỒNG NHẤT TUYỆT ĐỐI 100% GIỮA ĐÁP ÁN VÀ LỜI GIẢI CHI TIẾT:
    - Trong Phần I: Chữ cái ở trường 'answer' (A, B, C hoặc D) và kết luận trong trường 'explanation' BẮT BUỘC PHẢI HOÀN TOÀN TRÙNG KHỚP NHAU.
    - Trong Phần II: Giá trị 'is_correct' (true/false) của mỗi ý con a, b, c, d phải đồng nhất 100% với lời giải của ý con đó.
