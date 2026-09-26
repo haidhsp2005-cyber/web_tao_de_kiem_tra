@@ -1504,6 +1504,13 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             return get_mock_math_exam()
             
     user_prompt = f"Hãy tạo một đề kiểm tra môn {request.subject}, khối {request.grade}."
+    if str(request.grade) in ("3", "4", "5"):
+        user_prompt += (
+            f"\nLƯU Ý ĐẶC THÙ TIỂU HỌC (LỚP {request.grade}):\n"
+            f"- Kiến thức và ngôn ngữ biên soạn phải hoàn toàn phù hợp với tâm lý lứa tuổi học sinh Tiểu học lớp {request.grade} theo chương trình GDPT mới (2018).\n"
+            f"- Đề bài trong sáng, dễ hiểu, gắn liền với tình huống đời sống sinh hoạt, đồ vật, con vật gần gũi.\n"
+            f"- Các phép tính, con số số học và dạng bài bám sát chuẩn kiến thức lớp {request.grade} (không cho số quá phức tạp hay vượt cấp)."
+        )
     if request.topic:
         user_prompt += f"\nChủ đề kiến thức trọng tâm: {request.topic}"
     if request.prompt:

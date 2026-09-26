@@ -47,7 +47,7 @@ HÃY PHÂN TÍCH TÀI LIỆU DƯỚI ĐÂY VÀ TRẢ VỀ DUY NHẤT MỘT CHU�
 {
   "title": "MA TRẬN & BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KÌ MÔN...",
   "subject": "Toán học / Vật lý / Hóa học / Sinh học / Tin học / GDQP / Lịch sử / Địa lý / Ngữ văn / Tiếng Anh...",
-  "grade": "12" (hoặc "11", "10", "9", "8", "7", "6"),
+  "grade": "12" (hoặc "11", "10", "9", "8", "7", "6", "5", "4", "3"),
   "duration_minutes": 50 (số nguyên số phút làm bài, e.g. 45, 50, 90),
   "school_name": "Tên trường hoặc Sở nếu có, hoặc để trống",
   "academic_year": "NĂM HỌC 2026 - 2027",
@@ -125,7 +125,7 @@ def detect_subject_from_text(text: str) -> str:
         return "Toán học"
 
 def detect_grade_from_text(text: str) -> str:
-    for g in ["12", "11", "10", "9", "8", "7", "6"]:
+    for g in ["12", "11", "10", "9", "8", "7", "6", "5", "4", "3"]:
         re_pattern = rf"(?:lớp|khối|k|khóa)\s*{g}\b|_\b{g}\b|\b{g}\b"
         if re.search(re_pattern, text[:2000], re.IGNORECASE):
             return g
