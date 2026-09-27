@@ -692,18 +692,31 @@ createApp({
           model_name: modelName.value || "auto"
         };
 
+        const parseJsonResponse = async (response, defaultMsg) => {
+          if (!response.ok) {
+            let msg = `${defaultMsg} (mã lỗi ${response.status})`;
+            try {
+              const errData = await response.json();
+              if (errData && errData.detail) msg = errData.detail;
+            } catch (e) {
+              if (response.status === 502 || response.status === 503) {
+                msg = "Máy chủ Render đang triển khai cập nhật hoặc khởi động lại (502/503). Vui lòng nhấn 'Tạo đề kiểm tra' lại sau vài giây.";
+              } else if (response.status === 504) {
+                msg = "Máy chủ phản hồi quá thời gian chờ (504 Gateway Timeout). Vui lòng thử lại.";
+              }
+            }
+            throw new Error(msg);
+          }
+          return await response.json();
+        };
+
         const res = await fetch("/api/generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || "Lỗi khởi tạo đề thi");
-        }
-
-        const data = await res.json();
+        const data = await parseJsonResponse(res, "Lỗi khởi tạo đề thi");
         if (form.school_name) data.school_name = form.school_name;
         if (form.academic_year) data.academic_year = form.academic_year;
         exam.value = data;
@@ -741,12 +754,7 @@ createApp({
           body: JSON.stringify(payload)
         });
 
-        if (!res.ok) {
-          const err = await res.json();
-          throw new Error(err.detail || "Lỗi trộn đề");
-        }
-
-        const data = await res.json();
+        const data = await parseJsonResponse(res, "Lỗi trộn đề");
         // Sync school name and academic year across generated variants
         if (form.school_name || form.academic_year) {
           data.variants.forEach(v => {
