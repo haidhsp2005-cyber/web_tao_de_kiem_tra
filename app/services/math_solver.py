@@ -210,7 +210,7 @@ class UniversalMathEngine:
                 
                 diff_t = t1 - t2
                 diff_f = F - t2 * inv_T
-                if diff_t != 0 and diff_f > 0:
+                if diff_t != 0:
                     inv_x = diff_f / diff_t
                     inv_y = inv_T - inv_x
                     if inv_x > 0 and inv_y > 0:
@@ -388,6 +388,196 @@ class UniversalMathEngine:
         return q, False, ""
 
     @classmethod
+    def solve_team_work_mcq(cls, q: Part1Question) -> Tuple[Part1Question, bool, str]:
+        """
+        Thẩm định bài toán làm chung - làm riêng (hai đội công nhân, hai người thợ, hai tổ):
+        Ví dụ: Hai đội cùng làm trong T ngày xong. Đội 1 làm t1 ngày, đội 2 làm t2 ngày xong việc.
+        """
+        text = q.question.lower().replace("$", "")
+        if ("cùng làm" in text or "hai đội" in text or "hai người" in text or "hai tổ" in text) and ("công việc" in text):
+            m_T = re.search(r"cùng\s*làm.*?trong\s*(\d+(?:/\d+)?)\s*(ngày|giờ|tuần)", text)
+            m_t1 = re.search(r"(?:đội|người|tổ)\s*(?:thứ\s*)?(?:nhất|1)\s*làm\s*(?:trong)?\s*(\d+(?:/\d+)?)\s*(?:ngày|giờ|tuần)?", text)
+            m_t2 = re.search(r"(?:đội|người|tổ)\s*(?:thứ\s*)?(?:hai|2)\s*làm\s*(?:trong)?\s*(\d+(?:/\d+)?)\s*(?:ngày|giờ|tuần)?", text)
+            
+            if m_T and m_t1 and m_t2:
+                unit = m_T.group(2)
+                T = Fraction(m_T.group(1))
+                t1 = Fraction(m_t1.group(1))
+                t2 = Fraction(m_t2.group(1))
+                
+                m_F = re.search(r"(?:hoàn\s*thành|được)\s*(?:(\d+)/(\d+)|\\frac\{(\d+)\}\{(\d+)\})\s*công\s*việc", text)
+                if m_F:
+                    F = Fraction(int(m_F.group(1) or m_F.group(3)), int(m_F.group(2) or m_F.group(4)))
+                else:
+                    F = Fraction(1, 1)
+                
+                inv_T = 1 / T
+                diff_t = t1 - t2
+                diff_f = F - t2 * inv_T
+                
+                if diff_t != 0:
+                    inv_x = diff_f / diff_t
+                    inv_y = inv_T - inv_x
+                    if inv_x > 0 and inv_y > 0:
+                        x_ans = 1 / inv_x
+                        y_ans = 1 / inv_y
+                        
+                        is_asking_team1 = bool("thứ nhất" in text or "đội 1" in text or "người 1" in text or "tổ 1" in text)
+                        chosen_val = x_ans if is_asking_team1 else y_ans
+                        
+                        found_opt = None
+                        for o in q.options:
+                            if str(int(chosen_val)) in o.text and chosen_val.denominator == 1:
+                                found_opt = o.label
+                                break
+                            elif f"{chosen_val.numerator}/{chosen_val.denominator}" in o.text:
+                                found_opt = o.label
+                                break
+                                
+                        if found_opt:
+                            if q.answer != found_opt:
+                                q.answer = found_opt
+                                team_name = "đội thứ nhất" if is_asking_team1 else "đội thứ hai"
+                                q.explanation = (
+                                    f"Gọi thời gian {team_name} làm một mình xong công việc là $x$ ({unit}). "
+                                    f"Theo đề bài ta giải được $x = {int(chosen_val) if chosen_val.denominator == 1 else chosen_val}$ {unit}. "
+                                    f"Chọn đáp án {found_opt}."
+                                )
+                                return q, True, f"Bộ giải chuẩn hóa bài toán công việc chung: Chuyển đáp án về {found_opt}"
+                        else:
+                            marked_opt = next((o for o in q.options if o.label == q.answer), None)
+                            desired_x = None
+                            if marked_opt:
+                                num_match = re.findall(r"\d+", marked_opt.text)
+                                if num_match:
+                                    desired_x = int(num_match[0])
+                                    
+                            if desired_x and desired_x > T:
+                                inv_desired_x = Fraction(1, desired_x)
+                                inv_y_new = inv_T - inv_desired_x
+                                if inv_y_new > 0:
+                                    y_new = 1 / inv_y_new
+                                    t2_new = (F - t1 * inv_desired_x) / inv_y_new
+                                    if t2_new > 0 and t2_new.denominator == 1:
+                                        t2_int = t2_new.numerator
+                                        old_t2_pat = rf'((?:đội|người|tổ)\s*(?:thứ\s*)?(?:hai|2)\s*làm\s*(?:trong)?\s*)\d+'
+                                        q.question = re.sub(old_t2_pat, rf'\g<1>{t2_int}', q.question)
+                                        team_name = "đội thứ nhất" if is_asking_team1 else "đội thứ hai"
+                                        other_team = "đội thứ hai" if is_asking_team1 else "đội thứ nhất"
+                                        q.explanation = (
+                                            f"Gọi thời gian {team_name} và {other_team} làm một mình hoàn thành công việc lần lượt là $x$ và $y$ ({unit}, $x, y > {T}$). "
+                                            f"Trong 1 {unit}, hai đội cùng làm được $\\frac{{1}}{{{T}}}$ công việc. "
+                                            f"Theo đề bài ta có hệ phương trình:\n"
+                                            f"$\\begin{{cases}} \\frac{{1}}{{x}} + \\frac{{1}}{{y}} = \\frac{{1}}{{{T}}} \\\\ "
+                                            f"\\frac{{{int(t1)}}}{{x}} + \\frac{{{t2_int}}}{{y}} = {int(F) if F==1 else F} \\end{{cases}} "
+                                            f"\\Leftrightarrow \\begin{{cases}} x = {desired_x} \\\\ y = {int(y_new) if y_new.denominator==1 else y_new} \\end{{cases}}$ (thỏa mãn).\n"
+                                            f"Vậy {team_name} làm một mình trong {desired_x} {unit} thì xong công việc. Chọn đáp án {q.answer}."
+                                        )
+                                        return q, True, f"Bộ giải chuẩn hóa bài toán công việc: Điều chỉnh số ngày đội 2 thành {t2_int} {unit} để nghiệm đẹp {desired_x} {unit} khớp phương án {q.answer}"
+                            
+                            for o in q.options:
+                                if o.label == q.answer:
+                                    res_str = f"{int(chosen_val)} {unit}" if chosen_val.denominator == 1 else f"{chosen_val.numerator}/{chosen_val.denominator} {unit}"
+                                    o.text = res_str
+                                    break
+                            q.explanation = (
+                                f"Gọi thời gian hoàn thành một mình là $x$ ({unit}). "
+                                f"Theo hệ phương trình ta giải được $x = {int(chosen_val) if chosen_val.denominator == 1 else chosen_val}$ {unit}. Chọn đáp án {q.answer}."
+                            )
+                            return q, True, f"Bộ giải chuẩn hóa: Cập nhật phương án {q.answer} khớp nghiệm bài toán công việc"
+        return q, False, ""
+
+    @classmethod
+    def solve_percentage_yield_mcq(cls, q: Part1Question) -> Tuple[Part1Question, bool, str]:
+        """
+        Thẩm định bài toán năng suất / phần trăm / vượt mức:
+        Hai lớp / hai tổ / hai xưởng sản xuất tổng cộng S sản phẩm / cây...
+        Lớp 1 vượt p1%, lớp 2 vượt p2%, tổng cộng được T sản phẩm / cây.
+        """
+        text = q.question.lower().replace("$", "")
+        if ("trồng" in text or "sản xuất" in text or "kế hoạch" in text or "hai lớp" in text or "hai tổ" in text) and ("vượt mức" in text or "tăng" in text or "%" in text):
+            m_S = re.search(r"(?:tổng\s*cộng|tổng\s*số|kế\s*hoạch.*?là|được)\s*(\d+)\s*(?:cây|sản\s*phẩm|chiếc)", text)
+            m_rates = re.findall(r"(\d+(?:\.\d+)?)\s*%", text)
+            m_T = re.search(r"(?:nên|được|thực\s*tế.*?được)\s*(\d+)\s*(?:cây|sản\s*phẩm|chiếc)", text)
+            
+            if m_S and len(m_rates) >= 2 and m_T:
+                S = int(m_S.group(1))
+                T = int(m_T.group(1))
+                p1 = float(m_rates[0])
+                p2 = float(m_rates[1])
+                
+                r1 = 1.0 + p1 / 100.0
+                r2 = 1.0 + p2 / 100.0
+                
+                denom = r1 - r2
+                if abs(denom) > 1e-4:
+                    x_true = (T - r2 * S) / denom
+                    y_true = S - x_true
+                    
+                    is_asking_1 = bool("9a" in text or "lớp thứ nhất" in text or "tổ 1" in text or "tổ thứ nhất" in text)
+                    target_val = x_true if is_asking_1 else y_true
+                    target_int = int(round(target_val)) if abs(target_val - round(target_val)) < 1e-4 else None
+                    
+                    unit = "cây" if "cây" in text else ("sản phẩm" if "sản phẩm" in text else "")
+                    
+                    found_opt = None
+                    if target_int is not None:
+                        for o in q.options:
+                            if str(target_int) in o.text:
+                                found_opt = o.label
+                                break
+                                
+                    if found_opt:
+                        if q.answer != found_opt:
+                            q.answer = found_opt
+                            group_name = "lớp 9A" if "9a" in text else "tổ 1"
+                            q.explanation = (
+                                f"Gọi số {unit} {group_name} trồng ban đầu là $x$ ($x \\in \\mathbb{{N}}^*, x < {S}$). "
+                                f"Theo đề bài ta có hệ phương trình: $\\begin{{cases}} x + y = {S} \\\\ {r1:.2f}x + {r2:.2f}y = {T} \\end{{cases}} "
+                                f"\\Leftrightarrow \\begin{{cases}} x = {int(round(x_true))} \\\\ y = {int(round(y_true))} \\end{{cases}}$. "
+                                f"Vậy số {unit} ban đầu là {target_int}. Chọn đáp án {found_opt}."
+                            )
+                            return q, True, f"Bộ giải chuẩn hóa bài toán năng suất: Chuyển đáp án về {found_opt} ({target_int} {unit})"
+                    else:
+                        marked_opt = next((o for o in q.options if o.label == q.answer), None)
+                        intended_x = None
+                        if marked_opt:
+                            m_num = re.findall(r"\d+", marked_opt.text)
+                            if m_num:
+                                intended_x = int(m_num[0])
+                                
+                        if intended_x and 0 < intended_x < S:
+                            intended_y = S - intended_x
+                            intended_T = round(r1 * intended_x + r2 * intended_y)
+                            if abs(intended_T - T) <= 20:
+                                old_T_pat = rf'((?:nên\s*(?:cả\s*hai\s*lớp\s*)?trồng\s*được|thực\s*tế.*?được|tổng\s*số.*?được)\s*){T}'
+                                q.question = re.sub(old_T_pat, rf'\g<1>{intended_T}', q.question)
+                                group_name = "lớp 9A" if "9a" in text else "tổ 1"
+                                other_group = "lớp 9B" if "9b" in text else "tổ 2"
+                                q.explanation = (
+                                    f"Gọi số {unit} ban đầu của {group_name} là $x$, của {other_group} là $y$ ($x, y \\in \\mathbb{{N}}^*, x, y < {S}$). "
+                                    f"Theo kế hoạch hai lớp trồng {S} {unit} nên: $x + y = {S}$. "
+                                    f"Thực tế {group_name} vượt {int(p1)}%, {other_group} vượt {int(p2)}% nên trồng được {intended_T} {unit}: "
+                                    f"${r1:.2f}x + {r2:.2f}y = {intended_T}$. "
+                                    f"Giải hệ phương trình ta được: $x = {intended_x}$, $y = {intended_y}$ (thỏa mãn). "
+                                    f"Vậy số {unit} {group_name} trồng ban đầu là {intended_x} {unit}. Chọn đáp án {q.answer}."
+                                )
+                                return q, True, f"Bộ giải chuẩn hóa bài toán năng suất: Điều chỉnh tổng thực tế thành {intended_T} để nghiệm nguyên {intended_x} khớp đáp án {q.answer}"
+                                
+                        if target_int is not None:
+                            for o in q.options:
+                                if o.label == q.answer:
+                                    o.text = f"{target_int} {unit}"
+                                    break
+                            group_name = "lớp 9A" if "9a" in text else "tổ 1"
+                            q.explanation = (
+                                f"Gọi số {unit} {group_name} trồng ban đầu là $x$ ($x \\in \\mathbb{{N}}^*, x < {S}$). "
+                                f"Giải hệ phương trình ta được $x = {target_int}$. Chọn đáp án {q.answer}."
+                            )
+                            return q, True, f"Bộ giải chuẩn hóa bài toán năng suất: Cập nhật phương án {q.answer} thành {target_int} {unit}"
+        return q, False, ""
+
+    @classmethod
     def solve_tf_rectangle(cls, q: Part2Question) -> Tuple[Part2Question, bool, str]:
         """
         Thẩm định bài toán diện tích 300 m2 (Phần II - Câu 1):
@@ -506,6 +696,12 @@ class UniversalMathEngine:
 
         q, mod_tn, msg_tn = cls.solve_two_numbers_mcq(q)
         if mod_tn: return q, True, msg_tn
+
+        q, mod_tw, msg_tw = cls.solve_team_work_mcq(q)
+        if mod_tw: return q, True, msg_tw
+
+        q, mod_py, msg_py = cls.solve_percentage_yield_mcq(q)
+        if mod_py: return q, True, msg_py
 
         # 1. Hệ phương trình 2 ẩn
         sys_info = cls.parse_linear_system_2x2(q.question)

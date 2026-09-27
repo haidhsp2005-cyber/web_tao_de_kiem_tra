@@ -251,5 +251,58 @@ class TestAllUserDefectsVerification(unittest.TestCase):
         self.assertEqual(h_q.answer, "10")
         print("[PASS] Defect 10: Two-digit number underdetermined problem healed with independent quadratic condition.")
 
+    def test_defect_11_team_work(self):
+        # Phần I - Câu 16: Hai đội cùng làm 4 ngày xong. Đội 1 làm 2 ngày, đội 2 làm 9 ngày xong. (nghiệm 5.6 ngày không có trong options A. 6, B. 8, C. 10, D. 12)
+        # Sửa thành: Đội 2 làm 8 ngày để đội 1 làm một mình trong 6 ngày (khớp A).
+        q = Part1Question(
+            id=16,
+            question="Hai đội công nhân cùng làm một công việc trong 4 ngày thì xong. Nếu đội thứ nhất làm 2 ngày và đội thứ hai làm 9 ngày thì cũng xong công việc đó. Hỏi nếu đội thứ nhất làm một mình thì trong bao lâu xong công việc?",
+            options=[
+                Option(label="A", text="6 ngày"),
+                Option(label="B", text="8 ngày"),
+                Option(label="C", text="10 ngày"),
+                Option(label="D", text="12 ngày")
+            ],
+            answer="A", # AI marked A (6 ngày)
+            explanation="Đội 1 làm 6 ngày..."
+        )
+        exam = ExamStructure(
+            title="ĐỀ KIỂM TRA TOÁN", subject="Toán học", grade="9",
+            duration_minutes=45, code="101",
+            part1_mcq=[q], part2_tf=[], part3_short=[]
+        )
+        healed_exam, notes = auto_heal_math_questions(exam)
+        h_q = healed_exam.part1_mcq[0]
+        self.assertIn("8 ngày", h_q.question)
+        self.assertEqual(h_q.answer, "A")
+        print("[PASS] Defect 11: Team work problem adjusted to 8 days for Team 2, root 6 days matches Option A.")
+
+    def test_defect_12_percentage_yield(self):
+        # Phần I - Câu 17: Hai lớp 9A và 9B trồng 580 cây. 9A vượt 20%, 9B vượt 15%, tổng được 684 cây.
+        # Nghiệm thực tế: 9A = 340 cây (không có trong A. 280, B. 300, C. 320, D. 260. AI chọn B. 300).
+        # Nếu AI chọn B (300): 1.2*300 + 1.15*280 = 682 cây.
+        q = Part1Question(
+            id=17,
+            question="Hai lớp 9A và 9B trồng được tổng cộng 580 cây. Trong đợt phát động, lớp 9A trồng vượt mức 20% và lớp 9B trồng vượt mức 15% nên cả hai lớp trồng được 684 cây. Số cây lớp 9A trồng ban đầu là:",
+            options=[
+                Option(label="A", text="280 cây"),
+                Option(label="B", text="300 cây"),
+                Option(label="C", text="320 cây"),
+                Option(label="D", text="260 cây")
+            ],
+            answer="B", # AI marked B (300 cây)
+            explanation="Số cây lớp 9A là 300..."
+        )
+        exam = ExamStructure(
+            title="ĐỀ KIỂM TRA TOÁN", subject="Toán học", grade="9",
+            duration_minutes=45, code="101",
+            part1_mcq=[q], part2_tf=[], part3_short=[]
+        )
+        healed_exam, notes = auto_heal_math_questions(exam)
+        h_q = healed_exam.part1_mcq[0]
+        self.assertIn("682", h_q.question)
+        self.assertEqual(h_q.answer, "B")
+        print("[PASS] Defect 12: Percentage yield problem actual total corrected to 682, root 300 trees matches Option B.")
+
 if __name__ == "__main__":
     unittest.main()
