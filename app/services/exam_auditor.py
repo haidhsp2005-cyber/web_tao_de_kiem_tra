@@ -238,6 +238,8 @@ def heal_water_pipe_part1_q6(q: Part1Question) -> Tuple[Part1Question, bool, str
     """
     text = q.question.lower()
     if ("vòi nước" in text or "hai vòi" in text) and ("12/5" in text or r"\frac{12}{5}" in text or "2,4" in text or "2.4" in text):
+        if "3/2" in text or "frac{3}{2}" in text or "1.5" in text or "3/4" in text or "frac{3}{4}" in text:
+            return q, False, ""
         if "11/10" in text or "frac{11}{10}" in text:
             q.question = re.sub(r'\$?\s*\\?frac\{11\}\{10\}\s*\$?\s*bể|11/10\s*bể', r'1 bể (đầy bể)', q.question)
             

@@ -87,12 +87,19 @@ QUY TẮC BẮT BUỘC ĐỂ KHÔNG BỊ TRÀN TOKEN HOẶC THIẾU CÂU HỎI:
        BẮT BUỘC PHẢI CHỌN TRƯỚC NGHIỆM ĐẸP (SỐ TỰ NHIÊN / SỐ NGUYÊN HOẶC PHÂN SỐ TỐI GIẢN), rồi mới tính ngược lại các số liệu đề bài (quãng đường, thời gian, vận tốc, diện tích, tổng, hiệu...).
      + TUYỆT ĐỐI KHÔNG BỊA SỐ NGẪU NHIÊN VÀO ĐỀ BÀI RỒI MỚI GIẢI, vì sẽ dẫn đến phương trình bậc hai có biệt thức delta không chính phương (vô nghiệm nguyên, nghiệm vô tỉ / thập phân lẻ) hoặc mâu thuẫn với giả thiết đề bài (như bài toán yêu cầu tìm số tự nhiên nhưng nghiệm giải ra lại là số thập phân lẻ)!
    - PHƯƠNG TRÌNH BẬC HAI BẮT BUỘC CÓ BIỆT THỨC DELTA LÀ SỐ CHÍNH PHƯƠNG:
-     + Nếu bài toán dẫn đến phương trình bậc hai $ax^2 + bx + c = 0$, bắt buộc biệt thức $\Delta = b^2 - 4ac$ (hoặc $\Delta'$) PHẢI LÀ SỐ CHÍNH PHƯƠNG (ví dụ $\Delta = 25, 49, 100, 144, 225, 289, 400, 1225, 2025, 2500...$) để nghiệm giải ra là số nguyên hoặc số hữu tỉ đẹp.
+     + Nếu bài toán dẫn đến phương trình bậc hai $ax^2 + bx + c = 0$, bắt buộc biệt thức $\\Delta = b^2 - 4ac$ (hoặc $\\Delta'$) PHẢI LÀ SỐ CHÍNH PHƯƠNG (ví dụ $\\Delta = 25, 49, 100, 144, 225, 289, 400, 1225, 2025, 2500...$) để nghiệm giải ra là số nguyên hoặc số hữu tỉ đẹp.
    - TRẢ LỜI ĐÚNG ĐẠI LƯỢNG ĐỀ BÀI HỎI:
      + Nếu câu hỏi hỏi đại lượng ban đầu (ví dụ "Hỏi lớp 9A ban đầu trồng được bao nhiêu cây?"), đáp án BẮT BUỘC là số cây thực tế ban đầu của lớp 9A, TUYỆT ĐỐI KHÔNG lấy số cây sau khi giả định trồng thêm!
    - ĐỊNH DẠNG PHÂN SỐ VÀ CÁC PHƯƠNG ÁN LỰA CHỌN:
      + Trong các bài toán năng suất, vòi nước: các phân số BẮT BUỘC viết trong dấu $...$ theo chuẩn LaTeX: ví dụ $\\frac{1}{2}$ giờ, $\\frac{2}{5}$ bể.
      + Kết quả giải được BẮT BUỘC PHẢI CÓ MẶT trong 4 phương án A, B, C, D của câu hỏi.
+8. QUY TẮC "GIẢI TRƯỚC - RA ĐỀ SAU" (SOLVER-FIRST SCRATCHPAD CHO TOÁN HỌC):
+   - ĐỐI VỚI MỌI CÂU HỎI TOÁN CÓ TÍNH TOÁN (hệ phương trình, phương trình bậc hai, bài toán thực tế chuyển động/năng suất/diện tích):
+     + BẮT BUỘC đưa trường 'math_scratchpad' LÊN ĐẦU TIÊN TRONG MỖI CÂU HỎI (trước trường 'question').
+     + Trong 'math_scratchpad': Viết các bước tính xuôi từ nghiệm đẹp đã chọn trước:
+       * Ví dụ bài toán chữ nhật: "Chọn nghiệm: dài x=20, rộng y=15. Nửa chu vi 35, chu vi P=70. Nếu giảm dài 2m (còn 18), tăng rộng 3m (thành 18), diện tích mới 18*18=324, diện tích tăng 324-300=24m2. Hỏi chiều dài: kết quả 20m."
+       * Ví dụ hệ phương trình: "Chọn nghiệm: x=2, y=2. Tính P = x^2 + y^2 = 2^2 + 2^2 = 8. Đặt hệ phương trình: 4x - 3y = 2 và x + 3y = 8."
+     + Việc ghi các phép tính và nghiệm vào 'math_scratchpad' trước giúp đồng bộ tuyệt đối 100% giữa đề bài, các phương án lựa chọn và lời giải chi tiết.
 
 CẤU TRÚC JSON ĐẦU RA BẮT BUỘC (Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ, không kèm văn bản nào khác ngoài JSON):
 {
@@ -106,6 +113,7 @@ CẤU TRÚC JSON ĐẦU RA BẮT BUỘC (Chỉ trả về DUY NHẤT một chu�
   "part1_mcq": [
     {
       "id": 1,
+      "math_scratchpad": "Chọn nghiệm trước: x=..., y=... Tính xuôi đề bài...",
       "question": "Nội dung câu hỏi trắc nghiệm...",
       "options": [
         {"label": "A", "text": "Phương án A"},
@@ -120,6 +128,7 @@ CẤU TRÚC JSON ĐẦU RA BẮT BUỘC (Chỉ trả về DUY NHẤT một chu�
   "part2_tf": [
     {
       "id": 1,
+      "math_scratchpad": "Chọn nghiệm trước và xác định tính đúng/sai của 4 ý...",
       "question": "Nội dung đề bài câu đúng sai...",
       "sub_items": [
         {"label": "a", "statement": "Mệnh đề a", "is_correct": true, "explanation": "Giải thích a"},
@@ -133,6 +142,7 @@ CẤU TRÚC JSON ĐẦU RA BẮT BUỘC (Chỉ trả về DUY NHẤT một chu�
   "part3_short": [
     {
       "id": 1,
+      "math_scratchpad": "Tính toán đáp số chính xác...",
       "question": "Câu hỏi yêu cầu điền đáp số...",
       "answer": "12.5",
       "explanation": "Giải thích ngắn gọn... Vậy đáp số là 12.5."
@@ -740,7 +750,7 @@ def get_mock_physics_exam() -> ExamStructure:
             id=1,
             question="Một vật dao động điều hòa thực hiện được 50 dao động toàn phần trong thời gian 25 giây. Tần số dao động của vật bằng bao nhiêu Hertz?",
             answer="2",
-            explanation="Tần số dao động $f = \\frac{N}{\\Delta t} = \\frac{50}{25} = 2\\text{ Hz}$."
+            explanation="Tần số dao động $f = \\frac{N}{\\\Delta t} = \\frac{50}{25} = 2\\text{ Hz}$."
         ),
         Part3Question(
             id=2,
@@ -908,7 +918,7 @@ def get_mock_chemistry_exam() -> ExamStructure:
             id=5,
             question="Ngâm một đinh sắt ($Fe, M = 56$) vào dung dịch $CuSO_4$ dư. Sau phản ứng, lấy đinh sắt ra rửa nhẹ, sấy khô thấy khối lượng tăng thêm $0.8\\text{ gam}$. Số mol đồng bám trên thanh sắt bằng bao nhiêu mol?",
             answer="0.1",
-            explanation="Phương trình: $Fe + Cu^{2+} \\to Fe^{2+} + Cu$. Gọi số mol phản ứng là $x$. Độ tăng khối lượng: $\\Delta m = 64x - 56x = 8x = 0.8\\text{ g} \\Rightarrow x = 0.1\\text{ mol}$."
+            explanation="Phương trình: $Fe + Cu^{2+} \\to Fe^{2+} + Cu$. Gọi số mol phản ứng là $x$. Độ tăng khối lượng: $\\\Delta m = 64x - 56x = 8x = 0.8\\text{ g} \\Rightarrow x = 0.1\\text{ mol}$."
         ),
         Part3Question(
             id=6,
