@@ -202,6 +202,68 @@ y | -\\infty | -> 2 | -> -2 | -> +\\infty
     assert len(docx_bytes) > 50000
     print(f"  [PASS] Word DOCX with Câu 2, 3, 4 exported successfully ({len(docx_bytes):,} bytes)!")
 
+def test_cau15_and_cau16():
+    print("Testing Câu 15 (Đồ thị đạo hàm f'(x)) and Câu 16 (Đường cong với mô tả trong ngoặc)...")
+    raw_exam = ExamStructure(
+        title="ĐỀ KIỂM TRA ĐỊNH KỲ TOÁN 12",
+        subject="Toán học",
+        grade="12",
+        duration_minutes=50,
+        school_name="Trường THPT",
+        academic_year="2026-2027",
+        code="101",
+        part1_mcq=[
+            Part1Question(
+                id=15,
+                question="Cho hàm số y = f(x) có đạo hàm liên tục trên R và đồ thị của hàm số y = f'(x) như hình vẽ bên. Hàm số y = f(x) đồng biến trên khoảng nào dưới đây?",
+                options=[
+                    Option(label="A", text="(-\\infty; -1)"),
+                    Option(label="B", text="(1; +\\infty)"),
+                    Option(label="C", text="(-1; 1)"),
+                    Option(label="D", text="(-2; 0)")
+                ],
+                answer="C",
+                explanation="Từ đồ thị của hàm số đạo hàm y = f'(x), trên khoảng (-1; 1) đồ thị nằm phía trên trục hoành nên f'(x) > 0. Do đó hàm số y = f(x) đồng biến trên (-1; 1)."
+            ),
+            Part1Question(
+                id=16,
+                question="""Đường cong ở hình bên là đồ thị của hàm số nào trong các hàm số dưới đây?
+(Đồ thị hàm bậc ba có dạng đi lên từ góc phần tư thứ ba sang góc phần tư thứ nhất, cắt trục tung tại gốc tọa độ, qua điểm (1; 1))""",
+                options=[
+                    Option(label="A", text="y = -x^3 + 3x"),
+                    Option(label="B", text="y = x^3 + 3x"),
+                    Option(label="C", text="y = x^3 - 3x"),
+                    Option(label="D", text="y = x^3 - 2x^2 + x")
+                ],
+                answer="C",
+                explanation="Đồ thị hàm số bậc ba đi qua gốc tọa độ O(0; 0) và có hai điểm cực trị đối xứng qua gốc tọa độ."
+            )
+        ],
+        part2_tf=[],
+        part3_short=[],
+        part4_essay=[],
+        scoring=calculate_exam_scoring(num_p1=2, num_p2=0, num_p3=0, num_p4=0)
+    )
+    
+    attached = auto_attach_diagrams_to_exam(raw_exam)
+    
+    # Câu 15: Must have derivative graph y = f'(x) attached
+    q15 = attached.part1_mcq[0]
+    assert q15.image_base64 is not None and len(q15.image_base64) > 1000, "Q15 image missing"
+    assert "f'(x)" in q15.image_caption, f"Q15 caption expected f'(x), got: {q15.image_caption}"
+    print(f"  [PASS] Câu 15: Đồ thị hàm số đạo hàm y = f'(x) đã tự động được gắn chính xác!")
+    
+    # Câu 16: Parenthetical text must be stripped, and cubic graph attached
+    q16 = attached.part1_mcq[1]
+    assert "góc phần tư" not in q16.question, f"Parenthetical description not removed: {q16.question}"
+    assert "Đồ thị hàm bậc ba" not in q16.question, f"Parenthetical description not removed: {q16.question}"
+    assert q16.image_base64 is not None and len(q16.image_base64) > 1000, "Q16 image missing"
+    print(f"  [PASS] Câu 16: Đoạn mô tả trong ngoặc đã được xóa sạch & đồ thị hàm số bậc ba đã được gắn!")
+    
+    docx_bytes = export_to_bytes(attached, red_answers=True)
+    assert len(docx_bytes) > 50000
+    print(f"  [PASS] Word DOCX with Câu 15, 16 exported successfully ({len(docx_bytes):,} bytes)!")
+
 if __name__ == "__main__":
     test_math_mock()
     test_physics_mock()
@@ -210,4 +272,5 @@ if __name__ == "__main__":
     test_shuffling_preserves_images()
     test_auto_attach()
     test_ascii_and_bounded_graphs()
+    test_cau15_and_cau16()
     print("\nALL DIAGRAM TESTS PASSED 100%!")

@@ -297,6 +297,50 @@ def draw_bounded_polynomial_graph(
         
     return fig_to_base64(fig), caption
 
+def draw_derivative_graph(
+    x1: float = -1.0,
+    x2: float = 1.0,
+    title: str = "Đồ thị hàm số đạo hàm y = f'(x)",
+    caption: str = "Hình: Đồ thị hàm số đạo hàm y = f'(x)"
+) -> Tuple[str, str]:
+    """
+    Vẽ đồ thị hàm số đạo hàm y = f'(x) cắt trục hoành tại x1, x2 (ví dụ -1 và 1).
+    Phần đồ thị phía trên trục hoành (f'(x) > 0) tương ứng với khoảng đồng biến của f(x).
+    """
+    fig, ax = plt.subplots(figsize=(4.6, 3.6), dpi=150)
+    
+    # Parabol ngược: y = -2 * (x^2 - 1)
+    x = np.linspace(-2.2, 2.2, 400)
+    y = -2 * (x**2 - 1)
+    
+    ax.plot(x, y, color='#1e3a8a', linewidth=2.2, label=r"$y = f'(x)$")
+    ax.axhline(0, color='black', linewidth=1.1)
+    ax.axvline(0, color='black', linewidth=1.1)
+    
+    # Điểm giao với Ox: (-1, 0), (1, 0)
+    ax.plot([x1, x2], [0, 0], 'ro', markersize=4.5)
+    ax.text(x1, -0.4, f"{int(x1) if x1 == int(x1) else x1:g}", fontsize=9, ha='center', fontweight='bold', color='darkred')
+    ax.text(x2, -0.4, f"{int(x2) if x2 == int(x2) else x2:g}", fontsize=9, ha='center', fontweight='bold', color='darkred')
+    
+    # Điểm đỉnh (0, 2)
+    ax.plot(0, 2, 'ro', markersize=4.5)
+    ax.text(-0.3, 2.0, "2", fontsize=9, va='center', fontweight='bold', color='darkred')
+    
+    ax.text(-0.25, -0.35, 'O', fontsize=9.5, fontweight='bold')
+    ax.text(2.1, -0.45, 'x', fontsize=10, fontstyle='italic', fontweight='bold')
+    ax.text(0.15, 2.4, 'y', fontsize=10, fontstyle='italic', fontweight='bold')
+    
+    # Nhãn hàm f'(x)
+    ax.text(0.8, 1.4, r"$y = f'(x)$", fontsize=10.5, color='#1e3a8a', fontweight='bold')
+    
+    ax.grid(True, linestyle=':', alpha=0.4, color='gray')
+    ax.set_xlim(-2.5, 2.5)
+    ax.set_ylim(-3.5, 3.0)
+    if title:
+        ax.set_title(title, fontsize=10, pad=8, color='#0f172a', fontweight='bold')
+        
+    return fig_to_base64(fig), caption
+
 def extract_and_render_variation_table(q_text: str) -> Tuple[str, Optional[str], Optional[str]]:
     """
     Quét nội dung câu hỏi, nếu phát hiện bảng biến thiên dạng ASCII / Markdown table:
@@ -346,6 +390,51 @@ def extract_and_render_variation_table(q_text: str) -> Tuple[str, Optional[str],
     cleaned = re.sub(r'\n\s*\n+', '\n', cleaned).strip()
     
     return cleaned, b64, cap
+
+def strip_parenthetical_diagram_descriptions(text: str) -> str:
+    """
+    Xóa bỏ hoàn toàn các đoạn văn bản mô tả đồ thị/hình vẽ nằm trong ngoặc đơn
+    do AI tự sinh chèn vào đề bài, ví dụ:
+    '(Đồ thị hàm bậc ba có dạng đi lên từ góc phần tư thứ ba sang góc phần tư thứ nhất, cắt trục tung tại gốc tọa độ, qua điểm (1; 1))'
+    """
+    if not text:
+        return text
+        
+    # 1. Xóa các dòng nguyên câu nằm trong ngoặc đơn/vuông mô tả hình vẽ
+    text = re.sub(
+        r'(?:\n|^)[ \t]*[\(\[].*?(?:đồ thị|hình vẽ|đường cong|bảng biến thiên).*?[\)\]][ \t]*(?=\n|$)',
+        '',
+        text,
+        flags=re.IGNORECASE
+    )
+    
+    # 2. Xóa các đoạn ngoặc lồng nhau (nested parentheses) như (Đồ thị ... qua điểm (1; 1))
+    keywords = ["đồ thị", "hình vẽ", "đường cong", "bảng biến thiên"]
+    res = []
+    i = 0
+    n = len(text)
+    while i < n:
+        if text[i] in '([':
+            open_char = text[i]
+            close_char = ')' if open_char == '(' else ']'
+            depth = 1
+            j = i + 1
+            while j < n and depth > 0:
+                if text[j] == open_char:
+                    depth += 1
+                elif text[j] == close_char:
+                    depth -= 1
+                j += 1
+            inside = text[i:j]
+            if depth == 0 and any(k in inside.lower() for k in keywords):
+                i = j
+                continue
+        res.append(text[i])
+        i += 1
+        
+    out = ''.join(res)
+    out = re.sub(r'[ \t]+', ' ', out)
+    return re.sub(r'\n\s*\n+', '\n', out).strip()
 
 
 # ==============================================================================
@@ -702,6 +791,13 @@ def generate_diagram(spec: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]
                 title=title or "Đồ thị hàm số y = f(x)",
                 caption=caption or "Hình: Đồ thị hàm số y = f(x) trên đoạn [-2; 2]"
             )
+        elif diag_type in ("derivative_graph", "f_prime", "dao_ham"):
+            return draw_derivative_graph(
+                x1=float(spec.get("x1", -1.0)),
+                x2=float(spec.get("x2", 1.0)),
+                title=title or "Đồ thị hàm số đạo hàm y = f'(x)",
+                caption=caption or "Hình: Đồ thị hàm số đạo hàm y = f'(x)"
+            )
             
         # Vật lý
         elif diag_type in ("physics_oscillation", "dao_dong", "x_t"):
@@ -752,7 +848,7 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
     Tự động quét và gắn hình ảnh minh họa, đồ thị hàm số và bảng biến thiên
     vào các câu hỏi Toán 12, Vật lý, Hóa học, Sinh học nếu câu hỏi đề cập hoặc có spec diagram.
     Đồng thời tự động bóc tách và thay thế các bảng biến thiên ASCII/Markdown thô sơ
-    thành hình ảnh đồ họa chất lượng cao chuẩn SGK.
+    thành hình ảnh đồ họa chất lượng cao chuẩn SGK, và xóa sạch các đoạn mô tả đồ thị bằng chữ trong ngoặc đơn.
     """
     subject_lower = str(getattr(exam, "subject", "")).lower()
     
@@ -768,14 +864,18 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
             q_text_orig = str(getattr(q, "question", ""))
             
             # 1. BÓC TÁCH BẢNG BIẾN THIÊN ASCII / MARKDOWN:
-            # Nếu câu hỏi có bảng ASCII/Markdown (như | x | -\infty | ...), trích xuất tham số,
-            # vẽ hình đồ họa vector sắc nét và làm sạch văn bản trong q.question.
             cleaned_text, ascii_b64, ascii_cap = extract_and_render_variation_table(q_text_orig)
             if ascii_b64:
                 q.question = cleaned_text
                 q.image_base64 = ascii_b64
                 q.image_caption = ascii_cap
                 continue
+                
+            # 2. XÓA BỎ CÁC ĐOẠN MÔ TẢ ĐỒ THỊ TRONG NGOẶC ĐƠN DO AI TỰ SINH
+            # Ví dụ: (Đồ thị hàm bậc ba có dạng đi lên từ góc phần tư thứ ba sang góc phần tư thứ nhất, cắt trục tung tại gốc tọa độ, qua điểm (1; 1))
+            cleaned_q = strip_parenthetical_diagram_descriptions(q.question)
+            if cleaned_q != q.question:
+                q.question = cleaned_q
                 
             # Nếu câu hỏi đã có hình ảnh rồi thì bỏ qua
             if getattr(q, "image_base64", None):
@@ -784,16 +884,25 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
             q_text = str(getattr(q, "question", "")).lower()
             
             # 1. TOÁN HỌC (Lớp 12 & THPT)
-            if "toán" in subject_lower:
+            is_math = (
+                "toán" in subject_lower or "giải tích" in subject_lower or "đại số" in subject_lower or
+                not subject_lower or "hàm số" in q_text or "đạo hàm" in q_text or "bảng biến thiên" in q_text or "tiệm cận" in q_text
+            )
+            
+            if is_math:
                 if "bảng biến thiên" in q_text or "bbt" in q_text:
                     b64, cap = draw_variation_table(caption="Hình: Bảng biến thiên của hàm số")
+                    q.image_base64 = b64
+                    q.image_caption = cap
+                elif re.search(r"f[\'’]\(x\)|y\s*=\s*f[\'’]", q_text) and ("đồ thị" in q_text or "hình vẽ" in q_text or "hình bên" in q_text):
+                    b64, cap = draw_derivative_graph(caption="Hình: Đồ thị hàm số đạo hàm y = f'(x)")
                     q.image_base64 = b64
                     q.image_caption = cap
                 elif "[-2; 2]" in q_text or "[-2, 2]" in q_text or "[-2;2]" in q_text:
                     b64, cap = draw_bounded_polynomial_graph(caption="Hình: Đồ thị hàm số y = f(x) trên đoạn [-2; 2]")
                     q.image_base64 = b64
                     q.image_caption = cap
-                elif "đồ thị" in q_text or "hình vẽ" in q_text or "đường cong" in q_text:
+                elif "đồ thị" in q_text or "hình vẽ" in q_text or "đường cong" in q_text or "hình bên" in q_text:
                     if "trùng phương" in q_text or "bậc bốn" in q_text or "x^4" in q_text:
                         b64, cap = draw_quartic_graph(caption="Hình: Đồ thị hàm số bậc bốn trùng phương")
                         q.image_base64 = b64

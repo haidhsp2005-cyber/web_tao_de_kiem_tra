@@ -72,10 +72,11 @@ QUY TẮC BẮT BUỘC ĐỂ KHÔNG BỊ TRÀN TOKEN HOẶC THIẾU CÂU HỎI:
 6. HÌNH ẢNH MINH HỌA, BẢNG BIẾN THIÊN & ĐỒ THỊ (TOÁN 12, VẬT LÝ, HÓA HỌC, SINH HỌC):
    - QUY TẮC BẮT BUỘC ĐỐI VỚI BẢNG BIẾN THIÊN & ĐỒ THỊ:
      + TUYỆT ĐỐI KHÔNG xuất bảng biến thiên bằng ký tự ASCII hoặc bảng Markdown (như x | -\\infty | 0 | ... hay ---|---|---) bên trong đề bài câu hỏi ('question').
-     + Chỉ ghi đề bài: 'Cho hàm số $y = f(x)$ có bảng biến thiên như hình vẽ bên. ...'.
+     + TUYỆT ĐỐI KHÔNG mô tả đồ thị bằng văn bản trong dấu ngoặc đơn bên trong câu hỏi (ví dụ: '(Đồ thị hàm bậc ba có dạng đi lên từ góc phần tư thứ ba sang góc phần tư thứ nhất, cắt trục tung tại gốc tọa độ, qua điểm (1; 1))'). Chỉ ghi đề bài chuẩn mực: 'Đường cong trong hình vẽ bên là đồ thị của hàm số nào dưới đây?' hoặc 'Cho hàm số $y = f(x)$ có đạo hàm liên tục trên $\\mathbb{R}$ và đồ thị của hàm số $y = f\'(x)$ như hình vẽ bên. ...'.
      + Nếu muốn chỉ định giá trị cụ thể của bảng biến thiên, hãy khai báo trường 'diagram': {"type": "variation_table", "x_vals": ["-\\infty", "0", "2", "+\\infty"], "y_prime": ["-", "0", "+", "0", "-"], "y_vals": ["+\\infty", "-3", "5", "-\\infty"]}. Hệ thống sẽ tự động vẽ bảng biến thiên đồ họa chuẩn đẹp chèn vào câu hỏi.
+     + Đối với câu hỏi về đồ thị đạo hàm $y = f'(x)$, khai báo trường 'diagram': {"type": "derivative_graph"}.
      + Đối với câu hỏi về đồ thị trên đoạn [-2; 2], khai báo trường 'diagram': {"type": "bounded_graph"}.
-   - Môn Toán 12 (khảo sát hàm số, cực trị, tiệm cận): Khuyến khích tạo câu hỏi có Bảng biến thiên ("diagram": {"type": "variation_table"}), Đồ thị hàm số bậc ba ("diagram": {"type": "cubic_graph"}), Đồ thị hàm phân thức ("diagram": {"type": "rational_graph"}), Đồ thị trùng phương ("diagram": {"type": "quartic_graph"}), Đồ thị trên đoạn [-2; 2] ("diagram": {"type": "bounded_graph"}).
+   - Môn Toán 12 (khảo sát hàm số, cực trị, tiệm cận): Khuyến khích tạo câu hỏi có Bảng biến thiên ("diagram": {"type": "variation_table"}), Đồ thị hàm số bậc ba ("diagram": {"type": "cubic_graph"}), Đồ thị hàm phân thức ("diagram": {"type": "rational_graph"}), Đồ thị trùng phương ("diagram": {"type": "quartic_graph"}), Đồ thị trên đoạn [-2; 2] ("diagram": {"type": "bounded_graph"}), Đồ thị hàm số đạo hàm y = f'(x) ("diagram": {"type": "derivative_graph"}).
    - Môn Vật lý: Đồ thị dao động điều hòa ("diagram": {"type": "physics_oscillation"}), Chu trình nhiệt động lực học p-V ("diagram": {"type": "thermodynamic"}).
    - Môn Hóa học: Đường cong chuẩn độ pH ("diagram": {"type": "titration"}), Đồ thị kết tủa CaCO3/CO2 ("diagram": {"type": "precipitation"}).
    - Môn Sinh học: Sơ đồ phả hệ di truyền ("diagram": {"type": "pedigree"}), Đồ thị tăng trưởng quần thể chữ J / chữ S ("diagram": {"type": "population_growth"}).
