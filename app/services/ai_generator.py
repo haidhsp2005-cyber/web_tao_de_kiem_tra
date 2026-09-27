@@ -81,6 +81,18 @@ QUY TẮC BẮT BUỘC ĐỂ KHÔNG BỊ TRÀN TOKEN HOẶC THIẾU CÂU HỎI:
    - Môn Hóa học: Đường cong chuẩn độ pH ("diagram": {"type": "titration"}), Đồ thị kết tủa CaCO3/CO2 ("diagram": {"type": "precipitation"}).
    - Môn Sinh học: Sơ đồ phả hệ di truyền ("diagram": {"type": "pedigree"}), Đồ thị tăng trưởng quần thể chữ J / chữ S ("diagram": {"type": "population_growth"}).
    - Hệ thống tự động biên dịch và tạo hình minh họa độ nét cao (vector/PNG 300 DPI) chèn ngay vào câu hỏi trên Web và bản in Word (.docx)!
+7. NGUYÊN TẮC BẮT BUỘC ĐỐI VỚI BÀI TOÁN THỰC TẾ & GIẢI TOÁN BẰNG CÁCH LẬP PHƯƠNG TRÌNH / HỆ PHƯƠNG TRÌNH (TOÁN 9, THCS, THPT):
+   - NGUYÊN TẮC "THIẾT KẾ NGƯỢC TỪ NGHIỆM ĐẸP" (REVERSE ENGINEERING):
+     + KHI BIÊN SOẠN BÀI TOÁN THỰC TẾ (chuyển động, năng suất vòi nước, hình chữ nhật chu vi/diện tích, bài toán tìm số tự nhiên, mua hàng, trồng cây, năng suất phần trăm...):
+       BẮT BUỘC PHẢI CHỌN TRƯỚC NGHIỆM ĐẸP (SỐ TỰ NHIÊN / SỐ NGUYÊN HOẶC PHÂN SỐ TỐI GIẢN), rồi mới tính ngược lại các số liệu đề bài (quãng đường, thời gian, vận tốc, diện tích, tổng, hiệu...).
+     + TUYỆT ĐỐI KHÔNG BỊA SỐ NGẪU NHIÊN VÀO ĐỀ BÀI RỒI MỚI GIẢI, vì sẽ dẫn đến phương trình bậc hai có biệt thức delta không chính phương (vô nghiệm nguyên, nghiệm vô tỉ / thập phân lẻ) hoặc mâu thuẫn với giả thiết đề bài (như bài toán yêu cầu tìm số tự nhiên nhưng nghiệm giải ra lại là số thập phân lẻ)!
+   - PHƯƠNG TRÌNH BẬC HAI BẮT BUỘC CÓ BIỆT THỨC DELTA LÀ SỐ CHÍNH PHƯƠNG:
+     + Nếu bài toán dẫn đến phương trình bậc hai $ax^2 + bx + c = 0$, bắt buộc biệt thức $\Delta = b^2 - 4ac$ (hoặc $\Delta'$) PHẢI LÀ SỐ CHÍNH PHƯƠNG (ví dụ $\Delta = 25, 49, 100, 144, 225, 289, 400, 1225, 2025, 2500...$) để nghiệm giải ra là số nguyên hoặc số hữu tỉ đẹp.
+   - TRẢ LỜI ĐÚNG ĐẠI LƯỢNG ĐỀ BÀI HỎI:
+     + Nếu câu hỏi hỏi đại lượng ban đầu (ví dụ "Hỏi lớp 9A ban đầu trồng được bao nhiêu cây?"), đáp án BẮT BUỘC là số cây thực tế ban đầu của lớp 9A, TUYỆT ĐỐI KHÔNG lấy số cây sau khi giả định trồng thêm!
+   - ĐỊNH DẠNG PHÂN SỐ VÀ CÁC PHƯƠNG ÁN LỰA CHỌN:
+     + Trong các bài toán năng suất, vòi nước: các phân số BẮT BUỘC viết trong dấu $...$ theo chuẩn LaTeX: ví dụ $\\frac{1}{2}$ giờ, $\\frac{2}{5}$ bể.
+     + Kết quả giải được BẮT BUỘC PHẢI CÓ MẶT trong 4 phương án A, B, C, D của câu hỏi.
 
 CẤU TRÚC JSON ĐẦU RA BẮT BUỘC (Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ, không kèm văn bản nào khác ngoài JSON):
 {
@@ -364,15 +376,14 @@ async def generate_with_gemini(prompt: str, api_key: str, model: str = "auto") -
         if model and model not in ("auto", "default", ""):
             candidate_models.append(model)
             
-        # Priority: active working models on Google AI Studio
+        # Priority: active high-quality reasoning models on Google AI Studio
         for pref in [
-            "gemini-flash-lite-latest",
-            "gemini-3.6-flash",
-            "gemini-flash-latest",
-            "gemini-3.1-flash-lite",
             "gemini-2.5-flash",
+            "gemini-flash-latest",
             "gemini-2.0-flash",
-            "gemini-1.5-flash"
+            "gemini-1.5-flash",
+            "gemini-flash-lite-latest",
+            "gemini-3.1-flash-lite"
         ]:
             if pref not in candidate_models:
                 candidate_models.append(pref)
