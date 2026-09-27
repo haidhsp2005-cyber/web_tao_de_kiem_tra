@@ -304,5 +304,111 @@ class TestAllUserDefectsVerification(unittest.TestCase):
         self.assertEqual(h_q.answer, "B")
         print("[PASS] Defect 12: Percentage yield problem actual total corrected to 682, root 300 trees matches Option B.")
 
+    def test_defect_13_rectangle_100m_length_30(self):
+        # Phần I - Câu 18: Chu vi 100m (nửa chu vi p=50m). Tăng dài 3m, tăng rộng 2m, diện tích tăng 160m2 (ra nghiệm âm x = -4!).
+        # Phải tự động điều chỉnh 160 -> 126 m2 để chiều dài ban đầu là 30m, chiều rộng là 20m.
+        q = Part1Question(
+            id=18,
+            question="Một khu vườn hình chữ nhật có chu vi bằng 100 m. Nếu tăng chiều dài thêm 3 m và tăng chiều rộng thêm 2 m thì diện tích khu vườn tăng thêm 160 m^2. Chiều dài ban đầu của khu vườn là:",
+            options=[
+                Option(label="A", text="20 m"),
+                Option(label="B", text="30 m"),
+                Option(label="C", text="25 m"),
+                Option(label="D", text="35 m")
+            ],
+            answer="B", # chiều dài 30m
+            explanation="Chiều dài là 30 m..."
+        )
+        exam = ExamStructure(
+            title="ĐỀ KIỂM TRA TOÁN 9", subject="Toán học", grade="9",
+            duration_minutes=45, code="101",
+            part1_mcq=[q], part2_tf=[], part3_short=[]
+        )
+        healed_exam, notes = auto_heal_math_questions(exam)
+        h_q = healed_exam.part1_mcq[0]
+        self.assertIn("126", h_q.question)
+        self.assertEqual(h_q.answer, "B")
+        self.assertIn("30", h_q.options[1].text)
+        print("[PASS] Defect 13: Rectangle 100m perimeter healed delta S to 126 m2, length 30m matches Option B.")
+
+    def test_defect_14_system_product_scalar_options(self):
+        # Phần I - Câu 20: Hệ 2x+y=5 và x+y=3. Hỏi giá trị của x*y.
+        # Nghiệm là x=2, y=1 => x*y = 2.
+        # Options ban đầu bị hallucinate cặp tọa độ: B. (2; 1).
+        # Hệ thống phải nhận diện đúng intent là tích ('prod'), không bị nhầm thành tổng 'x+y' do phương trình chứa x+y=3,
+        # và làm sạch option B thành vô hướng 2 (hoặc $2$).
+        q = Part1Question(
+            id=20,
+            question=r"Cho hệ phương trình $\begin{cases} 2x + y = 5 \\ x + y = 3 \end{cases}$. Giá trị của biểu thức $x \cdot y$ là:",
+            options=[
+                Option(label="A", text="1"),
+                Option(label="B", text="(2; 1)"),
+                Option(label="C", text="3"),
+                Option(label="D", text="6")
+            ],
+            answer="B",
+            explanation="Ta có x=2, y=1 nên x*y = 2."
+        )
+        exam = ExamStructure(
+            title="ĐỀ KIỂM TRA TOÁN 9", subject="Toán học", grade="9",
+            duration_minutes=45, code="101",
+            part1_mcq=[q], part2_tf=[], part3_short=[]
+        )
+        healed_exam, notes = auto_heal_math_questions(exam)
+        h_q = healed_exam.part1_mcq[0]
+        self.assertIn(h_q.options[1].text.strip("$ "), ["2", "2.0"])
+        self.assertEqual(h_q.answer, "B")
+        print("[PASS] Defect 14: Linear system product intent detected correctly, coordinate option sanitized to scalar 2.")
+
+    def test_defect_15_grade9_boat_motion_no_calculus(self):
+        # Phần II - Câu 3: Bài toán ca nô xuôi/ngược dòng lớp 9.
+        # Đảm bảo không bị lọt câu hỏi giải tích lớp 12 (f'(x) = 0, f''(x) > 0).
+        q = Part2Question(
+            id=3,
+            question="Một ca nô xuôi dòng từ bến A đến bến B cách nhau 30 km rồi ngược dòng trở lại bến A mất tất cả 5 giờ. Biết vận tốc dòng nước là 3 km/h.",
+            sub_items=[
+                SubItem(label="a", statement="Vận tốc dòng nước là 3 km/h.", is_correct=True, explanation="Đúng"),
+                SubItem(label="b", statement="Thời gian xuôi dòng ít hơn thời gian ngược dòng.", is_correct=True, explanation="Đúng"),
+                SubItem(label="c", statement="Vận tốc thực của ca nô là 15 km/h.", is_correct=False, explanation="Sai"),
+                SubItem(label="d", statement=r"Nếu $f'(x_0) = 0$ và $f''(x_0) > 0$ thì hàm số đạt cực tiểu tại $x_0$.", is_correct=True, explanation="Lọt kiến thức lớp 12")
+            ],
+            explanation="Giải phương trình ta được vận tốc thực là 13 km/h..."
+        )
+        exam = ExamStructure(
+            title="ĐỀ KIỂM TRA TOÁN 9", subject="Toán học", grade="9",
+            duration_minutes=45, code="101",
+            part1_mcq=[], part2_tf=[q], part3_short=[]
+        )
+        healed_exam, notes = auto_heal_math_questions(exam)
+        h_q = healed_exam.part2_tf[0]
+        for s in h_q.sub_items:
+            self.assertNotIn("f'", s.statement)
+            self.assertNotIn("cực tiểu", s.statement)
+            self.assertNotIn("tiệm cận", s.statement)
+        print("[PASS] Defect 15: Grade 9 boat motion question sanitized, 100% calculus leaks eliminated.")
+
+    def test_defect_16_grade9_diagram_no_cubic(self):
+        # Phần III - Câu 6: Tìm hệ số góc của đường thẳng y = ax + b đi qua A(1; 3) và B(2; 5).
+        # Không được tự tiện gán đồ thị bậc 3 của lớp 12 khi câu hỏi lớp 9 chỉ nói về đồ thị hàm số bậc nhất.
+        from app.services.diagram_generator import enrich_exam_with_diagrams
+        q = Part3Question(
+            id=6,
+            question="Tìm hệ số góc a của đường thẳng (d): y = ax + b biết rằng đồ thị đi qua hai điểm A(1; 3) và B(2; 5).",
+            answer="2",
+            explanation="a = (5 - 3)/(2 - 1) = 2"
+        )
+        exam = ExamStructure(
+            title="ĐỀ KIỂM TRA TOÁN 9", subject="Toán học", grade="9",
+            duration_minutes=45, code="101",
+            part1_mcq=[], part2_tf=[], part3_short=[q]
+        )
+        enrich_exam_with_diagrams(exam)
+        self.assertIsNone(getattr(q, "image_base64", None))
+        
+        healed_exam, notes = auto_heal_math_questions(exam)
+        self.assertEqual(healed_exam.part3_short[0].answer, "2")
+        print("[PASS] Defect 16: Grade 9 linear graph has no stray cubic diagram, slope a = 2 verified.")
+
 if __name__ == "__main__":
     unittest.main()
+

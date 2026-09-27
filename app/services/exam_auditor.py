@@ -472,22 +472,30 @@ def auto_heal_single_mcq_math(q: Part1Question) -> Tuple[Part1Question, bool, st
                     pass
                     
             # 1.3 Tích x · y
-            if is_prod and target_val is not None:
-                if abs(x0 * y0 - target_val) > 1e-4:
-                    found_xy = None
-                    for cand_x in range(-12, 13):
-                        if b != 0 and (c - a * cand_x) % b == 0:
-                            cand_y = (c - a * cand_x) // b
-                            if cand_x * cand_y == int(target_val):
-                                found_xy = (cand_x, cand_y)
-                                break
-                    if found_xy:
-                        new_x, new_y = found_xy
-                        new_f = d * new_x + e * new_y
-                        old_eq2_pat = rf'({d if d!=1 else ""}\s*x\s*[\+\-]\s*{abs(e) if abs(e)!=1 else ""}\s*y\s*=\s*){f}'
-                        q.question = re.sub(old_eq2_pat, rf'\g<1>{new_f}', q.question)
-                        q.explanation = f"Giải hệ phương trình ta được x = {new_x}, y = {new_y}. Tích x · y = {new_x} · {new_y} = {int(target_val)}. Chọn đáp án {q.answer}."
-                        return q, True, f"Đã phát hiện sai số tích x · y và tự động chuẩn hóa hệ phương trình có nghiệm x = {new_x}, y = {new_y} khớp đáp án {q.answer}"
+            if is_prod:
+                true_prod = x0 * y0
+                val_int = int(round(true_prod)) if abs(true_prod - round(true_prod)) < 1e-4 else None
+                found_opt = None
+                for o in q.options:
+                    clean_txt = o.text.strip().replace("$", "").replace(" ", "")
+                    if val_int is not None and clean_txt == str(val_int):
+                        found_opt = o.label
+                        break
+                if found_opt:
+                    if q.answer != found_opt:
+                        q.answer = found_opt
+                        q.explanation = f"Giải hệ phương trình ta được x = {int(x0) if x0.is_integer() else x0}, y = {int(y0) if y0.is_integer() else y0}. Tích x · y = {val_int}. Chọn đáp án {found_opt}."
+                        return q, True, f"Bộ giải chuẩn hóa: Chuyển đáp án tích x · y về {found_opt} ({val_int})"
+                else:
+                    for o in q.options:
+                        if o.label == q.answer:
+                            o.text = f"${val_int if val_int is not None else true_prod}$"
+                            break
+                    for idx_o, o in enumerate(q.options):
+                        if o.label != q.answer and re.search(r'\([+-]?\d+;\s*[+-]?\d+\)', o.text):
+                            o.text = f"${(val_int if val_int is not None else 0) + idx_o + 1}$"
+                    q.explanation = f"Giải hệ phương trình ta được x = {int(x0) if x0.is_integer() else x0}, y = {int(y0) if y0.is_integer() else y0}. Tích x · y = {val_int if val_int is not None else true_prod}. Chọn đáp án {q.answer}."
+                    return q, True, f"Bộ giải chuẩn hóa: Sửa phương án {q.answer} thành ${val_int}$ (tích x · y)"
                         
             # 1.4 Hiệu x - y
             elif is_diff and target_val is not None:
@@ -1106,8 +1114,9 @@ def heal_mcq_offline(q: Part1Question, subject: str) -> Part1Question:
     q.explanation = synchronize_mcq_explanation_with_answer(q.explanation or "Phương án đúng đã được kiểm định.", q.answer)
     return q
 
-def heal_tf_offline(q: Part2Question, subject: str, index: int = 0) -> Part2Question:
+def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str = "12") -> Part2Question:
     sub_lower = subject.lower()
+    is_grade_9 = str(grade).strip().lower() in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
     
     subject_banks = {
         "hóa": [
@@ -1130,16 +1139,38 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0) -> Part2Ques
                     {"label": "d", "statement": "Poli(vinyl clorua) (PVC) được điều chế bằng phản ứng trùng hợp monome vinyl clorua.", "is_correct": True, "explanation": "Trùng hợp nối đôi C=C của CH2=CH-Cl."}
                 ],
                 "explanation": "Kiến thức trọng tâm hóa học hữu cơ THPT."
+            }
+        ],
+        "toán_9": [
+            {
+                "question": "Cho hệ hai phương trình bậc nhất hai ẩn $x, y$. Xét tính đúng sai của các khẳng định sau:",
+                "sub_items": [
+                    {"label": "a", "statement": "Hệ phương trình bậc nhất hai ẩn có thể có nghiệm duy nhất, vô số nghiệm hoặc vô nghiệm.", "is_correct": True, "explanation": "Tùy thuộc vào vị trí tương đối của hai đường thẳng biểu diễn hai phương trình."},
+                    {"label": "b", "statement": "Nếu hai đường thẳng biểu diễn hai phương trình song song với nhau thì hệ phương trình vô nghiệm.", "is_correct": True, "explanation": "Hai đường thẳng song song không có điểm chung nên hệ vô nghiệm."},
+                    {"label": "c", "statement": "Nếu hai đường thẳng trùng nhau thì hệ phương trình có duy nhất một nghiệm.", "is_correct": False, "explanation": "Hai đường thẳng trùng nhau thì hệ có vô số nghiệm."},
+                    {"label": "d", "statement": "Cặp số $(x_0; y_0)$ là nghiệm của hệ khi và chỉ khi nó thỏa mãn đồng thời cả hai phương trình của hệ.", "is_correct": True, "explanation": "Đúng theo định nghĩa nghiệm của hệ phương trình."}
+                ],
+                "explanation": "Khái niệm và nghiệm của hệ phương trình bậc nhất hai ẩn."
             },
             {
-                "question": "Tiến hành thí nghiệm điện phân dung dịch Cu(NO3)2 với các điện cực trơ:",
+                "question": "Về hàm số bậc nhất $y = ax + b$ ($a \\neq 0$) trong chương trình môn Toán:",
                 "sub_items": [
-                    {"label": "a", "statement": "Tại catot (cực âm) xảy ra quá trình khử ion Cu2+ thành kim loại Cu.", "is_correct": True, "explanation": "Ion kim loại Cu2+ nhận electron tại catot."},
-                    {"label": "b", "statement": "Tại anot (cực dương) xảy ra quá trình oxi hóa nước tạo khí oxi.", "is_correct": True, "explanation": "Nước bị oxi hóa giải phóng khí O2 và sinh ra ion H+."},
-                    {"label": "c", "statement": "Khối lượng catot giảm dần theo thời gian điện phân.", "is_correct": False, "explanation": "Kim loại Cu bám vào catot làm khối lượng catot tăng lên."},
-                    {"label": "d", "statement": "Độ pH của dung dịch sau phản ứng điện phân giảm so với ban đầu.", "is_correct": True, "explanation": "Quá trình sinh ra ion H+ làm môi trường có tính axit, pH giảm."}
+                    {"label": "a", "statement": "Hàm số bậc nhất $y = ax + b$ đồng biến trên $\\mathbb{R}$ khi $a > 0$ và nghịch biến trên $\\mathbb{R}$ khi $a < 0$.", "is_correct": True, "explanation": "Tính chất biến thiên cơ bản của hàm số bậc nhất."},
+                    {"label": "b", "statement": "Đồ thị hàm số $y = ax + b$ là một đường thẳng cắt trục tung tại điểm có tung độ bằng $b$.", "is_correct": True, "explanation": "Cho x = 0 ta được y = b."},
+                    {"label": "c", "statement": "Hai đường thẳng $y = ax + b$ và $y = a'x + b'$ song song với nhau khi $a = a'$ và $b \\neq b'$.", "is_correct": True, "explanation": "Điều kiện song song của hai đường thẳng."},
+                    {"label": "d", "statement": "Đồ thị của mọi hàm số bậc nhất $y = ax + b$ đều đi qua gốc tọa độ $O(0; 0)$.", "is_correct": False, "explanation": "Chỉ khi b = 0 thì đồ thị mới đi qua gốc tọa độ O."}
                 ],
-                "explanation": "Quá trình điện phân dung dịch chất điện li."
+                "explanation": "Tính chất và đồ thị của hàm số bậc nhất."
+            },
+            {
+                "question": "Xét bài toán chuyển động thực tế (ca nô, tàu thuyền trên dòng sông):",
+                "sub_items": [
+                    {"label": "a", "statement": "Vận tốc xuôi dòng của ca nô bằng vận tốc thực của ca nô cộng với vận tốc dòng nước.", "is_correct": True, "explanation": "$v_{\\text{xuôi}} = v_{\\text{thực}} + v_{\\text{nước}}$."},
+                    {"label": "b", "statement": "Vận tốc ngược dòng của ca nô bằng vận tốc thực của ca nô trừ đi vận tốc dòng nước.", "is_correct": True, "explanation": "$v_{\\text{ngược}} = v_{\\text{thực}} - v_{\\text{nước}}$ (với $v_{\\text{thực}} > v_{\\text{nước}}$)."},
+                    {"label": "c", "statement": "Thời gian đi xuôi dòng trên cùng một quãng đường luôn ít hơn thời gian đi ngược dòng.", "is_correct": True, "explanation": "Vì vận tốc xuôi dòng lớn hơn vận tốc ngược dòng."},
+                    {"label": "d", "statement": "Vận tốc của dòng nước luôn lớn hơn vận tốc thực của ca nô khi chuyển động bình thường.", "is_correct": False, "explanation": "Vận tốc thực của ca nô phải lớn hơn vận tốc dòng nước để có thể đi ngược dòng."}
+                ],
+                "explanation": "Chuyển động trên dòng nước."
             }
         ],
         "toán": [
@@ -1205,10 +1236,13 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0) -> Part2Ques
     ]
 
     chosen_list = None
-    for k, bank_items in subject_banks.items():
-        if k in sub_lower:
-            chosen_list = bank_items
-            break
+    if is_grade_9 and "toán" in sub_lower:
+        chosen_list = subject_banks.get("toán_9")
+    if not chosen_list:
+        for k, bank_items in subject_banks.items():
+            if k in sub_lower:
+                chosen_list = bank_items
+                break
     if not chosen_list:
         chosen_list = default_bank
 
@@ -1228,6 +1262,9 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0) -> Part2Ques
         for s in q.sub_items:
             s.statement = normalize_latex_delimiters(s.statement or "")
             stmt = s.statement.strip()
+            # Đối với lớp 9: Lọc bỏ ngay các mệnh đề rò rỉ đạo hàm, giải tích lớp 12
+            if is_grade_9 and re.search(r"f[\'’]\s*\(|f[\'’]{2}|hàm\s*số\s*đạt\s*cực|tiệm\s*cận|tích\s*phân|oxyz", stmt, re.IGNORECASE):
+                continue
             if len(stmt) >= 5 and stmt.count('$') % 2 == 0 and not re.search(r"đang cập nhật", stmt, re.IGNORECASE) and not re.match(r"^(?:mệnh đề|khẳng định)\s*[abcd]?\s*[\.:]?$", stmt, re.IGNORECASE):
                 existing_valid_subs.append(s)
 
@@ -1712,7 +1749,7 @@ async def audit_and_verify_exam(
     for i, q in enumerate(exam.part2_tf):
         is_bad, reason = is_tf_defective(q)
         if is_bad:
-            exam.part2_tf[i] = heal_tf_offline(q, exam.subject, i)
+            exam.part2_tf[i] = heal_tf_offline(q, exam.subject, i, exam.grade)
             notes.append(f"Câu {q.id} (Phần II): Đã tự động chuẩn hóa đề bài và 4 mệnh đề Đúng/Sai thực tế môn {exam.subject}.")
 
     for i, q in enumerate(exam.part3_short):
@@ -1734,12 +1771,12 @@ async def audit_and_verify_exam(
     for idx_p2, q in enumerate(exam.part2_tf):
         q.question = normalize_latex_delimiters(q.question)
         if not q.question or len(q.question.strip()) < 5 or is_question_stem_defective(q.question)[0]:
-            exam.part2_tf[idx_p2] = heal_tf_offline(q, exam.subject, idx_p2)
+            exam.part2_tf[idx_p2] = heal_tf_offline(q, exam.subject, idx_p2, exam.grade)
             q = exam.part2_tf[idx_p2]
             
         # Guarantee 4 valid sub_items
         if len(q.sub_items) != 4 or any(len(s.statement.strip()) < 5 or "đang cập nhật" in s.statement.lower() for s in q.sub_items):
-            exam.part2_tf[idx_p2] = heal_tf_offline(q, exam.subject, idx_p2)
+            exam.part2_tf[idx_p2] = heal_tf_offline(q, exam.subject, idx_p2, exam.grade)
             q = exam.part2_tf[idx_p2]
             
         # Guarantee 1 to 3 True items (never all True or all False)

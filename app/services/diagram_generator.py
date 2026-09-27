@@ -896,6 +896,8 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
     thành hình ảnh đồ họa chất lượng cao chuẩn SGK, và xóa sạch các đoạn mô tả đồ thị bằng chữ trong ngoặc đơn.
     """
     subject_lower = str(getattr(exam, "subject", "")).lower()
+    grade_str = str(getattr(exam, "grade", "12")).strip().lower()
+    is_grade_9 = grade_str in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
     
     all_sections = [
         getattr(exam, "part1_mcq", []) or [],
@@ -921,6 +923,13 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
             cleaned_q = strip_parenthetical_diagram_descriptions(q.question)
             if cleaned_q != q.question:
                 q.question = cleaned_q
+
+            # Nếu là đề thi Lớp 9 (THCS), khử mọi hình ảnh đồ thị bậc ba, trùng phương, tiệm cận, đạo hàm bị gán sai
+            if is_grade_9 and getattr(q, "image_base64", None):
+                curr_cap = str(getattr(q, "image_caption", "")).lower()
+                if any(bad in curr_cap for bad in ["bậc ba", "trùng phương", "đạo hàm", "bậc bốn", "tiệm cận", "phân thức"]):
+                    q.image_base64 = None
+                    q.image_caption = None
                 
             # Nếu câu hỏi đã có hình ảnh rồi thì bỏ qua
             if getattr(q, "image_base64", None):
@@ -935,8 +944,8 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
             )
             
             if is_math:
-                # 1. Bảng xét dấu của đạo hàm
-                if "bảng xét dấu" in q_text or "xét dấu của đạo hàm" in q_text or "xét dấu đạo hàm" in q_text or "dấu của đạo hàm" in q_text or "dấu đạo hàm" in q_text:
+                # 1. Bảng xét dấu của đạo hàm (chỉ THPT / Lớp 12)
+                if not is_grade_9 and ("bảng xét dấu" in q_text or "xét dấu của đạo hàm" in q_text or "xét dấu đạo hàm" in q_text or "dấu của đạo hàm" in q_text or "dấu đạo hàm" in q_text):
                     b64, cap = draw_variation_table(
                         title="Bảng xét dấu của đạo hàm f'(x)",
                         caption="Hình: Bảng xét dấu của đạo hàm f'(x)",
@@ -944,40 +953,45 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
                     )
                     q.image_base64 = b64
                     q.image_caption = cap
-                # 2. Bảng biến thiên
-                elif "bảng biến thiên" in q_text or "bbt" in q_text:
+                # 2. Bảng biến thiên (chỉ THPT / Lớp 12)
+                elif not is_grade_9 and ("bảng biến thiên" in q_text or "bbt" in q_text):
                     b64, cap = draw_variation_table(caption="Hình: Bảng biến thiên của hàm số")
                     q.image_base64 = b64
                     q.image_caption = cap
-                # 3. Đồ thị đạo hàm f'(x)
-                elif re.search(r"f[\'’]\(x\)|y\s*=\s*f[\'’]", q_text) and ("đồ thị" in q_text or "hình vẽ" in q_text or "hình bên" in q_text or "như hình" in q_text):
+                # 3. Đồ thị đạo hàm f'(x) (chỉ THPT / Lớp 12)
+                elif not is_grade_9 and re.search(r"f[\'’]\(x\)|y\s*=\s*f[\'’]", q_text) and ("đồ thị" in q_text or "hình vẽ" in q_text or "hình bên" in q_text or "như hình" in q_text):
                     b64, cap = draw_derivative_graph(caption="Hình: Đồ thị hàm số đạo hàm y = f'(x)")
                     q.image_base64 = b64
                     q.image_caption = cap
-                # 4. Đồ thị trên đoạn [-2, 2]
-                elif "[-2; 2]" in q_text or "[-2, 2]" in q_text or "[-2;2]" in q_text:
+                # 4. Đồ thị trên đoạn [-2, 2] (chỉ THPT / Lớp 12)
+                elif not is_grade_9 and ("[-2; 2]" in q_text or "[-2, 2]" in q_text or "[-2;2]" in q_text):
                     b64, cap = draw_bounded_polynomial_graph(caption="Hình: Đồ thị hàm số y = f(x) trên đoạn [-2; 2]")
                     q.image_base64 = b64
                     q.image_caption = cap
                 # 5. Đồ thị các dạng hàm số khác
-                elif "đồ thị" in q_text or "hình vẽ" in q_text or "đường cong" in q_text or "hình bên" in q_text or "như hình" in q_text:
-                    # Ưu tiên kiểm tra hàm bậc 3 trước để tránh nhầm "cx + d" trong ax^3 + bx^2 + cx + d thành phân thức
-                    if "bậc ba" in q_text or "ax^3" in q_text or "x^3" in q_text or "bac ba" in q_text:
-                        b64, cap = draw_cubic_graph(caption="Hình: Đồ thị hàm số bậc ba y = f(x)")
-                        q.image_base64 = b64
-                        q.image_caption = cap
-                    elif "trùng phương" in q_text or "bậc bốn" in q_text or "x^4" in q_text or "bac bon" in q_text:
-                        b64, cap = draw_quartic_graph(caption="Hình: Đồ thị hàm số bậc bốn trùng phương")
-                        q.image_base64 = b64
-                        q.image_caption = cap
-                    elif "phân thức" in q_text or "tiệm cận" in q_text or "hữu tỉ" in q_text or (("cx + d" in q_text or "cx+d" in q_text) and "x^3" not in q_text):
-                        b64, cap = draw_rational_graph(caption="Hình: Đồ thị hàm phân thức hữu tỉ")
-                        q.image_base64 = b64
-                        q.image_caption = cap
-                    else:
-                        b64, cap = draw_cubic_graph(caption="Hình: Đồ thị hàm số y = f(x)")
-                        q.image_base64 = b64
-                        q.image_caption = cap
+                else:
+                    # Chỉ gán hình ảnh khi câu hỏi thực sự có nhắc đến hình vẽ bên / quan sát hình
+                    has_visual_ref = any(k in q_text for k in [
+                        "hình vẽ", "hình bên", "hình dưới", "như hình", "đường cong trong hình",
+                        "đồ thị ở hình", "đồ thị như hình", "cho hình vẽ", "dựa vào hình", "quan sát hình"
+                    ])
+                    if has_visual_ref and not is_grade_9:
+                        if "bậc ba" in q_text or "ax^3" in q_text or "x^3" in q_text or "bac ba" in q_text:
+                            b64, cap = draw_cubic_graph(caption="Hình: Đồ thị hàm số bậc ba y = f(x)")
+                            q.image_base64 = b64
+                            q.image_caption = cap
+                        elif "trùng phương" in q_text or "bậc bốn" in q_text or "x^4" in q_text or "bac bon" in q_text:
+                            b64, cap = draw_quartic_graph(caption="Hình: Đồ thị hàm số bậc bốn trùng phương")
+                            q.image_base64 = b64
+                            q.image_caption = cap
+                        elif "phân thức" in q_text or "tiệm cận" in q_text or "hữu tỉ" in q_text or (("cx + d" in q_text or "cx+d" in q_text) and "x^3" not in q_text):
+                            b64, cap = draw_rational_graph(caption="Hình: Đồ thị hàm phân thức hữu tỉ")
+                            q.image_base64 = b64
+                            q.image_caption = cap
+                        elif "đường cong" in q_text or "đồ thị" in q_text:
+                            b64, cap = draw_cubic_graph(caption="Hình: Đồ thị hàm số y = f(x)")
+                            q.image_base64 = b64
+                            q.image_caption = cap
                         
             # 2. VẬT LÝ
             elif "vật" in subject_lower or "lý" in subject_lower or "ly" in subject_lower:
@@ -1013,3 +1027,7 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
                     q.image_caption = cap
                     
     return exam
+
+# Alias for diagram enrichment
+enrich_exam_with_diagrams = auto_attach_diagrams_to_exam
+

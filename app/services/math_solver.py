@@ -107,25 +107,70 @@ class UniversalMathEngine:
         - diff: hiệu x - y
         - prod: tích x * y
         - num_sol: số nghiệm
+        - num_sol: số nghiệm (vô nghiệm, duy nhất, vô số nghiệm)
+        - prod: tích x * y
+        - sum: tổng x + y
+        - diff: hiệu x - y
+        - val_x: tính giá trị x
+        - val_y: tính giá trị y
+        - sol_pair: cặp nghiệm (x; y)
         - param_m: tìm m
         - value: giá trị số cụ thể
         """
+        # Loại bỏ phần hệ phương trình để tránh nhầm lẫn các biểu thức trong hệ (ví dụ: x + y = 3) với câu hỏi
         stem_no_sys = re.sub(r'\\begin\{cases\}[\s\S]*?\\end\{cases\}', '', text)
-        lower = (stem_no_sys if len(stem_no_sys.strip()) > 5 else text).lower()
-        clean = lower.replace(" ", "").replace("−", "-").replace("$", "")
+        stem_no_sys = re.sub(r'\{[\s\S]*?(?:x[\s\S]*?y|y[\s\S]*?x)[\s\S]*?\}', '', stem_no_sys)
+        stem_no_sys = re.sub(r'\{[^\}]*?=[^\}]*?\n[^\}]*?=[^\}]*?\}?', '', stem_no_sys)
+        stem_no_sys = re.sub(r'[+-]?\d*x\s*[\+\-]\s*\d*y\s*=\s*[-+]?\d+', '', stem_no_sys)
         
-        if re.search(r"số\s*nghiệm", lower):
+        target_text = (stem_no_sys if len(stem_no_sys.strip()) > 3 else text).lower()
+        target_text = re.sub(r'\\cdot|\\times', '*', target_text)
+        clean = target_text.replace(" ", "").replace("−", "-").replace("$", "").replace("·", "*").replace("×", "*")
+        
+        if re.search(r"số\s*nghiệm", target_text):
             return "num_sol"
-        if re.search(r"(?:tổng|biểu\s*thức|giá\s*trị|tính).*?(?:x\s*\+\s*y|x0\s*\+\s*y0|x_0\s*\+\s*y_0)", lower) or "x+y" in clean or "x0+y0" in clean or "x_0+y_0" in clean or "s=" in clean:
-            return "sum"
-        if re.search(r"(?:hiệu|biểu\s*thức|giá\s*trị|tính).*?(?:x\s*-\s*y|x0\s*-\s*y0|x_0\s*-\s*y_0)", lower) or "x-y" in clean or "x0-y0" in clean or "x_0-y_0" in clean:
-            return "diff"
-        if re.search(r"(?:tích|biểu\s*thức|giá\s*trị|tính).*?(?:x\s*[\*·\.]?\s*y|x0\s*[\*·\.]?\s*y0|x_0\s*[\*·\.]?\s*y_0)", lower) or "x*y" in clean or "x.y" in clean or "p=" in clean:
-            return "prod"
-        if re.search(r"(?:nghiệm\s*của\s*hệ|cặp\s*số|tọa\s*độ|nghiệm\s*\(|cặp\s*nghiệm)", lower) or "(x;y)" in clean or "(x0;y0)" in clean or "(x_0;y_0)" in clean:
-            return "sol_pair"
-        if "tham số m" in lower or "tham số $m$" in lower or "giá trị của m" in lower or "giá trị của $m$" in lower or "tìm m" in lower:
+        if "tham số m" in target_text or "tham số $m$" in target_text or "giá trị của m" in target_text or "giá trị của $m$" in target_text or "tìm m" in target_text:
             return "param_m"
+            
+        # 1. Tích x * y
+        if (
+            re.search(r"(?:tích|tích\s*của|tích\s*hai\s*số).*?(?:x\s*[\*·\.\s]?\s*y|x_0\s*[\*·\.\s]?\s*y_0|xy\b)", target_text)
+            or re.search(r"giá\s*trị\s*(?:của)?\s*(?:tích)?\s*x\s*[\*·\.]\s*y", target_text)
+            or "tíchx*y" in clean or "tíchx.y" in clean or "x*y" in clean or "x.y" in clean or "p=" in clean
+        ):
+            return "prod"
+            
+        # 2. Tổng x + y
+        if (
+            re.search(r"(?:tổng|tổng\s*của|tổng\s*hai\s*số).*?(?:x\s*\+\s*y|x_0\s*\+\s*y_0)", target_text)
+            or re.search(r"giá\s*trị\s*(?:của)?\s*(?:tổng)?\s*x\s*\+\s*y", target_text)
+            or "tổngx+y" in clean or "x+y" in clean or "x0+y0" in clean or "x_0+y_0" in clean or "s=" in clean
+        ):
+            return "sum"
+            
+        # 3. Hiệu x - y
+        if (
+            re.search(r"(?:hiệu|hiệu\s*của).*?(?:x\s*-\s*y|x_0\s*-\s*y_0)", target_text)
+            or re.search(r"giá\s*trị\s*(?:của)?\s*(?:hiệu)?\s*x\s*-\s*y", target_text)
+            or "hiệux-y" in clean or "x-y" in clean or "x0-y0" in clean or "x_0-y_0" in clean
+        ):
+            return "diff"
+            
+        # 4. Giá trị x
+        if re.search(r"(?:giá\s*trị\s*của\s*x\b|tính\s*(?:giá\s*trị)?\s*x\b|tìm\s*x\b)", target_text) and not re.search(r"(?:nghiệm\s*\(x;\s*y\)|cặp\s*số)", target_text):
+            return "val_x"
+            
+        # 5. Giá trị y
+        if re.search(r"(?:giá\s*trị\s*của\s*y\b|tính\s*(?:giá\s*trị)?\s*y\b|tìm\s*y\b)", target_text) and not re.search(r"(?:nghiệm\s*\(x;\s*y\)|cặp\s*số)", target_text):
+            return "val_y"
+            
+        # 6. Cặp nghiệm (x; y)
+        if (
+            re.search(r"(?:nghiệm\s*của\s*hệ|cặp\s*số|tọa\s*độ|nghiệm\s*\(x;\s*y\)|cặp\s*nghiệm|nghiệm\s*là)", target_text)
+            or "(x;y)" in clean or "(x0;y0)" in clean or "(x_0;y_0)" in clean
+        ):
+            return "sol_pair"
+            
         return "value"
 
     @classmethod
@@ -326,32 +371,119 @@ class UniversalMathEngine:
     @classmethod
     def solve_rectangle_mcq(cls, q: Part1Question) -> Tuple[Part1Question, bool, str]:
         """
-        Thẩm định bài toán mảnh vườn chu vi 100m, giảm dài 2m, tăng rộng 3m, tăng diện tích 32m2 (lệch số).
-        Cân bằng diện tích tăng thành 34 m2 để chiều dài 28m, chiều rộng 22m là số nguyên đẹp.
+        Thẩm định toàn diện bài toán hình chữ nhật (chu vi, thay đổi chiều dài, chiều rộng, diện tích thay đổi):
+        Ví dụ: Chu vi P = 100m (nửa chu vi p = 50m). Tăng/giảm dài dx, tăng/giảm rộng dy, diện tích tăng/giảm dS.
+        Phương trình: (x + dx)(y + dy) - xy = dS <=> dy*x + dx*y + dx*dy = dS.
+        Kết hợp x + y = p <=> (dy - dx)x = dS - p*dx - dx*dy.
+        Nếu dS cho ra nghiệm âm (như x = -4m) hoặc không khớp các phương án:
+        Bộ giải CAS tự động cân bằng lại dS chuẩn xác theo phương án dự định hoặc khớp nghiệm nguyên dương x > y > 0.
         """
         text = q.question.lower()
-        if ("chu vi" in text and "100" in text) and "chiều dài" in text and "chiều rộng" in text:
-            if "32" in text and ("m2" in text or "m^2" in text or "mét vuông" in text):
-                q.question = re.sub(r'tăng\s*thêm\s*32\s*(?:m\^?2|mét vuông|\$\s*m\^?2\s*\$)', r'tăng thêm $34\text{ m}^2$', q.question, flags=re.IGNORECASE)
+        if ("chu vi" in text or "nửa chu vi" in text) and "chiều dài" in text and "chiều rộng" in text and ("diện tích" in text or "m2" in text or "m^2" in text or "mét vuông" in text):
+            # 1. Trích xuất chu vi P hoặc nửa chu vi p
+            m_peri = re.search(r"(?:chu\s*vi\s*(?:là|bằng)?|chu\s*vi\s*hình\s*chữ\s*nhật\s*(?:là|bằng)?|chu\s*vi\s*thửa\s*ruộng\s*(?:là|bằng)?|chu\s*vi\s*khu\s*vườn\s*(?:là|bằng)?)\s*(\d+)\s*m\b", text)
+            m_semi = re.search(r"nửa\s*chu\s*vi\s*(?:là|bằng)?\s*(\d+)\s*m\b", text)
+            p = None
+            if m_semi:
+                p = int(m_semi.group(1))
+            elif m_peri:
+                p = int(m_peri.group(1)) // 2
                 
-                found_d = None
-                for o in q.options:
-                    if "28" in o.text and "22" in o.text:
-                        found_d = o.label
-                        break
-                if not found_d:
-                    q.options[3].text = r"$28\text{ m}\text{ và }22\text{ m}$"
-                    found_d = "D"
-                q.answer = found_d
-                q.explanation = (
-                    r"Nửa chu vi mảnh vườn là $100 : 2 = 50$ (m). "
-                    r"Gọi chiều dài mảnh vườn là $x$ (m), chiều rộng là $y$ (m) ($x > y > 0$). Ta có: $x + y = 50$. "
-                    r"Khi giảm chiều dài 2 m và tăng chiều rộng 3 m, diện tích tăng thêm $34\text{ m}^2$ nên: "
-                    r"$(x - 2)(y + 3) - xy = 34 \Leftrightarrow 3x - 2y - 6 = 34 \Leftrightarrow 3x - 2y = 40$. "
-                    r"Từ hệ phương trình ta giải được: $x = 28$ m và $y = 22$ m (thỏa mãn). "
-                    rf"Vậy chiều dài là 28 m, chiều rộng là 22 m. Chọn đáp án {q.answer}."
-                )
-                return q, True, f"Bộ giải chuẩn hóa bài toán hình chữ nhật chu vi 100m: Sửa diện tích tăng thành 34 m2 để có nghiệm 28m và 22m (phương án {q.answer})"
+            # 2. Trích xuất thay đổi chiều dài và chiều rộng
+            m_dx_inc = re.search(r"tăng\s*chiều\s*dài\s*(?:thêm)?\s*(\d+)\s*m\b", text)
+            m_dx_dec = re.search(r"giảm\s*chiều\s*dài\s*(?:đi)?\s*(\d+)\s*m\b", text)
+            dx = None
+            if m_dx_inc:
+                dx = int(m_dx_inc.group(1))
+            elif m_dx_dec:
+                dx = -int(m_dx_dec.group(1))
+                
+            m_dy_inc = re.search(r"tăng\s*chiều\s*rộng\s*(?:thêm|lên)?\s*(\d+)\s*m\b", text)
+            m_dy_dec = re.search(r"giảm\s*chiều\s*rộng\s*(?:đi)?\s*(\d+)\s*m\b", text)
+            dy = None
+            if m_dy_inc:
+                dy = int(m_dy_inc.group(1))
+            elif m_dy_dec:
+                dy = -int(m_dy_dec.group(1))
+                
+            # 3. Trích xuất diện tích thay đổi dS
+            m_ds_inc = re.search(r"diện\s*tích.*?(?:tăng|tăng\s*thêm)\s*(\d+)\s*(?:m\s*\^?\s*2|mét vuông|\$\s*m\^?2\s*\$)", text)
+            m_ds_dec = re.search(r"diện\s*tích.*?(?:giảm|giảm\s*đi)\s*(\d+)\s*(?:m\s*\^?\s*2|mét vuông|\$\s*m\^?2\s*\$)", text)
+            dS = None
+            if m_ds_inc:
+                dS = int(m_ds_inc.group(1))
+            elif m_ds_dec:
+                dS = -int(m_ds_dec.group(1))
+                
+            if p and dx is not None and dy is not None and dS is not None and (dy - dx) != 0:
+                x_sol = (dS - p * dx - dx * dy) / (dy - dx)
+                y_sol = p - x_sol
+                
+                is_asking_length = bool("chiều dài" in text and ("tính chiều dài" in text or "chiều dài của" in text or "chiều dài là" in text or "chiều dài ban đầu" in text))
+                is_asking_pair = bool(("chiều dài và chiều rộng" in text or "kích thước" in text) and not is_asking_length)
+                target_sol = x_sol if (is_asking_length or is_asking_pair) else y_sol
+                
+                valid_sol = (target_sol.is_integer() and x_sol > y_sol > 0)
+                
+                found_opt = None
+                if valid_sol:
+                    target_int = int(target_sol)
+                    for o in q.options:
+                        if is_asking_pair:
+                            if str(int(x_sol)) in o.text and str(int(y_sol)) in o.text:
+                                found_opt = o.label
+                                break
+                        elif str(target_int) in o.text:
+                            found_opt = o.label
+                            break
+                            
+                if found_opt:
+                    if q.answer != found_opt:
+                        q.answer = found_opt
+                        target_name = "Chiều dài" if is_asking_length else ("Kích thước" if is_asking_pair else "Chiều rộng")
+                        q.explanation = (
+                            f"Nửa chu vi hình chữ nhật là {p} m. Gọi chiều dài là $x$ (m), chiều rộng là $y$ (m) ($x > y > 0, x + y = {p}$). "
+                            f"Theo đề bài: $(x {'+' if dx >= 0 else '-'} {abs(dx)})(y {'+' if dy >= 0 else '-'} {abs(dy)}) - xy = {dS} "
+                            f"\\Leftrightarrow {dy}x + {dx}y + {dx*dy} = {dS}$. "
+                            f"Giải hệ phương trình ta được $x = {int(x_sol)}$ m, $y = {int(y_sol)}$ m. "
+                            f"Vậy {target_name.lower()} là {int(target_sol)} m. Chọn đáp án {found_opt}."
+                        )
+                        return q, True, f"Bộ giải chuẩn hóa bài toán hình chữ nhật: Đáp án đúng là {int(target_sol)} m (phương án {found_opt})"
+                else:
+                    marked_opt = next((o for o in q.options if o.label == q.answer), q.options[0])
+                    nums = re.findall(r"\d+", marked_opt.text)
+                    intended_target = int(nums[0]) if nums else 30
+                    
+                    if is_asking_pair and len(nums) >= 2:
+                        intended_x = int(nums[0])
+                        intended_y = int(nums[1])
+                    elif is_asking_length or intended_target > p / 2:
+                        intended_x = intended_target
+                        intended_y = p - intended_x
+                    else:
+                        intended_y = intended_target
+                        intended_x = p - intended_y
+                        
+                    if intended_x > intended_y > 0:
+                        correct_dS = (intended_x + dx) * (intended_y + dy) - intended_x * intended_y
+                        if correct_dS != dS:
+                            old_dS_val = abs(dS)
+                            new_dS_val = abs(correct_dS)
+                            old_pat = rf'((?:tăng\s*thêm|tăng|giảm\s*đi|giảm)\s*){old_dS_val}(\s*(?:m\s*\^?\s*2|mét vuông|\$\s*m\^?2\s*\$))'
+                            q.question = re.sub(old_pat, rf'\g<1>{new_dS_val}\g<2>', q.question)
+                            
+                            target_name = "Chiều dài" if is_asking_length else ("Kích thước" if is_asking_pair else "Chiều rộng")
+                            val_desc = f"{intended_x} m" if is_asking_length else (f"{intended_x} m và {intended_y} m" if is_asking_pair else f"{intended_y} m")
+                            q.explanation = (
+                                f"Nửa chu vi hình chữ nhật là $P : 2 = {p}$ (m). "
+                                f"Gọi chiều dài là $x$ (m), chiều rộng là $y$ (m) ($x > y > 0, x + y = {p}$). "
+                                f"Khi thay đổi kích thước, diện tích {'tăng thêm' if correct_dS > 0 else 'giảm đi'} ${new_dS_val}\\text{{ m}}^2$: "
+                                f"$(x {'+' if dx >= 0 else '-'} {abs(dx)})(y {'+' if dy >= 0 else '-'} {abs(dy)}) - xy = {correct_dS} "
+                                f"\\Leftrightarrow {dy}x + {dx}y + {dx*dy} = {correct_dS}$. "
+                                f"Từ hệ phương trình ta giải được: $x = {intended_x}$ m, $y = {intended_y}$ m (thỏa mãn). "
+                                f"Vậy {target_name.lower()} là {val_desc}. Chọn đáp án {q.answer}."
+                            )
+                            return q, True, f"Bộ giải chuẩn hóa bài toán hình chữ nhật: Cân bằng diện tích thay đổi thành {new_dS_val} m2 để {target_name.lower()} là {val_desc} (phương án {q.answer})"
         return q, False, ""
 
     @classmethod
@@ -611,6 +743,75 @@ class UniversalMathEngine:
         return q, False, ""
 
     @classmethod
+    def solve_tf_boat_motion(cls, q: Part2Question) -> Tuple[Part2Question, bool, str]:
+        """
+        Thẩm định bài toán chuyển động ca nô / thuyền trên dòng nước (Phần II):
+        Ví dụ: Xuôi dòng S1 km, ngược dòng S2 km hết T giờ. Vận tốc dòng nước vn km/h.
+        Phương trình: S1 / (v + vn) + S2 / (v - vn) = T.
+        Giải tìm vận tốc thực v (km/h, v > vn).
+        Đồng thời rà soát và loại bỏ sạch sẽ các mệnh đề đạo hàm / giải tích lớp 12 (f'(x), f''(x))
+        bị rò rỉ vào bài toán lớp 9, thay bằng mệnh đề chuyển động thực tế tương ứng.
+        """
+        text = q.question.lower()
+        if ("ca nô" in text or "thuyền" in text or "tàu thủy" in text) and ("xuôi dòng" in text or "ngược dòng" in text) and "dòng nước" in text:
+            m_s1 = re.search(r"xuôi\s*dòng\s*(\d+)\s*km", text)
+            m_s2 = re.search(r"ngược\s*dòng\s*(\d+)\s*km", text)
+            m_t = re.search(r"(?:hết\s*(?:tổng\s*cộng)?|trong)\s*(\d+)\s*giờ", text)
+            m_vn = re.search(r"dòng\s*nước\s*(?:là|bằng)?\s*(\d+)\s*km/h", text)
+            
+            if m_s1 and m_s2 and m_t and m_vn:
+                s1 = float(m_s1.group(1))
+                s2 = float(m_s2.group(1))
+                T = float(m_t.group(1))
+                vn = float(m_vn.group(1))
+                
+                # Phương trình: T*v^2 - (s1 + s2)*v - (T*vn^2 + s2*vn - s1*vn) = 0
+                a = T
+                b = -(s1 + s2)
+                c = -(T * vn**2 + s2 * vn - s1 * vn)
+                
+                disc = b**2 - 4 * a * c
+                if disc >= 0:
+                    v_sol = (-b + math.sqrt(disc)) / (2 * a)
+                    v_int = int(round(v_sol)) if abs(v_sol - round(v_sol)) < 1e-4 else None
+                    if v_int and v_int > vn:
+                        t_down = s1 / (v_int + vn)
+                        t_up = s2 / (v_int - vn)
+                        
+                        modified = False
+                        if q.sub_items:
+                            for idx, s in enumerate(q.sub_items):
+                                stmt = s.statement
+                                # Kiểm tra rò rỉ đạo hàm f', f'' hoặc kiến thức giải tích
+                                if re.search(r"f[\'’]\s*\(|f[\'’]{2}|hàm\s*số\s*đạt\s*cực|tiệm\s*cận|tích\s*phân", stmt):
+                                    s.statement = f"Thời gian ca nô đi xuôi dòng là {int(t_down) if t_down.is_integer() else t_down:.1f} giờ."
+                                    s.is_correct = True
+                                    s.explanation = f"Thời gian xuôi dòng bằng {int(s1)} : ({v_int} + {int(vn)}) = {int(t_down) if t_down.is_integer() else t_down} (giờ)."
+                                    modified = True
+                                elif "vận tốc thực" in stmt.lower() and "km/h" in stmt.lower():
+                                    nums = re.findall(r"\d+", stmt)
+                                    if nums:
+                                        claimed_v = int(nums[0])
+                                        s.is_correct = (claimed_v == v_int)
+                                        s.explanation = f"Giải phương trình ta được vận tốc thực của ca nô là {v_int} km/h (thỏa mãn v > {int(vn)})."
+                                        modified = True
+                                elif "vận tốc xuôi dòng" in stmt.lower() and "x +" in stmt.lower():
+                                    s.is_correct = True
+                                    s.explanation = f"Vận tốc xuôi dòng bằng vận tốc thực cộng vận tốc dòng nước: x + {int(vn)} (km/h)."
+                                elif "vận tốc ngược dòng" in stmt.lower() and "x -" in stmt.lower():
+                                    s.is_correct = True
+                                    s.explanation = f"Vận tốc ngược dòng bằng vận tốc thực trừ vận tốc dòng nước: x - {int(vn)} (km/h)."
+                                    
+                        q.explanation = (
+                            f"Gọi vận tốc thực của ca nô là $x$ (km/h, $x > {int(vn)}$). "
+                            f"Vận tốc xuôi dòng là $x + {int(vn)}$ km/h, vận tốc ngược dòng là $x - {int(vn)}$ km/h. "
+                            f"Phương trình: $\\frac{{{int(s1)}}}{{x + {int(vn)}}} + \\frac{{{int(s2)}}}{{x - {int(vn)}}} = {int(T)}$. "
+                            f"Giải phương trình ta được $x = {v_int}$ km/h."
+                        )
+                        return q, True, f"Bộ giải chuẩn hóa bài toán ca nô Phần II: Vận tốc thực là {v_int} km/h, loại bỏ mệnh đề đạo hàm lạc đề"
+        return q, False, ""
+
+    @classmethod
     def solve_short_rectangle(cls, q: Part3Question) -> Tuple[Part3Question, bool, str]:
         """
         Thẩm định bài toán khu vườn chu vi 70m, tính chiều dài (đáp án 20m)
@@ -745,6 +946,13 @@ class UniversalMathEngine:
                 elif intent == "prod":
                     target_val = x_val * y_val
                     target_desc = f"x · y = {x_val} · {y_val} = {target_val}"
+                elif intent == "val_x":
+                    target_val = x_val
+                    target_desc = f"x = {x_val}"
+                elif intent == "val_y":
+                    target_val = y_val
+                    target_desc = f"y = {y_val}"
+
                 if intent == "sol_pair":
                     x_str = f"{int(x_val)}" if x_val.denominator == 1 else f"{x_val}"
                     y_str = f"{int(y_val)}" if y_val.denominator == 1 else f"{y_val}"
@@ -787,6 +995,9 @@ class UniversalMathEngine:
                     found_opt = None
                     for o in q.options:
                         clean_opt = o.text.replace(" ", "").replace("$", "")
+                        # Bỏ qua các phương án dạng cặp tọa độ (x; y) khi đang tìm giá trị vô hướng (tích, tổng, hiệu, x, y)
+                        if "(" in clean_opt and ";" in clean_opt:
+                            continue
                         try:
                             if val_int is not None and str(val_int) == clean_opt:
                                 found_opt = o.label
@@ -795,7 +1006,7 @@ class UniversalMathEngine:
                                 found_opt = o.label
                                 break
                         except Exception:
-                            if str(val_float) in clean_opt or (val_int is not None and str(val_int) in clean_opt):
+                            if clean_opt == str(val_float) or (val_int is not None and clean_opt == str(val_int)):
                                 found_opt = o.label
                                 break
                                 
@@ -808,41 +1019,20 @@ class UniversalMathEngine:
                             )
                             return q, True, f"Bộ giải chuẩn hóa: Chuyển đáp án đúng về phương án {found_opt} ({target_desc})"
                     else:
+                        # Phương án hiện tại chứa tuple như (2; 1) hoặc bị sai format số
                         marked_opt = next((o for o in q.options if o.label == q.answer), q.options[0])
-                        try:
-                            desired_target = float(re.findall(r"[-+]?\d+", marked_opt.text)[0])
-                            a1, b1, c1 = sys_info["a1"], sys_info["b1"], sys_info["c1"]
-                            a2, b2 = sys_info["a2"], sys_info["b2"]
-                            
-                            found_xy = None
-                            for cand_x in range(-15, 16):
-                                if b1 != 0 and (c1 - a1 * cand_x) % b1 == 0:
-                                    cand_y = (c1 - a1 * cand_x) // b1
-                                    cand_target = (cand_x + cand_y) if intent == "sum" else ((cand_x - cand_y) if intent == "diff" else (cand_x * cand_y))
-                                    if cand_target == desired_target:
-                                        found_xy = (cand_x, cand_y)
-                                        break
-                            if found_xy:
-                                nx, ny = found_xy
-                                new_c2 = int(a2 * nx + b2 * ny)
-                                old_c2_pat = rf'({sys_info["a2"] if sys_info["a2"]!=1 else ""}\s*x\s*[\+\-]\s*{abs(sys_info["b2"]) if abs(sys_info["b2"])!=1 else ""}\s*y\s*=\s*)[-+]?\d+'
-                                q.question = re.sub(old_c2_pat, rf'\g<1>{new_c2}', q.question)
-                                q.explanation = (
-                                    f"Giải hệ phương trình ta được $x = {nx}$, $y = {ny}$. "
-                                    f"Suy ra {intent} bằng {int(desired_target)}. Chọn đáp án {marked_opt.label}."
-                                )
-                                return q, True, f"Bộ giải chuẩn hóa: Điều chỉnh hệ số phương trình 2 thành {new_c2} để nghiệm nguyên khớp đáp án {marked_opt.label}"
-                        except Exception:
-                            target_str = f"${val_int}$" if val_int is not None else f"${target_val}$"
-                            for o in q.options:
-                                if o.label == q.answer:
-                                    o.text = target_str
-                                    break
-                            q.explanation = (
-                                f"Giải hệ phương trình ta được $x = {x_val}$, $y = {y_val}$. "
-                                f"Khi đó {target_desc}. Chọn đáp án {q.answer}."
-                            )
-                            return q, True, f"Bộ giải chuẩn hóa: Cập nhật phương án {q.answer} thành {target_str} chuẩn xác"
+                        target_str = f"${val_int}$" if val_int is not None else f"${target_val}$"
+                        marked_opt.text = target_str
+                        # Chuẩn hóa lại các distractors nếu chứa tuple (x; y)
+                        for idx_o, o in enumerate(q.options):
+                            if o.label != q.answer and re.search(r'\([+-]?\d+;\s*[+-]?\d+\)', o.text):
+                                offset = idx_o + 1
+                                o.text = f"${(val_int if val_int is not None else 0) + offset}$"
+                        q.explanation = (
+                            f"Giải hệ phương trình ta được $x = {x_val}$, $y = {y_val}$. "
+                            f"Khi đó {target_desc}. Chọn đáp án {q.answer}."
+                        )
+                        return q, True, f"Bộ giải chuẩn hóa: Cập nhật phương án {q.answer} thành {target_str} ({target_desc})"
 
         # 2. Phương trình bậc hai
         quad_info = cls.parse_quadratic_equation(q.question)
@@ -890,6 +1080,10 @@ class UniversalMathEngine:
                 calc_res = x_val - y_val
             elif intent == "prod":
                 calc_res = x_val * y_val
+            elif intent == "val_x":
+                calc_res = x_val
+            elif intent == "val_y":
+                calc_res = y_val
                 
             if calc_res is not None:
                 res_float = float(calc_res)
@@ -947,6 +1141,30 @@ class UniversalMathEngine:
                         )
                         return q, True, f"Bộ giải chuẩn hóa: Tham số m để hệ có vô số nghiệm là m = {val_m}"
 
+        # 4. Tìm hệ số a, b của hàm số bậc nhất y = ax + b qua hai điểm A(x1, y1) và B(x2, y2)
+        m_pts = re.findall(r'[A-Za-z]?\s*\(\s*([+-]?\d+)\s*;\s*([+-]?\d+)\s*\)', q.question)
+        if len(m_pts) >= 2 and ("ax + b" in q.question or "ax+b" in q.question or "y = ax" in q.question):
+            x1, y1 = int(m_pts[0][0]), int(m_pts[0][1])
+            x2, y2 = int(m_pts[1][0]), int(m_pts[1][1])
+            if x2 != x1:
+                a_val = Fraction(y2 - y1, x2 - x1)
+                b_val = y1 - a_val * x1
+                is_asking_a = bool("giá trị của a" in q.question.lower() or "tìm a" in q.question.lower() or "hệ số a" in q.question.lower())
+                is_asking_b = bool("giá trị của b" in q.question.lower() or "tìm b" in q.question.lower() or "hệ số b" in q.question.lower())
+                target = a_val if is_asking_a else (b_val if is_asking_b else a_val)
+                target_str = str(int(target)) if target.denominator == 1 else f"{target.numerator}/{target.denominator}"
+                if q.answer.strip() != target_str:
+                    old_a = q.answer
+                    q.answer = target_str
+                    name = "a" if is_asking_a else "b"
+                    q.explanation = (
+                        f"Đồ thị hàm số $y = ax + b$ đi qua $A({x1}; {y1})$ và $B({x2}; {y2})$ nên ta có hệ phương trình:\n"
+                        f"$\\begin{{cases}} {x1}a + b = {y1} \\\\ {x2}a + b = {y2} \\end{{cases}} "
+                        f"\\Leftrightarrow \\begin{{cases}} a = {a_val} \\\\ b = {b_val} \\end{{cases}}$. "
+                        f"Vậy {name} = {target_str}."
+                    )
+                    return q, True, f"Bộ giải chuẩn hóa: Tính chính xác {name} = {target_str} cho đồ thị hàm số qua 2 điểm"
+
         return q, False, ""
 
     @classmethod
@@ -955,6 +1173,8 @@ class UniversalMathEngine:
         Duyệt toàn bộ đề thi qua Bộ giải toán tự động CAS & SymPy để giải quyết triệt để mọi bài toán.
         """
         notes = []
+        is_grade_9 = str(getattr(exam, "grade", "12")).strip() in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
+
         for q in exam.part1_mcq:
             q, mod, msg = cls.solve_and_verify_mcq(q)
             if mod:
@@ -964,6 +1184,19 @@ class UniversalMathEngine:
             q, mod_r, msg_r = cls.solve_tf_rectangle(q)
             if mod_r:
                 notes.append(f"Câu {q.id} (Phần II): {msg_r}")
+                
+            q, mod_b, msg_b = cls.solve_tf_boat_motion(q)
+            if mod_b:
+                notes.append(f"Câu {q.id} (Phần II): {msg_b}")
+
+            # Khử triệt để mọi rò rỉ giải tích lớp 12 vào đề toán lớp 9
+            if is_grade_9 and q.sub_items:
+                for s in q.sub_items:
+                    if re.search(r"f[\'’]\s*\(|f[\'’]{2}|hàm\s*số\s*đạt\s*cực|tiệm\s*cận|tích\s*phân|oxyz", s.statement, re.IGNORECASE):
+                        s.statement = "Hệ phương trình bậc nhất hai ẩn có nghiệm duy nhất khi các đường thẳng cắt nhau."
+                        s.is_correct = True
+                        s.explanation = "Hai đường thẳng cắt nhau tại đúng một điểm duy nhất nên hệ có nghiệm duy nhất."
+                        notes.append(f"Câu {q.id} (Phần II): Thay thế mệnh đề giải tích lớp 12 bằng kiến thức hình học tọa độ lớp 9 chuẩn mực")
                 
         for q in exam.part3_short:
             q, mod, msg = cls.solve_and_verify_short(q)

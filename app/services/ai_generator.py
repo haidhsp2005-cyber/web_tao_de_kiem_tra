@@ -1631,7 +1631,7 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
             explanation=explanation
         )
         if len(subs_list) < 4 or any(len(s["statement"].strip()) < 5 or re.search(r"đang cập nhật", s["statement"], re.IGNORECASE) or re.match(r"^(?:mệnh đề|khẳng định)\s*[abcd]?\s*[\.:]?$", s["statement"].strip(), re.IGNORECASE) for s in subs_list):
-            temp_q = heal_tf_offline(temp_q, default_subject, idx - 1)
+            temp_q = heal_tf_offline(temp_q, default_subject, idx - 1, grade=grade)
 
         t_count = sum(1 for s in temp_q.sub_items if s.is_correct)
         if t_count == 4:
