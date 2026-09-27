@@ -138,12 +138,20 @@ def insert_question_image_if_present(doc, q, width_inches=3.2):
         import base64
         clean_b64 = img_b64.split(",")[-1]
         img_bytes = base64.b64decode(clean_b64)
+        
+        caption = getattr(q, 'image_caption', None) or ""
+        # Bảng biến thiên và bảng xét dấu rộng hơn đồ thị hàm số để số liệu không bị ép nhỏ
+        if any(kw in caption.lower() for kw in ["bảng", "biến thiên", "xét dấu", "phả hệ"]):
+            effective_width = 4.6
+        else:
+            effective_width = width_inches
+            
         p_img = doc.add_paragraph()
         p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_img.paragraph_format.space_before = Pt(4)
         p_img.paragraph_format.space_after = Pt(2)
         run_img = p_img.add_run()
-        run_img.add_picture(io.BytesIO(img_bytes), width=Inches(width_inches))
+        run_img.add_picture(io.BytesIO(img_bytes), width=Inches(effective_width))
         
         caption = getattr(q, 'image_caption', None)
         if caption:
@@ -232,7 +240,8 @@ def create_exam_document(
         exam = auto_attach_diagrams_to_exam(exam)
         if all_variants:
             for v in all_variants:
-                auto_attach_diagrams_to_exam(v)
+                target = getattr(v, "exam", v)
+                auto_attach_diagrams_to_exam(target)
     except Exception as e_diag:
         print(f"[Docx Exporter Warning] Lỗi khi auto-attach diagram: {e_diag}")
     

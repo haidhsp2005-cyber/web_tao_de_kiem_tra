@@ -24,6 +24,7 @@ from .services.ai_generator import (
 )
 from .services.shuffler import shuffle_exam
 from .services.docx_exporter import create_exam_document
+from .services.diagram_generator import auto_attach_diagrams_to_exam
 
 app = FastAPI(
     title="EduExam AI 2026 - Hệ Thống Biên Soạn & Trộn Đề Kiểm Tra Chuẩn Bộ GD&ĐT 2026 - 2027",
@@ -219,6 +220,7 @@ async def api_sample(subject: str):
 @app.post("/api/shuffle", response_model=ShuffleResponse)
 async def api_shuffle(req: ShuffleRequest):
     try:
+        req.exam = auto_attach_diagrams_to_exam(req.exam)
         res = shuffle_exam(
             exam=req.exam,
             num_variants=req.num_variants,
@@ -226,6 +228,8 @@ async def api_shuffle(req: ShuffleRequest):
             shuffle_part1_options=req.shuffle_part1_options,
             shuffle_part2_subitems=req.shuffle_part2_subitems
         )
+        for v in res.variants:
+            v.exam = auto_attach_diagrams_to_exam(v.exam)
         return res
     except Exception as e:
         traceback.print_exc()
@@ -235,6 +239,10 @@ async def api_shuffle(req: ShuffleRequest):
 @app.post("/api/export-docx")
 async def api_export_docx(req: ExportDocxRequest):
     try:
+        req.exam = auto_attach_diagrams_to_exam(req.exam)
+        if req.all_variants:
+            for v in req.all_variants:
+                v.exam = auto_attach_diagrams_to_exam(v.exam)
         doc = create_exam_document(
             exam=req.exam,
             variant_code=req.variant_code,

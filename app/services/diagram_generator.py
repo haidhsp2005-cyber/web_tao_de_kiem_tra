@@ -173,9 +173,10 @@ def draw_variation_table(
     y_prime: Optional[List[str]] = None,
     y_vals: Optional[List[str]] = None,
     title: str = "Bảng biến thiên của hàm số y = f(x)",
-    caption: str = "Hình: Bảng biến thiên của hàm số"
+    caption: str = "Hình: Bảng biến thiên của hàm số",
+    is_sign_table: bool = False
 ) -> Tuple[str, str]:
-    """Vẽ bảng biến thiên chuẩn SGK 3 dòng (x, y', y) sắc nét bằng hình ảnh đồ họa động."""
+    """Vẽ bảng biến thiên chuẩn SGK 3 dòng (x, y', y) hoặc bảng xét dấu 2 dòng (x, y'/f'(x)) sắc nét."""
     if not x_vals:
         x_vals = [r"$-\infty$", "-1", "1", r"$+\infty$"]
     if not y_prime:
@@ -183,6 +184,50 @@ def draw_variation_table(
     if not y_vals:
         y_vals = [r"$-\infty$", "2", "-2", r"$+\infty$"]
         
+    n = len(x_vals)
+    xs = np.linspace(2.2, 9.2, n)
+    int_signs = [s.strip() for s in y_prime if s.strip() in ('+', '-') or '+' in s or '-' in s]
+    
+    # TRƯỜNG HỢP: BẢNG XÉT DẤU CỦA ĐẠO HÀM (2 DÒNG: x và f'(x))
+    if is_sign_table:
+        fig, ax = plt.subplots(figsize=(6.0, 1.4), dpi=150)
+        ax.axis('off')
+        
+        # Khung bảng 2 dòng
+        ax.plot([0, 10], [1.0, 1.0], 'k-', lw=1.2)
+        ax.plot([0, 10], [0.5, 0.5], 'k-', lw=1.0)
+        ax.plot([0, 10], [0.0, 0.0], 'k-', lw=1.2)
+        
+        # Đường dọc
+        ax.plot([1.5, 1.5], [0.0, 1.0], 'k-', lw=1.2)
+        ax.plot([0.0, 0.0], [0.0, 1.0], 'k-', lw=1.2)
+        ax.plot([10.0, 10.0], [0.0, 1.0], 'k-', lw=1.2)
+        
+        # Nhãn hàng
+        ax.text(0.75, 0.75, r'$x$', fontsize=11, fontweight='bold', va='center', ha='center')
+        ax.text(0.75, 0.25, r"$f'(x)$", fontsize=11, fontweight='bold', va='center', ha='center')
+        
+        for i, v in enumerate(x_vals):
+            lbl = str(v).strip()
+            if 'inf' in lbl.lower() and '$' not in lbl:
+                lbl = r'$+\infty$' if '+' in lbl else r'$-\infty$'
+            elif '$' not in lbl and lbl:
+                lbl = f"${lbl}$"
+            ax.text(xs[i], 0.75, lbl, fontsize=10, va='center', ha='center')
+            
+        for i in range(n - 1):
+            mid_x = (xs[i] + xs[i+1]) / 2.0
+            sign = int_signs[i] if i < len(int_signs) else '+'
+            color = 'darkred' if '+' in sign else 'darkblue'
+            ax.text(mid_x, 0.25, sign, fontsize=12, fontweight='bold', va='center', ha='center', color=color)
+            if i > 0:
+                ax.text(xs[i], 0.25, '0', fontsize=10, va='center', ha='center')
+                
+        ax.set_xlim(-0.2, 10.2)
+        ax.set_ylim(-0.1, 1.1)
+        return fig_to_base64(fig), caption
+        
+    # TRƯỜNG HỢP: BẢNG BIẾN THIÊN ĐẦY ĐỦ 3 DÒNG (x, y', y)
     fig, ax = plt.subplots(figsize=(6.0, 2.4), dpi=150)
     ax.axis('off')
     
@@ -890,24 +935,42 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
             )
             
             if is_math:
-                if "bảng biến thiên" in q_text or "bbt" in q_text:
+                # 1. Bảng xét dấu của đạo hàm
+                if "bảng xét dấu" in q_text or "xét dấu của đạo hàm" in q_text or "xét dấu đạo hàm" in q_text or "dấu của đạo hàm" in q_text or "dấu đạo hàm" in q_text:
+                    b64, cap = draw_variation_table(
+                        title="Bảng xét dấu của đạo hàm f'(x)",
+                        caption="Hình: Bảng xét dấu của đạo hàm f'(x)",
+                        is_sign_table=True
+                    )
+                    q.image_base64 = b64
+                    q.image_caption = cap
+                # 2. Bảng biến thiên
+                elif "bảng biến thiên" in q_text or "bbt" in q_text:
                     b64, cap = draw_variation_table(caption="Hình: Bảng biến thiên của hàm số")
                     q.image_base64 = b64
                     q.image_caption = cap
-                elif re.search(r"f[\'’]\(x\)|y\s*=\s*f[\'’]", q_text) and ("đồ thị" in q_text or "hình vẽ" in q_text or "hình bên" in q_text):
+                # 3. Đồ thị đạo hàm f'(x)
+                elif re.search(r"f[\'’]\(x\)|y\s*=\s*f[\'’]", q_text) and ("đồ thị" in q_text or "hình vẽ" in q_text or "hình bên" in q_text or "như hình" in q_text):
                     b64, cap = draw_derivative_graph(caption="Hình: Đồ thị hàm số đạo hàm y = f'(x)")
                     q.image_base64 = b64
                     q.image_caption = cap
+                # 4. Đồ thị trên đoạn [-2, 2]
                 elif "[-2; 2]" in q_text or "[-2, 2]" in q_text or "[-2;2]" in q_text:
                     b64, cap = draw_bounded_polynomial_graph(caption="Hình: Đồ thị hàm số y = f(x) trên đoạn [-2; 2]")
                     q.image_base64 = b64
                     q.image_caption = cap
-                elif "đồ thị" in q_text or "hình vẽ" in q_text or "đường cong" in q_text or "hình bên" in q_text:
-                    if "trùng phương" in q_text or "bậc bốn" in q_text or "x^4" in q_text:
+                # 5. Đồ thị các dạng hàm số khác
+                elif "đồ thị" in q_text or "hình vẽ" in q_text or "đường cong" in q_text or "hình bên" in q_text or "như hình" in q_text:
+                    # Ưu tiên kiểm tra hàm bậc 3 trước để tránh nhầm "cx + d" trong ax^3 + bx^2 + cx + d thành phân thức
+                    if "bậc ba" in q_text or "ax^3" in q_text or "x^3" in q_text or "bac ba" in q_text:
+                        b64, cap = draw_cubic_graph(caption="Hình: Đồ thị hàm số bậc ba y = f(x)")
+                        q.image_base64 = b64
+                        q.image_caption = cap
+                    elif "trùng phương" in q_text or "bậc bốn" in q_text or "x^4" in q_text or "bac bon" in q_text:
                         b64, cap = draw_quartic_graph(caption="Hình: Đồ thị hàm số bậc bốn trùng phương")
                         q.image_base64 = b64
                         q.image_caption = cap
-                    elif "phân thức" in q_text or "tiệm cận" in q_text or "cx + d" in q_text or "cx+d" in q_text:
+                    elif "phân thức" in q_text or "tiệm cận" in q_text or "hữu tỉ" in q_text or (("cx + d" in q_text or "cx+d" in q_text) and "x^3" not in q_text):
                         b64, cap = draw_rational_graph(caption="Hình: Đồ thị hàm phân thức hữu tỉ")
                         q.image_base64 = b64
                         q.image_caption = cap
