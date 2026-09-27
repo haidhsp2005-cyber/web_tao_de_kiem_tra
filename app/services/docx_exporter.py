@@ -128,6 +128,36 @@ def add_formatted_text_with_math(paragraph, text: str, bold=False, italic=False,
             if color:
                 run.font.color.rgb = color
 
+def insert_question_image_if_present(doc, q, width_inches=3.2):
+    """Chèn hình ảnh minh họa câu hỏi vào tài liệu Word nếu có image_base64."""
+    img_b64 = getattr(q, 'image_base64', None)
+    if not img_b64:
+        return
+    try:
+        import base64
+        clean_b64 = img_b64.split(",")[-1]
+        img_bytes = base64.b64decode(clean_b64)
+        p_img = doc.add_paragraph()
+        p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p_img.paragraph_format.space_before = Pt(4)
+        p_img.paragraph_format.space_after = Pt(2)
+        run_img = p_img.add_run()
+        run_img.add_picture(io.BytesIO(img_bytes), width=Inches(width_inches))
+        
+        caption = getattr(q, 'image_caption', None)
+        if caption:
+            p_cap = doc.add_paragraph()
+            p_cap.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            p_cap.paragraph_format.space_before = Pt(1)
+            p_cap.paragraph_format.space_after = Pt(4)
+            run_cap = p_cap.add_run(caption)
+            run_cap.italic = True
+            run_cap.font.name = "Times New Roman"
+            run_cap.font.size = Pt(9.5)
+            run_cap.font.color.rgb = RGBColor(70, 70, 70)
+    except Exception as e:
+        print(f"[Docx Exporter] Lỗi khi chèn ảnh câu hỏi: {e}")
+
 def format_points(val: Any, decimals: int = 1) -> str:
     try:
         f_val = float(val)
@@ -330,6 +360,7 @@ def create_exam_document(
             
             # Question body with math
             add_formatted_text_with_math(p_q, q.question, font_size=11)
+            insert_question_image_if_present(doc, q)
             
             red_color = RGBColor(192, 0, 0)
             
@@ -436,6 +467,7 @@ def create_exam_document(
             run_num.font.name = "Times New Roman"
             run_num.font.size = Pt(11)
             add_formatted_text_with_math(p_q, q.question, font_size=11)
+            insert_question_image_if_present(doc, q)
             
             # Sub-items a, b, c, d
             for sub in q.sub_items:
@@ -482,6 +514,7 @@ def create_exam_document(
             run_num.font.name = "Times New Roman"
             run_num.font.size = Pt(11)
             add_formatted_text_with_math(p_q, q.question, font_size=11)
+            insert_question_image_if_present(doc, q)
             
             if red_answers and q.answer:
                 p_ans = doc.add_paragraph()
@@ -521,6 +554,7 @@ def create_exam_document(
             run_num.font.name = "Times New Roman"
             run_num.font.size = Pt(11)
             add_formatted_text_with_math(p_q, q.question, font_size=11)
+            insert_question_image_if_present(doc, q)
             
             if red_answers and (q.explanation or q.answer):
                 p_hd = doc.add_paragraph()

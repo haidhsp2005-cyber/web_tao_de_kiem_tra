@@ -12,6 +12,8 @@ class Part1Question(BaseModel):
     options: List[Option]
     answer: str  # A, B, C, or D
     explanation: Optional[str] = ''
+    image_base64: Optional[str] = None
+    image_caption: Optional[str] = None
 
 class SubItem(BaseModel):
     label: str  # a, b, c, d
@@ -24,12 +26,16 @@ class Part2Question(BaseModel):
     question: str
     sub_items: List[SubItem]
     explanation: Optional[str] = ''
+    image_base64: Optional[str] = None
+    image_caption: Optional[str] = None
 
 class Part3Question(BaseModel):
     id: int
     question: str
     answer: str  # Short text or numerical answer e.g. '12.5', '3'
     explanation: Optional[str] = ''
+    image_base64: Optional[str] = None
+    image_caption: Optional[str] = None
 
 class Part4EssayQuestion(BaseModel):
     id: int
@@ -37,6 +43,8 @@ class Part4EssayQuestion(BaseModel):
     points: Optional[float] = 1.0  # Điểm số của câu tự luận
     answer: Optional[str] = ''     # Tóm tắt đáp án / kết quả then chốt
     explanation: Optional[str] = '' # Hướng dẫn chấm chi tiết & biểu điểm
+    image_base64: Optional[str] = None
+    image_caption: Optional[str] = None
 
 class AuditReport(BaseModel):
     passed: bool = True

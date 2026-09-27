@@ -16,6 +16,20 @@ from .explanation_sync import (
     reconcile_tf_subitem
 )
 from .exam_auditor import heal_mcq_offline, heal_tf_offline, audit_and_verify_exam
+from .diagram_generator import (
+    generate_diagram,
+    auto_attach_diagrams_to_exam,
+    draw_cubic_graph,
+    draw_rational_graph,
+    draw_quartic_graph,
+    draw_variation_table,
+    draw_physics_oscillation,
+    draw_thermodynamic_cycle,
+    draw_titration_curve,
+    draw_precipitation_graph,
+    draw_pedigree,
+    draw_population_curve
+)
 
 SYSTEM_PROMPT = """Bạn là một chuyên gia khảo thí và biên soạn đề kiểm tra hàng đầu của Bộ Giáo dục & Đào tạo Việt Nam.
 Nhiệm vụ của bạn là biên soạn một đề kiểm tra chuẩn định dạng mới nhất (áp dụng theo chương trình GDPT mới 2025).
@@ -55,6 +69,12 @@ QUY TẮC BẮT BUỘC ĐỂ KHÔNG BỊ TRÀN TOKEN HOẶC THIẾU CÂU HỎI:
    - Trong Phần I: Chữ cái ở trường 'answer' (A, B, C hoặc D) và kết luận trong trường 'explanation' BẮT BUỘC PHẢI HOÀN TOÀN TRÙNG KHỚP NHAU.
    - Trong Phần II: Giá trị 'is_correct' (true/false) của mỗi ý con a, b, c, d phải đồng nhất 100% với lời giải của ý con đó.
    - Trong Phần III: Giá trị đáp số 'answer' và kết quả tính được trong 'explanation' phải hoàn toàn trùng khớp.
+6. HÌNH ẢNH MINH HỌA, BẢNG BIẾN THIÊN & ĐỒ THỊ (TOÁN 12, VẬT LÝ, HÓA HỌC, SINH HỌC):
+   - Môn Toán 12 (khảo sát hàm số, cực trị, tiệm cận): Khuyến khích tạo câu hỏi có Bảng biến thiên ("Cho hàm số có bảng biến thiên như hình vẽ..."), Đồ thị hàm số bậc ba, Đồ thị hàm phân thức, Đồ thị trùng phương. Trong câu hỏi, có thể khai báo thêm trường "diagram": {"type": "variation_table"} hoặc "diagram": {"type": "cubic_graph"} / "rational_graph" / "quartic_graph".
+   - Môn Vật lý: Đồ thị dao động điều hòa ("diagram": {"type": "physics_oscillation"}), Chu trình nhiệt động lực học p-V ("diagram": {"type": "thermodynamic"}).
+   - Môn Hóa học: Đường cong chuẩn độ pH ("diagram": {"type": "titration"}), Đồ thị kết tủa CaCO3/CO2 ("diagram": {"type": "precipitation"}).
+   - Môn Sinh học: Sơ đồ phả hệ di truyền ("diagram": {"type": "pedigree"}), Đồ thị tăng trưởng quần thể chữ J / chữ S ("diagram": {"type": "population_growth"}).
+   - Hệ thống tự động biên dịch và tạo hình minh họa độ nét cao (vector/PNG 300 DPI) chèn ngay vào câu hỏi trên Web và bản in Word (.docx)!
 
 CẤU TRÚC JSON ĐẦU RA BẮT BUỘC (Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ, không kèm văn bản nào khác ngoài JSON):
 {
@@ -462,12 +482,16 @@ def create_default_audit_report(subject: str) -> AuditReport:
 
 def get_mock_math_exam() -> ExamStructure:
     mcqs = []
+    b64_bbt, cap_bbt = draw_variation_table(caption="Hình: Bảng biến thiên của hàm số")
+    b64_cubic, cap_cubic = draw_cubic_graph(caption="Hình: Đồ thị hàm số bậc ba y = f(x)")
+    b64_rational, cap_rational = draw_rational_graph(caption="Hình: Đồ thị hàm phân thức hữu tỉ")
+
     math_p1_samples = [
-        ("Cho hàm số $y = x^3 - 3x + 2$. Điểm cực đại của đồ thị hàm số là", [("A", "$(-1; 4)$"), ("B", "$(1; 0)$"), ("C", "$(-1; 0)$"), ("D", "$(1; 4)$")], "A", "Ta có đạo hàm $y' = 3x^2 - 3 = 0$ khi $x = \\pm 1$. Tại $x = -1$, đạo hàm đổi dấu từ dương sang âm nên là điểm cực đại với $y(-1) = 4$."),
-        ("Tập xác định của hàm số $y = \\log_2 (x - 3)$ là", [("A", "$(3; +\\infty)$"), ("B", "$[3; +\\infty)$"), ("C", "$(-\\infty; 3)$"), ("D", "$\\mathbb{R} \\setminus \\{3\\}$")], "A", "Điều kiện biểu thức trong logarit lớn hơn 0: $x - 3 > 0 \\Leftrightarrow x > 3$. Vậy $D = (3; +\\infty)$."),
+        ("Cho hàm số $y = f(x)$ xác định trên $\\mathbb{R} \\setminus \\{1\\}$ và có bảng biến thiên như hình vẽ bên dưới. Điểm cực đại của hàm số đã cho là", [("A", "$x = -1$"), ("B", "$x = 3$"), ("C", "$y = 4$"), ("D", "$y = -2$")], "A", "Từ bảng biến thiên, ta thấy khi qua điểm $x = -1$, đạo hàm $y'$ đổi dấu từ dương sang âm. Do đó điểm cực đại của hàm số là $x = -1$."),
+        ("Đường cong trong hình vẽ bên là đồ thị của hàm số nào dưới đây?", [("A", "$y = x^3 - 3x + 2$"), ("B", "$y = -x^3 + 3x + 2$"), ("C", "$y = x^4 - 2x^2 + 1$"), ("D", "$y = \\frac{2x-1}{x+1}$")], "A", "Đồ thị có dạng đường cong hàm số bậc ba với hệ số $a > 0$, đi qua các điểm cực đại $(-1; 4)$ và cực tiểu $(1; 0)$, cắt trục tung tại $(0; 2)$. Do đó đây là đồ thị hàm số $y = x^3 - 3x + 2$."),
         ("Họ tất cả các nguyên hàm của hàm số $f(x) = e^x + 2x$ là", [("A", "$e^x + x^2 + C$"), ("B", "$e^x + 2x^2 + C$"), ("C", "$e^x + 2 + C$"), ("D", "$\\frac{e^x}{x} + x^2 + C$")], "A", "Ta có $\\int (e^x + 2x)dx = e^x + x^2 + C$."),
         ("Trong không gian $Oxyz$, cho mặt cầu $(S): (x-1)^2 + (y+2)^2 + (z-3)^2 = 16$. Tọa độ tâm $I$ và bán kính $R$ là", [("A", "$I(1; -2; 3), R = 4$"), ("B", "$I(-1; 2; -3), R = 4$"), ("C", "$I(1; -2; 3), R = 16$"), ("D", "$I(-1; 2; -3), R = 16$")], "A", "Mặt cầu có tâm $I(1; -2; 3)$ và bán kính $R = \\sqrt{16} = 4$."),
-        ("Đồ thị hàm số $y = \\frac{2x - 1}{x + 1}$ có tiệm cận đứng là đường thẳng", [("A", "$x = -1$"), ("B", "$x = 2$"), ("C", "$y = 2$"), ("D", "$y = -1$")], "A", "Mẫu số bằng 0 tại $x = -1$ và tử số bằng $-3 \\neq 0$, do đó tiệm cận đứng là đường thẳng $x = -1$."),
+        ("Cho hàm số $y = \\frac{2x - 1}{x + 1}$ có đồ thị như hình vẽ bên dưới. Phương trình đường tiệm cận đứng và tiệm cận ngang của đồ thị hàm số lần lượt là", [("A", "$x = -1$ và $y = 2$"), ("B", "$x = 2$ và $y = -1$"), ("C", "$x = 1$ và $y = 2$"), ("D", "$x = -1$ và $y = 1$")], "A", "Mẫu số bằng 0 tại $x = -1$ và tử số bằng $-3 \\neq 0$, do đó tiệm cận đứng là đường thẳng $x = -1$. Tiệm cận ngang là $y = \\lim_{x \\to \\pm\\infty} \\frac{2x-1}{x+1} = 2$."),
         ("Tích phân $\\int_0^1 (3x^2 + 1)dx$ bằng", [("A", "$2$"), ("B", "$1$"), ("C", "$3$"), ("D", "$4$")], "A", "Ta có $\\int_0^1 (3x^2 + 1)dx = [x^3 + x]_0^1 = (1 + 1) - 0 = 2$."),
         ("Trong không gian $Oxyz$, vectơ nào sau đây là một vectơ pháp tuyến của mặt phẳng $(\\alpha): 2x - y + 3z - 5 = 0$?", [("A", "$\\vec{n} = (2; -1; 3)$"), ("B", "$\\vec{n} = (2; 1; 3)$"), ("C", "$\\vec{n} = (2; -1; -5)$"), ("D", "$\\vec{n} = (-1; 3; -5)$")], "A", "Mặt phẳng $Ax + By + Cz + D = 0$ nhận vectơ $\\vec{n} = (A; B; C) = (2; -1; 3)$ làm VTPT."),
         ("Nghiệm của phương trình $2^{2x-1} = 8$ là", [("A", "$x = 2$"), ("B", "$x = \\frac{3}{2}$"), ("C", "$x = 1$"), ("D", "$x = 3$")], "A", "Phương trình tương đương $2^{2x-1} = 2^3 \\Leftrightarrow 2x - 1 = 3 \\Leftrightarrow 2x = 4 \\Leftrightarrow x = 2$."),
@@ -485,12 +509,22 @@ def get_mock_math_exam() -> ExamStructure:
         ("Cho hai biến cố độc lập $A$ và $B$ với $P(A) = 0.4$ và $P(B) = 0.5$. Xác suất của biến cố giao $P(AB)$ là", [("A", "$0.2$"), ("B", "$0.9$"), ("C", "$0.1$"), ("D", "$0.45$")], "A", "Vì hai biến cố độc lập nên $P(AB) = P(A) \\cdot P(B) = 0.4 \\times 0.5 = 0.2$.")
     ]
     for i, (q_text, opts, ans, exp) in enumerate(math_p1_samples, start=1):
+        img_b64 = None
+        img_cap = None
+        if i == 1:
+            img_b64, img_cap = b64_bbt, cap_bbt
+        elif i == 2:
+            img_b64, img_cap = b64_cubic, cap_cubic
+        elif i == 5:
+            img_b64, img_cap = b64_rational, cap_rational
         mcqs.append(Part1Question(
             id=i,
             question=q_text,
             options=[Option(label=o[0], text=o[1]) for o in opts],
             answer=ans,
-            explanation=exp
+            explanation=exp,
+            image_base64=img_b64,
+            image_caption=img_cap
         ))
     
     tf_questions = [
@@ -595,9 +629,12 @@ def get_mock_math_exam() -> ExamStructure:
 
 def get_mock_physics_exam() -> ExamStructure:
     mcqs = []
+    b64_osc, cap_osc = draw_physics_oscillation(caption="Hình: Đồ thị dao động điều hòa li độ - thời gian")
+    b64_thermo, cap_thermo = draw_thermodynamic_cycle(caption="Hình: Chu trình nhiệt động lực học trong hệ p - V")
+
     physics_p1_samples = [
-        ("Một vật dao động điều hòa với phương trình $x = A\\cos(\\omega t + \\varphi)$. Đại lượng $\\omega$ được gọi là", [("A", "Tần số góc của dao động"), ("B", "Chu kỳ của dao động"), ("C", "Pha ban đầu của dao động"), ("D", "Biên độ của dao động")], "A", "Trong phương trình dao động điều hòa, đại lượng $\\omega$ là tần số góc (rad/s)."),
-        ("Một con lắc lò xo gồm lò xo nhẹ có độ cứng $k$ và vật nhỏ khối lượng $m$. Chu kỳ dao động riêng của con lắc được tính bằng công thức", [("A", "$T = 2\\pi\\sqrt{\\frac{m}{k}}$"), ("B", "$T = 2\\pi\\sqrt{\\frac{k}{m}}$"), ("C", "$T = \\frac{1}{2\\pi}\\sqrt{\\frac{m}{k}}$"), ("D", "$T = \\frac{1}{2\\pi}\\sqrt{\\frac{k}{m}}$")], "A", "Công thức chu kỳ dao động riêng của con lắc lò xo là $T = 2\\pi\\sqrt{\\frac{m}{k}}$."),
+        ("Một chất điểm dao động điều hòa có đồ thị li độ - thời gian $(x - t)$ như hình vẽ bên. Biên độ và chu kỳ dao động của chất điểm lần lượt là", [("A", "$A = 4\\text{ cm}, T = 2\\text{ s}$"), ("B", "$A = 8\\text{ cm}, T = 2\\text{ s}$"), ("C", "$A = 4\\text{ cm}, T = 1\\text{ s}$"), ("D", "$A = 2\\text{ cm}, T = 4\\text{ s}$")], "A", "Từ đồ thị $x - t$, li độ cực đại (biên độ) $A = 4\\text{ cm}$. Thời gian thực hiện một dao động toàn phần là $T = 2\\text{ s}$."),
+        ("Một khối khí lí tưởng thực hiện chu trình biến đổi nhiệt động lực học trong hệ tọa độ $p - V$ như hình vẽ bên. Quá trình biến đổi từ trạng thái (1) sang trạng thái (2) là quá trình", [("A", "Đẳng tích (thể tích $V$ không đổi)"), ("B", "Đẳng áp (áp suất $p$ không đổi)"), ("C", "Đẳng nhiệt (nhiệt độ $T$ không đổi)"), ("D", "Đoạn nhiệt (không trao đổi nhiệt)")], "A", "Đoạn thẳng nối trạng thái (1) và (2) vuông góc với trục thể tích $V$, nghĩa là thể tích giữ nguyên không đổi $V = \\text{const}$. Đây là quá trình biến đổi đẳng tích."),
         ("Tại nơi có gia tốc trọng trường $g$, con lắc đơn có chiều dài dây treo $l$ dao động điều hòa với tần số góc", [("A", "$\\omega = \\sqrt{\\frac{g}{l}}$"), ("B", "$\\omega = \\sqrt{\\frac{l}{g}}$"), ("C", "$\\omega = 2\\pi\\sqrt{\\frac{l}{g}}$"), ("D", "$\\omega = 2\\pi\\sqrt{\\frac{g}{l}}$")], "A", "Tần số góc của con lắc đơn dao động điều hòa là $\\omega = \\sqrt{\\frac{g}{l}}$."),
         ("Khi một sóng cơ truyền từ không khí vào nước thì đại lượng nào sau đây không đổi?", [("A", "Tần số của sóng"), ("B", "Bước sóng"), ("C", "Tốc độ truyền sóng"), ("D", "Năng lượng của sóng")], "A", "Tần số sóng chỉ phụ thuộc vào nguồn phát sóng nên không thay đổi khi truyền qua các môi trường khác nhau."),
         ("Sóng âm truyền nhanh nhất trong môi trường nào sau đây?", [("A", "Chất rắn"), ("B", "Chất lỏng"), ("C", "Chất khí"), ("D", "Chân không")], "A", "Tốc độ truyền âm giảm dần theo thứ tự: Chất rắn > Chất lỏng > Chất khí. Trong chân không sóng âm không truyền được."),
@@ -618,12 +655,20 @@ def get_mock_physics_exam() -> ExamStructure:
         ("Hạt nhân $_{92}^{238}\\text{U}$ có số nucleon mang điện (proton) và số neutron lần lượt là", [("A", "$92$ proton và $146$ neutron"), ("B", "$92$ proton và $238$ neutron"), ("C", "$146$ proton và $92$ neutron"), ("D", "$238$ proton và $92$ neutron")], "A", "Số proton là $Z = 92$, số neutron là $N = A - Z = 238 - 92 = 146$.")
     ]
     for i, (q_text, opts, ans, exp) in enumerate(physics_p1_samples, start=1):
+        img_b64 = None
+        img_cap = None
+        if i == 1:
+            img_b64, img_cap = b64_osc, cap_osc
+        elif i == 2:
+            img_b64, img_cap = b64_thermo, cap_thermo
         mcqs.append(Part1Question(
             id=i,
             question=q_text,
             options=[Option(label=o[0], text=o[1]) for o in opts],
             answer=ans,
-            explanation=exp
+            explanation=exp,
+            image_base64=img_b64,
+            image_caption=img_cap
         ))
         
     tf_questions = [
@@ -728,9 +773,12 @@ def get_mock_physics_exam() -> ExamStructure:
 
 def get_mock_chemistry_exam() -> ExamStructure:
     mcqs = []
+    b64_titr, cap_titr = draw_titration_curve(caption="Hình: Đường cong chuẩn độ axit mạnh bằng bazơ mạnh")
+    b64_precip, cap_precip = draw_precipitation_graph(caption="Hình: Đồ thị kết tủa CaCO3 khi sục khí CO2 vào dung dịch Ca(OH)2")
+
     chemistry_p1_samples = [
-        ("Chất nào sau đây thuộc loại este no, đơn chức, mạch hở?", [("A", "$CH_3COOCH_3$"), ("B", "$CH_2=CH-COOCH_3$"), ("C", "$CH_3COOCH=CH_2$"), ("D", "$HCOOCH_2CH=CH_2$")], "A", "Metyl axetat ($CH_3COOCH_3$) có công thức phân tử $C_3H_6O_2$, thuộc dãy đồng đẳng este no đơn chức mạch hở $C_n H_{2n} O_2$."),
-        ("Thủy phân hoàn toàn chất béo triolein ($(C_{17}H_{33}COO)_3C_3H_5$) trong dung dịch $NaOH$ đun nóng thu được muối và chất nào sau đây?", [("A", "Glixerol"), ("B", "Etanol"), ("C", "Etylen glicol"), ("D", "Metanol")], "A", "Mọi chất béo khi thủy phân trong môi trường kiềm (xà phòng hóa) đều tạo ra glixerol ($C_3H_5(OH)_3$)."),
+        ("Đường cong chuẩn độ $25\\text{ mL}$ dung dịch axit mạnh $HCl\\ 0.1\\text{ M}$ bằng dung dịch chuẩn bazơ mạnh $NaOH\\ 0.1\\text{ M}$ được biểu diễn như hình vẽ bên. Giá trị pH tại điểm tương đương của phép chuẩn độ này bằng", [("A", "$7.0$"), ("B", "$4.0$"), ("C", "$9.0$"), ("D", "$1.0$")], "A", "Chuẩn độ axit mạnh bằng bazơ mạnh, sản phẩm muối $NaCl$ không bị thủy phân nên tại điểm tương đương môi trường trung tính với $\\text{pH} = 7.0$."),
+        ("Sục từ từ đến dư khí $CO_2$ vào cốc đựng dung dịch $Ca(OH)_2$. Đồ thị biểu diễn số mol kết tủa $CaCO_3$ theo số mol $CO_2$ sục vào được thể hiện như hình bên. Hiện tượng quan sát được tương ứng với đoạn đồ thị đi xuống là", [("A", "Kết tủa bị hòa tan dần do tạo muối tan $Ca(HCO_3)_2$"), ("B", "Lượng kết tủa đạt cực đại và không đổi"), ("C", "Khí $CO_2$ không còn phản ứng và bắt đầu thoát ra ngoài"), ("D", "Kết tủa tiếp tục tăng nhanh hơn")], "A", "Khi đã đạt kết tủa cực đại, nếu tiếp tục sục thêm $CO_2$ thì kết tủa tan dần theo phản ứng: $CO_2 + H_2O + CaCO_3 \\to Ca(HCO_3)_2$, làm giảm số mol kết tủa về 0 tương ứng với nhánh đồ thị đi xuống."),
         ("Cacbohidrat nào sau đây là đồng phân của glucozơ?", [("A", "Fructozơ"), ("B", "Saccarozơ"), ("C", "Tinh bột"), ("D", "Xenlulozơ")], "A", "Glucozơ và fructozơ đều có cùng công thức phân tử $C_6H_{12}O_6$ nhưng khác nhau về cấu tạo phân tử nên là đồng phân của nhau."),
         ("Cacbohidrat nào sau đây thuộc loại monosaccarit và không bị thủy phân trong môi trường axit?", [("A", "Glucozơ"), ("B", "Saccarozơ"), ("C", "Tinh bột"), ("D", "Mantozo")], "A", "Glucozơ là monosaccarit đơn giản nhất, không bị thủy phân."),
         ("Nhỏ vài giọt dung dịch iot ($I_2$) vào ống nghiệm đựng hồ tinh bột ở nhiệt độ thường, dung dịch xuất hiện màu đặc trưng là", [("A", "Màu xanh tím"), ("B", "Màu đỏ nâu"), ("C", "Màu hồng cánh sen"), ("D", "Màu vàng cam")], "A", "Phân tử tinh bột có cấu trúc xoắn tạo các khoang rỗng hấp phụ phân tử iot tạo hợp chất bọc màu xanh tím đặc trưng."),
@@ -751,12 +799,20 @@ def get_mock_chemistry_exam() -> ExamStructure:
         ("Hợp chất nào sau đây của sắt vừa thể hiện tính oxi hóa vừa thể hiện tính khử?", [("A", "$FeO$"), ("B", "$Fe_2O_3$"), ("C", "$Fe_2(SO_4)_3$"), ("D", "$Fe(OH)_3$")], "A", "Trong $FeO$, sắt có số oxi hóa trung gian $+2$, có thể tăng lên $+3$ (tính khử) hoặc giảm xuống $0$ (tính oxi hóa).")
     ]
     for i, (q_text, opts, ans, exp) in enumerate(chemistry_p1_samples, start=1):
+        img_b64 = None
+        img_cap = None
+        if i == 1:
+            img_b64, img_cap = b64_titr, cap_titr
+        elif i == 2:
+            img_b64, img_cap = b64_precip, cap_precip
         mcqs.append(Part1Question(
             id=i,
             question=q_text,
             options=[Option(label=o[0], text=o[1]) for o in opts],
             answer=ans,
-            explanation=exp
+            explanation=exp,
+            image_base64=img_b64,
+            image_caption=img_cap
         ))
         
     tf_questions = [
@@ -990,6 +1046,151 @@ def get_mock_gdqp_exam() -> ExamStructure:
         part3_short=short_questions,
         scoring=calculate_exam_scoring(num_p1=len(mcqs), num_p2=len(tf_questions), num_p3=len(short_questions), num_p4=0),
         audit_report=create_default_audit_report("Giáo dục Quốc phòng & An ninh")
+    )
+
+def get_mock_biology_exam() -> ExamStructure:
+    mcqs = []
+    b64_ped, cap_ped = draw_pedigree(caption="Hình: Sơ đồ phả hệ di truyền bệnh máu khó đông ở người")
+    b64_pop, cap_pop = draw_population_curve(caption="Hình: Đường cong tăng trưởng số lượng cá thể của quần thể")
+
+    bio_p1_samples = [
+        ("Cho sơ đồ phả hệ mô tả sự di truyền một bệnh ở người qua ba thế hệ như hình vẽ bên. Biết rằng bệnh do một gen gồm 2 alen quy định và không xảy ra đột biến mới. Bệnh trên do", [("A", "Alen lặn nằm trên nhiễm sắc thể thường quy định"), ("B", "Alen trội nằm trên nhiễm sắc thể thường quy định"), ("C", "Alen lặn nằm trên nhiễm sắc thể giới tính X"), ("D", "Alen trội nằm trên nhiễm sắc thể giới tính X")], "A", "Cặp bố mẹ I-1 và I-2 bình thường nhưng sinh con gái II-3 bị bệnh, chứng tỏ bệnh do alen lặn quy định và gen nằm trên NST thường (nếu trên X thì bố bình thường không thể sinh con gái bị bệnh)."),
+        ("Đường cong tăng trưởng số lượng cá thể của quần thể sinh vật trong điều kiện môi trường bị giới hạn (có sức cản môi trường) trên hình vẽ bên có dạng", [("A", "Đường cong chữ S (tăng trưởng logistic)"), ("B", "Đường cong chữ J (tăng trưởng hàm số mũ)"), ("C", "Đường thẳng dốc đứng liên tục"), ("D", "Đường parabol lõm xuống")], "A", "Khi môi trường bị giới hạn về nguồn sống, tốc độ tăng trưởng của quần thể giảm dần và ổn định quanh sức chứa K của môi trường, tạo thành đường cong hình chữ S."),
+        ("Trong cơ chế điều hòa hoạt động của operon Lac ở vi khuẩn E. coli, khi môi trường có lactôzơ thì", [("A", "Chất cảm ứng lactôzơ liên kết với prôtêin ức chế làm nó bị bất hoạt"), ("B", "Prôtêin ức chế liên kết chặt với vùng vận hành O ngăn phiên mã"), ("C", "Gen điều hòa R ngừng tổng hợp prôtêin ức chế"), ("D", "Các gen cấu trúc Z, Y, A ngừng hoạt động")], "A", "Lactôzơ đóng vai trò chất cảm ứng liên kết với prôtêin ức chế làm biến đổi cấu hình không gian, ngăn không cho nó bám vào vùng vận hành O, giải phóng cho ARN polimeraza phiên mã."),
+        ("Đột biến điểm làm thay thế một cặp nuclêôtit này bằng một cặp nuclêôtit khác nhưng không làm thay đổi axit amin nào trong chuỗi pôlipeptit là do đặc tính nào của mã di truyền?", [("A", "Tính thoái hóa"), ("B", "Tính phổ biến"), ("C", "Tính đặc hiệu"), ("D", "Tính liên tục")], "A", "Tính thoái hóa (nhiều bộ ba khác nhau cùng mã hóa cho một loại axit amin) giúp cơ thể sinh vật giảm thiểu nguy cơ biểu hiện các đột biến có hại."),
+        ("Quá trình nhân đôi ADN diễn ra theo những nguyên tắc nào sau đây?", [("A", "Nguyên tắc bổ sung và nguyên tắc bán bảo toàn"), ("B", "Nguyên tắc bảo toàn và nguyên tắc khuôn mẫu"), ("C", "Nguyên tắc bổ sung và nguyên tắc dịch mã"), ("D", "Nguyên tắc gián đoạn và liên tục")], "A", "Nhân đôi ADN diễn ra theo nguyên tắc bổ sung (A-T, G-X) và nguyên tắc bán bảo tồn (mỗi ADN con chứa 1 mạch cũ và 1 mạch mới)."),
+        ("Loại ARN nào sau đây mang bộ ba đối mã (anticodon) và làm nhiệm vụ vận chuyển axit amin tới ribôxôm?", [("A", "tARN (ARN vận chuyển)"), ("B", "mARN (ARN thông tin)"), ("C", "rARN (ARN ribôxôm)"), ("D", "snARN")], "A", "tARN có bộ ba đối mã anticodon khớp bổ sung với codon trên mARN và mang axit amin tương ứng."),
+        ("Theo Men-đen, phép lai nào sau đây được gọi là phép lai phân tích?", [("A", "Lai giữa cá thể mang tính trạng trội cần xác định kiểu gen với cá thể lặn"), ("B", "Lai giữa hai cá thể có kiểu hình trội thuần chủng"), ("C", "Lai giữa hai cá thể dị hợp tử"), ("D", "Tự thụ phấn qua nhiều thế hệ")], "A", "Phép lai phân tích là phép lai giữa cá thể mang tính trạng trội chưa biết kiểu gen với cá thể mang kiểu hình lặn."),
+        ("Ở đậu Hà Lan, gen A quy định hạt vàng trội hoàn toàn so với gen a quy định hạt xanh. Cho cây hạt vàng dị hợp tự thụ phấn, tỉ lệ phân li kiểu hình ở F1 là", [("A", "3 hạt vàng : 1 hạt xanh"), ("B", "1 hạt vàng : 1 hạt xanh"), ("C", "100% hạt vàng"), ("D", "1 hạt vàng : 2 hạt xanh")], "A", "Phép lai Aa x Aa cho tỉ lệ kiểu gen 1AA : 2Aa : 1aa, tương ứng với kiểu hình 3 vàng : 1 xanh."),
+        ("Hiện tượng hoán vị gen xảy ra do", [("A", "Sự tiếp hợp và trao đổi chéo giữa 2 crômatit khác nguồn của cặp NST tương đồng ở kì đầu giảm phân I"), ("B", "Sự phân li độc lập của các NST ở kì sau giảm phân I"), ("C", "Sự tiếp hợp giữa 2 NST không tương đồng"), ("D", "Sự tự nhân đôi của ADN")], "A", "Hoán vị gen xảy ra do sự trao đổi chéo giữa 2 crômatit khác nguồn trong cặp NST tương đồng ở kì đầu giảm phân I."),
+        ("Dạng đột biến cấu trúc nhiễm sắc thể nào sau đây làm tăng cường hoặc giảm bớt mức biểu hiện của tính trạng?", [("A", "Lặp đoạn"), ("B", "Mất đoạn"), ("C", "Đảo đoạn"), ("D", "Chuyển đoạn tương hỗ")], "A", "Đột biến lặp đoạn làm gia tăng số lượng bản sao của gen, qua đó có thể làm tăng hoặc giảm mức độ biểu hiện của tính trạng."),
+        ("Cơ thể có bộ nhiễm sắc thể $2n + 1$ được gọi là thể đột biến", [("A", "Thể ba"), ("B", "Thể một"), ("C", "Thể tứ bội"), ("D", "Thể tam bội")], "A", "Thể ba có bộ NST thừa 1 chiếc ở một cặp tương đồng ($2n + 1$)."),
+        ("Tập hợp sinh vật nào sau đây là một quần thể sinh vật?", [("A", "Các cá thể cá chép sinh sống trong một hồ nước ngọt"), ("B", "Tất cả các loài cá sống trong một nhánh sông"), ("C", "Các loài thú ăn cỏ trong một thảo nguyên"), ("D", "Cây cối trong một khu rừng nhiệt đới")], "A", "Quần thể sinh vật là tập hợp các cá thể cùng loài, cùng sinh sống trong một khoảng không gian và thời gian xác định."),
+        ("Mối quan hệ nào sau đây là quan hệ cộng sinh giữa hai loài sinh vật?", [("A", "Nấm và vi khuẩn lam tạo thành địa y"), ("B", "Dây tơ hồng sống bám trên thân cây gỗ"), ("C", "Hổ săn bắt nai rừng"), ("D", "Giun đũa sống trong ruột người")], "A", "Địa y là ví dụ điển hình của mối quan hệ cộng sinh chặt chẽ giữa nấm và tảo hoặc vi khuẩn lam."),
+        ("Trong chuỗi thức ăn: Cỏ -> Châu chấu -> Ếch đồng -> Rắn nước -> Diều hâu, sinh vật tiêu thụ bậc 2 là", [("A", "Ếch đồng"), ("B", "Châu chấu"), ("C", "Rắn nước"), ("D", "Diều hâu")], "A", "Cỏ là SV sản xuất; Châu chấu là SVTT bậc 1; Ếch đồng là SVTT bậc 2; Rắn nước là SVTT bậc 3; Diều hâu là SVTT bậc 4."),
+        ("Nhân tố sinh thái nào sau đây là nhân tố vô sinh?", [("A", "Nhiệt độ và ánh sáng"), ("B", "Động vật ăn cỏ"), ("C", "Vi sinh vật phân giải"), ("D", "Cây xanh quang hợp")], "A", "Nhiệt độ, ánh sáng, độ ẩm, đất, nước là các nhân tố sinh thái vô sinh (vật lý, hóa học)."),
+        ("Nhân tố tiến hóa nào sau đây có thể làm thay đổi tần số alen của quần thể theo một hướng xác định?", [("A", "Chọn lọc tự nhiên"), ("B", "Đột biến gen"), ("C", "Di - nhập gen"), ("D", "Yếu tố ngẫu nhiên")], "A", "Chọn lọc tự nhiên là nhân tố tiến hóa có hướng, làm thay đổi tần số alen và thành phần kiểu gen theo một hướng xác định."),
+        ("Hiện tượng các cá thể cùng loài tranh giành nhau nguồn thức ăn, nơi ở dẫn đến sự phân ly ổ sinh thái được gọi là", [("A", "Cạnh tranh cùng loài"), ("B", "Hỗ trợ cùng loài"), ("C", "Ký sinh"), ("D", "Ức chế - cảm nhiễm")], "A", "Cạnh tranh cùng loài xảy ra khi mật độ cá thể tăng cao, tài nguyên môi trường thiếu thốn, giúp chọn lọc cá thể thích nghi nhất."),
+        ("Cơ quan tương đồng ở các loài sinh vật phản ánh nguồn gốc nào?", [("A", "Tiến hóa phân ly từ một nguồn gốc chung"), ("B", "Tiến hóa đồng quy do môi trường sống giống nhau"), ("C", "Hiện tượng thoái hóa giống"), ("D", "Đột biến nhân tạo")], "A", "Cơ quan tương đồng là những cơ quan bắt nguồn từ cùng một cấu trúc phôi chung nhưng phát triển thích nghi theo các hướng khác nhau (phân ly)."),
+        ("Theo thuyết tiến hóa hiện đại, nhân tố nào sau đây cung cấp nguồn nguyên liệu sơ cấp cho quá trình tiến hóa?", [("A", "Đột biến gen"), ("B", "Biến dị tổ hợp"), ("C", "Giao phối không ngẫu nhiên"), ("D", "Chọn lọc tự nhiên")], "A", "Đột biến (chủ yếu là đột biến gen) là nguồn phát sinh nguyên liệu sơ cấp cho quá trình tiến hóa."),
+        ("Hệ sinh thái nào sau đây có độ đa dạng loài và sinh khối lớn nhất trên Trái Đất?", [("A", "Rừng mưa nhiệt đới"), ("B", "Đồng rêu hàn đới (Tundra)"), ("C", "Sa mạc cát"), ("D", "Thảo nguyên ôn đới")], "A", "Rừng mưa nhiệt đới có điều kiện khí hậu nóng ẩm quanh năm, thảm thực vật nhiều tầng phong phú nên có độ đa dạng sinh học cao nhất.")
+    ]
+    for i, (q_text, opts, ans, exp) in enumerate(bio_p1_samples, start=1):
+        img_b64 = None
+        img_cap = None
+        if i == 1:
+            img_b64, img_cap = b64_ped, cap_ped
+        elif i == 2:
+            img_b64, img_cap = b64_pop, cap_pop
+        mcqs.append(Part1Question(
+            id=i,
+            question=q_text,
+            options=[Option(label=o[0], text=o[1]) for o in opts],
+            answer=ans,
+            explanation=exp,
+            image_base64=img_b64,
+            image_caption=img_cap
+        ))
+
+    tf_questions = [
+        Part2Question(
+            id=1,
+            question="Xét các cơ chế di truyền ở cấp độ phân tử (nhân đôi ADN, phiên mã và dịch mã) ở sinh vật nhân thực:",
+            sub_items=[
+                SubItem(label="a", statement="Quá trình nhân đôi ADN diễn ra theo nguyên tắc bổ sung và nguyên tắc bán bảo toàn.", is_correct=True, explanation="Đây là 2 nguyên tắc cốt lõi đảm bảo thông tin di truyền được truyền đạt chính xác qua các thế hệ tế bào."),
+                SubItem(label="b", statement="Enzim ARN polimeraza có khả năng tự tháo xoắn phân tử ADN và tổng hợp mạch mới theo chiều 5' -> 3'.", is_correct=True, explanation="ARN polimeraza vừa làm nhiệm vụ tháo xoắn ADN vừa tổng hợp mARN mới theo chiều 5' -> 3'."),
+                SubItem(label="c", statement="Trên một phân tử mARN chỉ có duy nhất một ribôxôm trượt qua trong toàn bộ quá trình dịch mã.", is_correct=False, explanation="Nhiều ribôxôm cùng trượt trên 1 mARN (gọi là pôliribôxôm) để tăng hiệu suất tổng hợp cùng một loại prôtêin."),
+                SubItem(label="d", statement="Mã di truyền có tính phổ biến, nghĩa là tất cả các loài sinh vật đều dùng chung một bộ mã di truyền (trừ vài ngoại lệ).", is_correct=True, explanation="Tính phổ biến của mã di truyền chứng minh nguồn gốc chung thống nhất của toàn bộ sinh giới.")
+            ],
+            explanation="Cơ chế truyền đạt thông tin di truyền ở cấp độ phân tử."
+        ),
+        Part2Question(
+            id=2,
+            question="Xét một quần thể thực vật tự thụ phấn nghiêm ngặt có cấu trúc di truyền ở thế hệ xuất phát P là: $0.4\\text{ AA} : 0.4\\text{ Aa} : 0.2\\text{ aa}$:",
+            sub_items=[
+                SubItem(label="a", statement="Tần số của alen A trong quần thể ở thế hệ P bằng 0.6.", is_correct=True, explanation="Tần số alen $p(A) = 0.4 + 0.4 / 2 = 0.6$."),
+                SubItem(label="b", statement="Qua các thế hệ tự thụ phấn liên tiếp, tỉ lệ kiểu gen dị hợp tử Aa giảm dần và tỉ lệ đồng hợp tử tăng dần.", is_correct=True, explanation="Tự thụ phấn làm giảm dị hợp tử theo tỉ lệ $(1/2)^n$ và tăng đồng hợp tử."),
+                SubItem(label="c", statement="Tần số các alen A và a bị biến đổi mạnh qua các thế hệ tự thụ phấn.", is_correct=False, explanation="Quá trình tự thụ phấn chỉ làm biến đổi cấu trúc kiểu gen chứ không làm thay đổi tần số alen."),
+                SubItem(label="d", statement="Ở thế hệ F1, tỉ lệ kiểu gen dị hợp Aa trong quần thể bằng 0.2.", is_correct=True, explanation="Ở F1, tỉ lệ $Aa = 0.4 / 2 = 0.2$.")
+            ],
+            explanation="Cấu trúc di truyền và sự biến đổi tần số kiểu gen trong quần thể tự thụ phấn."
+        ),
+        Part2Question(
+            id=3,
+            question="Xét các đặc trưng cơ bản và mối quan hệ sinh thái trong quần xã sinh vật:",
+            sub_items=[
+                SubItem(label="a", statement="Độ phong phú của loài thể hiện mức độ đa dạng về số lượng loài trong quần xã.", is_correct=True, explanation="Độ phong phú là tỉ lệ phần trăm số cá thể của từng loài so với tổng số cá thể của toàn quần xã."),
+                SubItem(label="b", statement="Loài ưu thế là loài đóng vai trò quan trọng nhất trong quần xã do có sinh khối lớn hoặc số lượng đông đảo.", is_correct=True, explanation="Đúng theo định nghĩa loài ưu thế trong sinh thái học."),
+                SubItem(label="c", statement="Hiện tượng khống chế sinh học làm mất cân bằng sinh thái và dẫn đến sự suy vong của quần xã.", is_correct=False, explanation="Khống chế sinh học giúp duy trì số lượng cá thể của các loài ở trạng thái cân bằng sinh học ổn định."),
+                SubItem(label="d", statement="Phân tầng thẳng đứng của các loài thực vật trong rừng nhiệt đới giúp giảm cạnh tranh ánh sáng và tăng hiệu quả sử dụng tài nguyên.", is_correct=True, explanation="Phân tầng không gian giúp các loài khai thác triệt để các nguồn sống khác nhau mà không cạnh tranh gay gắt.")
+            ],
+            explanation="Đặc trưng cấu trúc và mối quan hệ giữa các loài trong quần xã sinh vật."
+        ),
+        Part2Question(
+            id=4,
+            question="Về các nhân tố tiến hóa và hình thành loài mới theo thuyết tiến hóa tổng hợp hiện đại:",
+            sub_items=[
+                SubItem(label="a", statement="Đột biến gen là nguồn nguyên liệu sơ cấp chủ yếu cho quá trình tiến hóa.", is_correct=True, explanation="Đột biến tạo ra các alen mới, làm phong phú vốn gen của quần thể."),
+                SubItem(label="b", statement="Giao phối không ngẫu nhiên làm thay đổi tần số alen của quần thể rất nhanh chóng.", is_correct=False, explanation="Giao phối không ngẫu nhiên không làm thay đổi tần số alen, chỉ làm thay đổi thành phần kiểu gen theo hướng tăng đồng hợp giảm dị hợp."),
+                SubItem(label="c", statement="Cách li địa lí là nhân tố trực tiếp tạo ra các kiểu gen mới thích nghi trong quần thể.", is_correct=False, explanation="Cách li địa lí chỉ ngăn cản dòng gen giao phối, nhân tố tạo kiểu gen mới là đột biến và biến dị tổ hợp."),
+                SubItem(label="d", statement="Cách li sinh sản là ranh giới phân biệt giữa các loài sinh vật sinh sản hữu tính.", is_correct=True, explanation="Tiêu chuẩn cách li sinh sản là tiêu chuẩn quan trọng nhất để xác định hai loài thân thuộc.")
+            ],
+            explanation="Cơ chế tiến hóa hiện đại và hình thành loài mới."
+        )
+    ]
+
+    short_questions = [
+        Part3Question(
+            id=1,
+            question="Trong bảng mã di truyền chuẩn gồm 64 bộ ba (codon), có bao nhiêu bộ ba thực sự mã hóa cho các axit amin (không tính các mã kết thúc)?",
+            answer="61",
+            explanation="Có 3 bộ ba kết thúc (UAA, UAG, UGA) không mã hóa axit amin, do đó số bộ ba mã hóa là $64 - 3 = 61$."
+        ),
+        Part3Question(
+            id=2,
+            question="Một gen nằm trên nhiễm sắc thể thường có 3 alen khác nhau ($A_1, A_2, A_3$). Số loại kiểu gen tối đa có thể được tạo ra trong quần thể lưỡng bội bằng bao nhiêu?",
+            answer="6",
+            explanation="Số loại kiểu gen tối đa của gen có $n = 3$ alen là $\\frac{n(n+1)}{2} = \\frac{3 \\times 4}{2} = 6$."
+        ),
+        Part3Question(
+            id=3,
+            question="Một phân tử ADN mạch kép của sinh vật nhân sơ có tổng số $3000$ nuclêôtit. Chiều dài của phân tử ADN này bằng bao nhiêu nanomet (nm)?",
+            answer="510",
+            explanation="Chiều dài phân tử ADN: $L = \\frac{N}{2} \\times 3.4\\text{ Å} = 1500 \\times 3.4 = 5100\\text{ Å} = 510\\text{ nm}$."
+        ),
+        Part3Question(
+            id=4,
+            question="Một quần thể ngẫu phối ở trạng thái cân bằng Hacđi - Vanbec có cấu trúc di truyền gồm $16\\%$ cá thể mang kiểu hình lặn ($aa$). Tần số của alen A trong quần thể này bằng bao nhiêu (ghi dưới dạng số thập phân)?",
+            answer="0.6",
+            explanation="Quần thể cân bằng có $q^2(aa) = 0.16 \\Rightarrow q(a) = 0.4 \\Rightarrow p(A) = 1 - 0.4 = 0.6$."
+        ),
+        Part3Question(
+            id=5,
+            question="Xét chuỗi thức ăn: Ngô -> Chuột đồng -> Rắn hổ mang -> Diều hâu. Trong chuỗi thức ăn này, có bao nhiêu bậc dinh dưỡng tất cả?",
+            answer="4",
+            explanation="Chuỗi gồm 4 loài tương ứng với 4 bậc dinh dưỡng: Ngô (bậc 1), Chuột (bậc 2), Rắn (bậc 3), Diều hâu (bậc 4)."
+        ),
+        Part3Question(
+            id=6,
+            question="Ở một loài thực vật lưỡng bội có bộ nhiễm sắc thể $2n = 24$. Số lượng nhiễm sắc thể trong thể ba ($2n + 1$) của loài này bằng bao nhiêu?",
+            answer="25",
+            explanation="Thể ba có bộ NST là $2n + 1 = 24 + 1 = 25$ chiếc."
+        )
+    ]
+
+    return ExamStructure(
+        title="ĐỀ KIỂM TRA ĐỊNH KỲ MÔN SINH HỌC 12",
+        subject="Sinh học",
+        grade="12",
+        duration_minutes=50,
+        school_name="SỞ GD&ĐT ... - TRƯỜNG THPT ...",
+        academic_year="NĂM HỌC 2026 - 2027",
+        code="101",
+        part1_mcq=mcqs,
+        part2_tf=tf_questions,
+        part3_short=short_questions,
+        scoring=calculate_exam_scoring(num_p1=len(mcqs), num_p2=len(tf_questions), num_p3=len(short_questions), num_p4=0),
+        audit_report=create_default_audit_report("Sinh học")
     )
 
 _key_rotation_counter = 0
@@ -1286,12 +1487,20 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
         # Synchronize explanation conclusion with final_answer 100%
         explanation = synchronize_mcq_explanation_with_answer(explanation, final_answer)
 
+        # Diagram / Image support
+        img_b64 = item.get("image_base64")
+        img_cap = item.get("image_caption")
+        if not img_b64 and item.get("diagram"):
+            img_b64, img_cap = generate_diagram(item.get("diagram"))
+
         p1_list.append({
             "id": q_id,
             "question": question,
             "options": opts_list,
             "answer": final_answer,
-            "explanation": explanation
+            "explanation": explanation,
+            "image_base64": img_b64,
+            "image_caption": img_cap
         })
 
     # Part 2 TF
@@ -1408,11 +1617,19 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
         for s in temp_q.sub_items:
             s.is_correct, s.explanation = reconcile_tf_subitem(s.is_correct, s.explanation or "")
 
+        # Diagram / Image support
+        img_b64 = item.get("image_base64")
+        img_cap = item.get("image_caption")
+        if not img_b64 and item.get("diagram"):
+            img_b64, img_cap = generate_diagram(item.get("diagram"))
+
         p2_list.append({
             "id": temp_q.id,
             "question": temp_q.question,
             "sub_items": [{"label": s.label, "statement": s.statement, "is_correct": s.is_correct, "explanation": s.explanation} for s in temp_q.sub_items],
-            "explanation": temp_q.explanation
+            "explanation": temp_q.explanation,
+            "image_base64": img_b64,
+            "image_caption": img_cap
         })
 
     # Part 3 Short Answer
@@ -1426,11 +1643,19 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
         explanation = str(item.get("explanation") or item.get("huong_dan_giai") or item.get("loi_giai") or "")
         if answer and explanation and answer not in explanation:
             explanation = explanation.rstrip(" .;,") + f". Vậy đáp số là {answer}."
+
+        img_b64 = item.get("image_base64")
+        img_cap = item.get("image_caption")
+        if not img_b64 and item.get("diagram"):
+            img_b64, img_cap = generate_diagram(item.get("diagram"))
+
         p3_list.append({
             "id": q_id,
             "question": question,
             "answer": answer,
-            "explanation": explanation
+            "explanation": explanation,
+            "image_base64": img_b64,
+            "image_caption": img_cap
         })
 
     # Part 4 Essay
@@ -1448,12 +1673,20 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
             points = 1.0
         answer = str(item.get("answer") or item.get("dap_an") or item.get("tom_tat") or "").strip()
         explanation = str(item.get("explanation") or item.get("huong_dan_cham") or item.get("bieu_diem") or item.get("loi_giai") or "")
+
+        img_b64 = item.get("image_base64")
+        img_cap = item.get("image_caption")
+        if not img_b64 and item.get("diagram"):
+            img_b64, img_cap = generate_diagram(item.get("diagram"))
+
         p4_list.append({
             "id": q_id,
             "question": question,
             "points": points,
             "answer": answer,
-            "explanation": explanation
+            "explanation": explanation,
+            "image_base64": img_b64,
+            "image_caption": img_cap
         })
 
     p4_total_pts = sum(q.get("points", 1.0) for q in p4_list) if p4_list else 0.0
@@ -1489,6 +1722,10 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             return get_mock_physics_exam()
         elif "hóa" in sub_lower:
             return get_mock_chemistry_exam()
+        elif "sinh" in sub_lower:
+            return get_mock_biology_exam()
+        elif "gdqp" in sub_lower or "quân sự" in sub_lower or "quốc phòng" in sub_lower:
+            return get_mock_gdqp_exam()
         else:
             return get_mock_math_exam()
             
@@ -1500,6 +1737,10 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             return get_mock_physics_exam()
         elif "hóa" in sub_lower:
             return get_mock_chemistry_exam()
+        elif "sinh" in sub_lower:
+            return get_mock_biology_exam()
+        elif "gdqp" in sub_lower or "quân sự" in sub_lower or "quốc phòng" in sub_lower:
+            return get_mock_gdqp_exam()
         else:
             return get_mock_math_exam()
             
@@ -1787,6 +2028,8 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc:
         fallback_bank = get_mock_physics_exam()
     elif "hóa" in sub_lower:
         fallback_bank = get_mock_chemistry_exam()
+    elif "sinh" in sub_lower:
+        fallback_bank = get_mock_biology_exam()
     elif "gdqp" in sub_lower or "quân sự" in sub_lower or "quốc phòng" in sub_lower:
         fallback_bank = get_mock_gdqp_exam()
     else:
@@ -1839,4 +2082,5 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc:
     except Exception as audit_err:
         print(f"[Auditor Agent Warning] Lỗi trong quá trình thẩm định: {audit_err}")
         
+    exam_obj = auto_attach_diagrams_to_exam(exam_obj)
     return exam_obj

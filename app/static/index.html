@@ -696,6 +696,12 @@
                     <div class="text-sm text-slate-800 math-content" v-html="renderMath(q.question)"></div>
                   </div>
 
+                  <!-- Image / Diagram if present -->
+                  <div v-if="q.image_base64" class="my-3 text-center">
+                    <img :src="q.image_base64" :alt="q.image_caption || 'Hình minh họa'" class="max-h-64 mx-auto rounded-lg border border-slate-200 shadow-xs bg-white p-1" />
+                    <p v-if="q.image_caption" class="text-xs italic text-slate-500 mt-1">{{ q.image_caption }}</p>
+                  </div>
+
                   <!-- Options grid (Strictly 4 options A, B, C, D) -->
                   <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-2 pt-1 pl-4">
                     <div v-for="opt in (q.options ? q.options.slice(0, 4) : [])" :key="opt.label" class="flex items-start space-x-1.5 text-xs text-slate-700">
@@ -726,6 +732,12 @@
                     <div class="text-sm text-slate-800 math-content" v-html="renderMath(q.question)"></div>
                   </div>
 
+                  <!-- Image / Diagram if present -->
+                  <div v-if="q.image_base64" class="my-3 text-center">
+                    <img :src="q.image_base64" :alt="q.image_caption || 'Hình minh họa'" class="max-h-64 mx-auto rounded-lg border border-slate-200 shadow-xs bg-white p-1" />
+                    <p v-if="q.image_caption" class="text-xs italic text-slate-500 mt-1">{{ q.image_caption }}</p>
+                  </div>
+
                   <div class="space-y-1.5 pl-4 pt-1">
                     <div v-for="sub in q.sub_items" :key="sub.label" class="flex items-start space-x-2 text-xs text-slate-700">
                       <span class="font-bold text-slate-900">{{ sub.label }})</span>
@@ -754,6 +766,12 @@
                     <span class="font-bold text-slate-900 text-sm whitespace-nowrap">Câu {{ idx + 1 }}:</span>
                     <div class="text-sm text-slate-800 math-content" v-html="renderMath(q.question)"></div>
                   </div>
+
+                  <!-- Image / Diagram if present -->
+                  <div v-if="q.image_base64" class="my-3 text-center">
+                    <img :src="q.image_base64" :alt="q.image_caption || 'Hình minh họa'" class="max-h-64 mx-auto rounded-lg border border-slate-200 shadow-xs bg-white p-1" />
+                    <p v-if="q.image_caption" class="text-xs italic text-slate-500 mt-1">{{ q.image_caption }}</p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -775,6 +793,12 @@
                   <div class="flex items-start space-x-2">
                     <span class="font-bold text-slate-900 text-sm whitespace-nowrap">Câu {{ idx + 1 }} <span class="text-purple-700 font-semibold text-xs">({{ getEssayPoints(q, idx) }} điểm)</span>:</span>
                     <div class="text-sm text-slate-800 math-content" v-html="renderMath(q.question)"></div>
+                  </div>
+
+                  <!-- Image / Diagram if present -->
+                  <div v-if="q.image_base64" class="my-3 text-center">
+                    <img :src="q.image_base64" :alt="q.image_caption || 'Hình minh họa'" class="max-h-64 mx-auto rounded-lg border border-slate-200 shadow-xs bg-white p-1" />
+                    <p v-if="q.image_caption" class="text-xs italic text-slate-500 mt-1">{{ q.image_caption }}</p>
                   </div>
                 </div>
               </div>
