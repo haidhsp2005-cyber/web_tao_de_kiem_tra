@@ -667,6 +667,25 @@ createApp({
       }
     };
 
+    // Helper to safely parse JSON response and catch 502/503/504 HTML error gateways
+    const parseJsonResponse = async (response, defaultMsg) => {
+      if (!response.ok) {
+        let msg = `${defaultMsg} (mã lỗi ${response.status})`;
+        try {
+          const errData = await response.json();
+          if (errData && errData.detail) msg = errData.detail;
+        } catch (e) {
+          if (response.status === 502 || response.status === 503) {
+            msg = "Máy chủ Render đang triển khai cập nhật hoặc khởi động lại (502/503). Vui lòng nhấn 'Tạo đề kiểm tra' lại sau vài giây.";
+          } else if (response.status === 504) {
+            msg = "Máy chủ phản hồi quá thời gian chờ (504 Gateway Timeout). Vui lòng thử lại.";
+          }
+        }
+        throw new Error(msg);
+      }
+      return await response.json();
+    };
+
     // Generate Exam
     const startGenerate = async () => {
       isGenerating.value = true;
@@ -690,24 +709,6 @@ createApp({
           api_key: keysList[0] || null,
           api_keys: keysList,
           model_name: modelName.value || "auto"
-        };
-
-        const parseJsonResponse = async (response, defaultMsg) => {
-          if (!response.ok) {
-            let msg = `${defaultMsg} (mã lỗi ${response.status})`;
-            try {
-              const errData = await response.json();
-              if (errData && errData.detail) msg = errData.detail;
-            } catch (e) {
-              if (response.status === 502 || response.status === 503) {
-                msg = "Máy chủ Render đang triển khai cập nhật hoặc khởi động lại (502/503). Vui lòng nhấn 'Tạo đề kiểm tra' lại sau vài giây.";
-              } else if (response.status === 504) {
-                msg = "Máy chủ phản hồi quá thời gian chờ (504 Gateway Timeout). Vui lòng thử lại.";
-              }
-            }
-            throw new Error(msg);
-          }
-          return await response.json();
         };
 
         const res = await fetch("/api/generate", {
