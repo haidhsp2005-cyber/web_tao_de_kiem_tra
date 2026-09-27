@@ -7,6 +7,7 @@ from .explanation_sync import (
     synchronize_mcq_explanation_with_answer,
     reconcile_tf_subitem
 )
+from .math_solver import UniversalMathEngine
 
 GARBAGE_PATTERNS = [
     r"phương án khác",
@@ -948,8 +949,17 @@ def heal_parallel_system_short(q: Part3Question) -> Tuple[Part3Question, bool, s
 def auto_heal_math_questions(exam: ExamStructure) -> Tuple[ExamStructure, List[str]]:
     """
     Rà soát và tự động kiểm định độ chuẩn xác toán học của toàn bộ đề thi bằng giải thuật giải tích độc lập.
+    Kết hợp Bộ giải toán thông minh toàn diện CAS & SymPy và các quy tắc kiểm định đặc thù chương trình GDPT.
     """
     notes = []
+    
+    # 0. Bộ giải toán đại số toàn diện CAS / SymPy độc lập (Universal Math Engine)
+    try:
+        exam, universal_notes = UniversalMathEngine.audit_and_solve_all(exam)
+        notes.extend(universal_notes)
+    except Exception as cas_err:
+        print(f"[Universal Math Engine Warning]: {cas_err}")
+
     for idx, q in enumerate(exam.part1_mcq):
         q, modified, msg = auto_heal_single_mcq_math(q)
         if modified:
