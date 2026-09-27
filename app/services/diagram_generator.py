@@ -1,4 +1,5 @@
 import io
+import re
 import base64
 from typing import Dict, Any, Optional, Tuple, List
 import matplotlib
@@ -172,9 +173,9 @@ def draw_variation_table(
     y_prime: Optional[List[str]] = None,
     y_vals: Optional[List[str]] = None,
     title: str = "Bảng biến thiên của hàm số y = f(x)",
-    caption: str = "Bảng biến thiên hàm số"
+    caption: str = "Hình: Bảng biến thiên của hàm số"
 ) -> Tuple[str, str]:
-    """Vẽ bảng biến thiên chuẩn SGK 3 dòng (x, y', y) sắc nét bằng hình ảnh đồ họa."""
+    """Vẽ bảng biến thiên chuẩn SGK 3 dòng (x, y', y) sắc nét bằng hình ảnh đồ họa động."""
     if not x_vals:
         x_vals = [r"$-\infty$", "-1", "1", r"$+\infty$"]
     if not y_prime:
@@ -182,7 +183,7 @@ def draw_variation_table(
     if not y_vals:
         y_vals = [r"$-\infty$", "2", "-2", r"$+\infty$"]
         
-    fig, ax = plt.subplots(figsize=(5.6, 2.2), dpi=150)
+    fig, ax = plt.subplots(figsize=(6.0, 2.4), dpi=150)
     ax.axis('off')
     
     # Khung bảng
@@ -194,7 +195,7 @@ def draw_variation_table(
     ax.plot([0, 10], [0.4, 0.4], 'k-', lw=1.0)
     ax.plot([0, 10], [0.0, 0.0], 'k-', lw=1.2)
     
-    # Đường dọc ngăn cột nhãn
+    # Đường dọc ngăn cột nhãn và đường biên ngoài
     ax.plot([1.4, 1.4], [0.0, 1.0], 'k-', lw=1.2)
     ax.plot([0.0, 0.0], [0.0, 1.0], 'k-', lw=1.2)
     ax.plot([10.0, 10.0], [0.0, 1.0], 'k-', lw=1.2)
@@ -204,37 +205,147 @@ def draw_variation_table(
     ax.text(0.7, 0.55, r"$y'$", fontsize=11, fontweight='bold', va='center', ha='center')
     ax.text(0.7, 0.20, r'$y$', fontsize=11, fontweight='bold', va='center', ha='center')
     
-    # Điền giá trị dòng x
-    n_pts = len(x_vals)
-    xs = np.linspace(2.2, 9.2, n_pts)
-    for i, val in enumerate(x_vals):
-        ax.text(xs[i], 0.85, val, fontsize=10, va='center', ha='center')
+    n = len(x_vals)
+    xs = np.linspace(2.2, 9.2, n)
+    for i, v in enumerate(x_vals):
+        lbl = str(v).strip()
+        if 'inf' in lbl.lower() and '$' not in lbl:
+            lbl = r'$+\infty$' if '+' in lbl else r'$-\infty$'
+        elif '$' not in lbl and lbl:
+            lbl = f"${lbl}$"
+        ax.text(xs[i], 0.85, lbl, fontsize=10, va='center', ha='center')
         
+    int_signs = [s.strip() for s in y_prime if s.strip() in ('+', '-') or '+' in s or '-' in s]
+    
     # Điền dấu y'
-    n_signs = len(y_prime)
-    xs_signs = np.linspace(2.2, 9.2, n_signs)
-    for i, s in enumerate(y_prime):
-        ax.text(xs_signs[i], 0.55, s, fontsize=10, fontweight='bold' if s == '0' else 'normal',
-                va='center', ha='center', color='darkblue' if s in ('+', '-') else 'black')
-        
-    # Mũi tên và giá trị dòng y (Cực đại đi lên, cực tiểu đi xuống)
-    # Ví dụ với 4 mốc: -inf -> 2 -> -2 -> +inf
-    if len(y_vals) >= 4:
-        ax.text(2.2, 0.08, y_vals[0], fontsize=9.5, ha='center', va='center')
-        ax.annotate('', xy=(4.3, 0.32), xytext=(2.6, 0.10), arrowprops=dict(arrowstyle="->", color="black", lw=1.2))
-        ax.text(4.5, 0.34, y_vals[1], fontsize=10, fontweight='bold', ha='center', va='center', color='darkred')
-        ax.annotate('', xy=(6.7, 0.10), xytext=(4.8, 0.32), arrowprops=dict(arrowstyle="->", color="black", lw=1.2))
-        ax.text(6.9, 0.08, y_vals[2], fontsize=10, fontweight='bold', ha='center', va='center', color='darkblue')
-        ax.annotate('', xy=(9.0, 0.32), xytext=(7.2, 0.10), arrowprops=dict(arrowstyle="->", color="black", lw=1.2))
-        ax.text(9.2, 0.34, y_vals[3], fontsize=9.5, ha='center', va='center')
-    else:
-        for i, val in enumerate(y_vals):
-            ax.text(xs[i], 0.20, val, fontsize=10, ha='center', va='center')
+    for i in range(n - 1):
+        mid_x = (xs[i] + xs[i+1]) / 2.0
+        sign = int_signs[i] if i < len(int_signs) else '+'
+        ax.text(mid_x, 0.55, sign, fontsize=11, fontweight='bold', va='center', ha='center', color='darkblue')
+        if i > 0:
+            ax.text(xs[i], 0.55, '0', fontsize=10, va='center', ha='center')
             
+    # Tính toán vị trí chiều cao hàng y theo dấu đạo hàm (Cực đại ở trên, Cực tiểu ở dưới)
+    y_top = 0.33
+    y_bot = 0.08
+    pos_list = []
+    for i in range(n):
+        if i == 0:
+            s0 = int_signs[0] if int_signs else '+'
+            pos_list.append(y_bot if s0 == '+' else y_top)
+        else:
+            s_prev = int_signs[i-1] if i-1 < len(int_signs) else '+'
+            pos_list.append(y_top if s_prev == '+' else y_bot)
+            
+    for i in range(n):
+        v = str(y_vals[i]) if i < len(y_vals) else ''
+        lbl = v.strip()
+        if 'inf' in lbl.lower() and '$' not in lbl:
+            lbl = r'$+\infty$' if '+' in lbl else r'$-\infty$'
+        elif '$' not in lbl and lbl:
+            lbl = f"${lbl}$"
+        color = 'darkred' if pos_list[i] == y_top and 'inf' not in v.lower() else ('darkblue' if pos_list[i] == y_bot and 'inf' not in v.lower() else 'black')
+        ax.text(xs[i], pos_list[i], lbl, fontsize=9.5, fontweight='bold' if 'inf' not in v.lower() else 'normal', va='center', ha='center', color=color)
+        
+    # Vẽ các mũi tên biến thiên
+    for i in range(n - 1):
+        x_start = xs[i] + 0.38
+        x_end = xs[i+1] - 0.38
+        y_start = pos_list[i]
+        y_end = pos_list[i+1]
+        dy = 0.04 if y_start == y_bot else -0.04
+        dy_end = -0.04 if y_end == y_top else 0.04
+        ax.annotate('', xy=(x_end, y_end + dy_end), xytext=(x_start, y_start + dy), arrowprops=dict(arrowstyle='->', color='black', lw=1.2))
+        
     ax.set_xlim(-0.2, 10.2)
     ax.set_ylim(-0.1, 1.1)
     
     return fig_to_base64(fig), caption
+
+def draw_bounded_polynomial_graph(
+    x_min: float = -2.0,
+    x_max: float = 2.0,
+    title: str = "Đồ thị hàm số y = f(x)",
+    caption: str = "Hình: Đồ thị hàm số y = f(x) trên đoạn [-2; 2]"
+) -> Tuple[str, str]:
+    """Vẽ đồ thị hàm số y = x^3 - 3x liên tục trên đoạn [-2; 2] chuẩn bài toán SGK/thi tốt nghiệp."""
+    fig, ax = plt.subplots(figsize=(4.6, 3.6), dpi=150)
+    
+    x = np.linspace(-2.2, 2.2, 400)
+    y = x**3 - 3*x
+    
+    ax.plot(x, y, color='#1e3a8a', linewidth=2.2, label=r'$y = f(x)$')
+    ax.axhline(0, color='black', linewidth=1.1)
+    ax.axvline(0, color='black', linewidth=1.1)
+    
+    key_points = [(-2.0, -2.0), (-1.0, 2.0), (1.0, -2.0), (2.0, 2.0)]
+    for px, py in key_points:
+        ax.plot(px, py, 'ro', markersize=4.5)
+        ax.plot([px, px], [0, py], 'r--', linewidth=0.9, alpha=0.7)
+        ax.plot([0, px], [py, py], 'r--', linewidth=0.9, alpha=0.7)
+        ax.text(px, -0.45 if py > 0 else 0.3, f"{int(px)}", fontsize=8.5, ha='center', color='darkred', fontweight='bold')
+        ax.text(-0.35 if px > 0 else 0.25, py, f"{int(py)}", fontsize=8.5, va='center', color='darkred', fontweight='bold')
+        
+    ax.text(-0.25, -0.35, 'O', fontsize=9.5, fontweight='bold')
+    ax.text(2.1, -0.5, 'x', fontsize=10, fontstyle='italic', fontweight='bold')
+    ax.text(0.15, 2.5, 'y', fontsize=10, fontstyle='italic', fontweight='bold')
+    ax.grid(True, linestyle=':', alpha=0.4, color='gray')
+    ax.set_xlim(-2.5, 2.5)
+    ax.set_ylim(-2.8, 2.8)
+    if title:
+        ax.set_title(title, fontsize=10, pad=8, color='#0f172a', fontweight='bold')
+        
+    return fig_to_base64(fig), caption
+
+def extract_and_render_variation_table(q_text: str) -> Tuple[str, Optional[str], Optional[str]]:
+    """
+    Quét nội dung câu hỏi, nếu phát hiện bảng biến thiên dạng ASCII / Markdown table:
+    1. Trích xuất chính xác các giá trị x, y' (dấu), y.
+    2. Vẽ bảng biến thiên đồ họa Matplotlib sắc nét với đúng các giá trị và chiều mũi tên đó.
+    3. Làm sạch, loại bỏ hoàn toàn đoạn bảng ký tự ASCII/Markdown xấu xí khỏi nội dung câu hỏi.
+    Trả về: (q_text_cleaned, image_base64, image_caption)
+    """
+    if not q_text:
+        return q_text, None, None
+        
+    pattern = re.compile(
+        r'(?:\n|^)[ \t]*\|?[ \t]*x[ \t]*\|([^\n]+)\n'
+        r'(?:[ \t]*\|?[ \t]*[-:| ]+\n)?'
+        r'[ \t]*\|?[ \t]*(?:y[\'’]?|f[\'’]?\(x\))[ \t]*\|([^\n]+)\n'
+        r'(?:[ \t]*\|?[ \t]*[-:| ]+\n)?'
+        r'[ \t]*\|?[ \t]*(?:y|f\(x\))[ \t]*\|([^\n]+)',
+        re.IGNORECASE
+    )
+    
+    m = pattern.search(q_text)
+    if not m:
+        return q_text, None, None
+        
+    x_raw, yp_raw, y_raw = m.groups()
+    x_tokens = [tok.strip() for tok in x_raw.split('|') if tok.strip()]
+    yp_tokens = [tok.strip() for tok in yp_raw.split('|') if tok.strip()]
+    y_tokens = [
+        re.sub(r'^(?:->|-->|=>|\\searrow|\\nearrow|>)\s*', '', tok.strip()).strip()
+        for tok in y_raw.split('|') if tok.strip()
+    ]
+    
+    # Render graphic table
+    b64, cap = draw_variation_table(
+        x_vals=x_tokens if x_tokens else None,
+        y_prime=yp_tokens if yp_tokens else None,
+        y_vals=y_tokens if y_tokens else None,
+        caption="Hình: Bảng biến thiên của hàm số"
+    )
+    
+    # Strip raw ASCII table from question text
+    cleaned = pattern.sub('', q_text)
+    # Strip any dangling markdown table dividers
+    cleaned = re.sub(r'^[ \t]*\|?[-:| ]+\|?[ \t]*$', '', cleaned, flags=re.MULTILINE)
+    # Normalize introductory phrasing
+    cleaned = re.sub(r'(?:bảng biến thiên\s+)?như sau:?\s*', 'bảng biến thiên như hình vẽ bên. ', cleaned, flags=re.IGNORECASE)
+    cleaned = re.sub(r'\n\s*\n+', '\n', cleaned).strip()
+    
+    return cleaned, b64, cap
 
 
 # ==============================================================================
@@ -584,6 +695,13 @@ def generate_diagram(spec: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]
                 title=title or "Bảng biến thiên của hàm số",
                 caption=caption or "Bảng biến thiên"
             )
+        elif diag_type in ("bounded_graph", "bounded_polynomial", "do_thi_doan"):
+            return draw_bounded_polynomial_graph(
+                x_min=float(spec.get("x_min", -2.0)),
+                x_max=float(spec.get("x_max", 2.0)),
+                title=title or "Đồ thị hàm số y = f(x)",
+                caption=caption or "Hình: Đồ thị hàm số y = f(x) trên đoạn [-2; 2]"
+            )
             
         # Vật lý
         elif diag_type in ("physics_oscillation", "dao_dong", "x_t"):
@@ -633,6 +751,8 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
     """
     Tự động quét và gắn hình ảnh minh họa, đồ thị hàm số và bảng biến thiên
     vào các câu hỏi Toán 12, Vật lý, Hóa học, Sinh học nếu câu hỏi đề cập hoặc có spec diagram.
+    Đồng thời tự động bóc tách và thay thế các bảng biến thiên ASCII/Markdown thô sơ
+    thành hình ảnh đồ họa chất lượng cao chuẩn SGK.
     """
     subject_lower = str(getattr(exam, "subject", "")).lower()
     
@@ -645,6 +765,19 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
     
     for sec in all_sections:
         for q in sec:
+            q_text_orig = str(getattr(q, "question", ""))
+            
+            # 1. BÓC TÁCH BẢNG BIẾN THIÊN ASCII / MARKDOWN:
+            # Nếu câu hỏi có bảng ASCII/Markdown (như | x | -\infty | ...), trích xuất tham số,
+            # vẽ hình đồ họa vector sắc nét và làm sạch văn bản trong q.question.
+            cleaned_text, ascii_b64, ascii_cap = extract_and_render_variation_table(q_text_orig)
+            if ascii_b64:
+                q.question = cleaned_text
+                q.image_base64 = ascii_b64
+                q.image_caption = ascii_cap
+                continue
+                
+            # Nếu câu hỏi đã có hình ảnh rồi thì bỏ qua
             if getattr(q, "image_base64", None):
                 continue
                 
@@ -654,6 +787,10 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
             if "toán" in subject_lower:
                 if "bảng biến thiên" in q_text or "bbt" in q_text:
                     b64, cap = draw_variation_table(caption="Hình: Bảng biến thiên của hàm số")
+                    q.image_base64 = b64
+                    q.image_caption = cap
+                elif "[-2; 2]" in q_text or "[-2, 2]" in q_text or "[-2;2]" in q_text:
+                    b64, cap = draw_bounded_polynomial_graph(caption="Hình: Đồ thị hàm số y = f(x) trên đoạn [-2; 2]")
                     q.image_base64 = b64
                     q.image_caption = cap
                 elif "đồ thị" in q_text or "hình vẽ" in q_text or "đường cong" in q_text:

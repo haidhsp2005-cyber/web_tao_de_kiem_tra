@@ -127,6 +127,81 @@ def test_auto_attach():
     assert attached.part1_mcq[1].image_base64 is not None, "Auto-attached Quartic graph failed"
     print("  [PASS] auto_attach_diagrams_to_exam successfully attached diagrams based on question context!")
 
+def test_ascii_and_bounded_graphs():
+    print("Testing ASCII table auto-extraction and bounded polynomial graph...")
+    raw_exam = ExamStructure(
+        title="ĐỀ KIỂM TRA ĐỊNH KỲ TOÁN 12",
+        subject="Toán học",
+        grade="12",
+        duration_minutes=50,
+        school_name="Trường THPT",
+        academic_year="2026-2027",
+        code="101",
+        part1_mcq=[
+            Part1Question(
+                id=2,
+                question="""Cho hàm số y = f(x) có đạo hàm trên R và có bảng biến thiên như sau:
+| x | -\\infty | 0 | 2 | +\\infty |
+|---|---|---|---|---|
+| y' | - | 0 | + | 0 | - |
+| y | +\\infty | -> -3 | -> 5 | -> -\\infty |
+Hàm số đã cho đồng biến trên khoảng nào dưới đây?""",
+                options=[Option(label="A", text="(0; 2)"), Option(label="B", text="(-\\infty; 0)"), Option(label="C", text="(2; +\\infty)"), Option(label="D", text="(0; +\\infty)")],
+                answer="A",
+                explanation="Từ bảng biến thiên, trên khoảng (0; 2), y' > 0 nên hàm số đồng biến."
+            ),
+            Part1Question(
+                id=3,
+                question="Cho hàm số y = f(x) liên tục trên đoạn [-2; 2] và có đồ thị là đường cong như hình vẽ bên. Giá trị lớn nhất của hàm số trên đoạn [-2; 2] là:",
+                options=[Option(label="A", text="-1"), Option(label="B", text="0"), Option(label="C", text="-2"), Option(label="D", text="2")],
+                answer="D",
+                explanation="Dựa vào đồ thị hàm số trên đoạn [-2; 2], điểm cao nhất có tung độ bằng 2. Vậy GTLN bằng 2."
+            ),
+            Part1Question(
+                id=4,
+                question="""Cho hàm số y = f(x) có bảng biến thiên như sau:
+x | -\\infty | -1 | 1 | +\\infty
+---|---|---|---|---
+y' | + | 0 | - | 0 | +
+y | -\\infty | -> 2 | -> -2 | -> +\\infty
+Điểm cực đại của hàm số đã cho là:""",
+                options=[Option(label="A", text="x = -1"), Option(label="B", text="x = 1"), Option(label="C", text="y = 2"), Option(label="D", text="y = -2")],
+                answer="A",
+                explanation="Hàm số đạt cực đại tại x = -1."
+            )
+        ],
+        part2_tf=[],
+        part3_short=[],
+        part4_essay=[],
+        scoring=calculate_exam_scoring(num_p1=3, num_p2=0, num_p3=0, num_p4=0)
+    )
+    
+    attached = auto_attach_diagrams_to_exam(raw_exam)
+    
+    # Câu 2: ASCII table must be stripped, dynamic variation table attached
+    q2 = attached.part1_mcq[0]
+    assert "| x |" not in q2.question, f"ASCII table was not removed from Q2 question: {q2.question}"
+    assert "bảng biến thiên như hình vẽ bên" in q2.question, f"Question phrasing not cleaned: {q2.question}"
+    assert q2.image_base64 is not None and len(q2.image_base64) > 1000, "Q2 image missing"
+    print(f"  [PASS] Câu 2: Raw ASCII table cleanly stripped & dynamic variation table attached!")
+    
+    # Câu 3: Bounded interval [-2; 2] graph attached
+    q3 = attached.part1_mcq[1]
+    assert q3.image_base64 is not None and len(q3.image_base64) > 1000, "Q3 image missing"
+    assert "[-2; 2]" in q3.image_caption, f"Caption not matching: {q3.image_caption}"
+    print(f"  [PASS] Câu 3: Bounded graph on [-2; 2] successfully attached!")
+    
+    # Câu 4: Markdown table stripped, dynamic variation table attached
+    q4 = attached.part1_mcq[2]
+    assert "x | -\\infty" not in q4.question, f"ASCII table was not removed from Q4: {q4.question}"
+    assert q4.image_base64 is not None and len(q4.image_base64) > 1000, "Q4 image missing"
+    print(f"  [PASS] Câu 4: Raw table stripped & dynamic variation table attached!")
+    
+    # Export to DOCX
+    docx_bytes = export_to_bytes(attached, red_answers=True)
+    assert len(docx_bytes) > 50000
+    print(f"  [PASS] Word DOCX with Câu 2, 3, 4 exported successfully ({len(docx_bytes):,} bytes)!")
+
 if __name__ == "__main__":
     test_math_mock()
     test_physics_mock()
@@ -134,4 +209,5 @@ if __name__ == "__main__":
     test_biology_mock()
     test_shuffling_preserves_images()
     test_auto_attach()
+    test_ascii_and_bounded_graphs()
     print("\nALL DIAGRAM TESTS PASSED 100%!")

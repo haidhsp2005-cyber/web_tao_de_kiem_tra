@@ -14,6 +14,7 @@ from typing import List, Optional, Dict, Any
 
 from .models import ExamStructure, ExamVariant, Option, Part1Question, Part2Question, Part3Question, ExamScoring, calculate_exam_scoring, sync_part4_essay_points, clean_essay_explanation
 from .explanation_sync import synchronize_mcq_explanation_with_answer
+from .diagram_generator import auto_attach_diagrams_to_exam
 
 # Locate MML2OMML.XSL
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -226,6 +227,14 @@ def create_exam_document(
       Section 3: LỜI GIẢI CHI TIẾT (Step by step explanations with math)
     """
     doc = docx.Document()
+    
+    try:
+        exam = auto_attach_diagrams_to_exam(exam)
+        if all_variants:
+            for v in all_variants:
+                auto_attach_diagrams_to_exam(v)
+    except Exception as e_diag:
+        print(f"[Docx Exporter Warning] Lỗi khi auto-attach diagram: {e_diag}")
     
     # Configure page setup: Standard A4, 2cm margins
     section = doc.sections[0]
