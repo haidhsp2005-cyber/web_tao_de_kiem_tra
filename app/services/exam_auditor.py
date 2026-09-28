@@ -1218,6 +1218,38 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
                 ],
                 "explanation": "Quy định pháp luật về quốc phòng và an ninh quốc gia."
             }
+        ],
+        "tin": [
+            {
+                "question": "Xét các phát biểu sau đây về khái niệm và đặc trưng của Trí tuệ nhân tạo (AI):",
+                "sub_items": [
+                    {"label": "a", "statement": "Trí tuệ nhân tạo hẹp (AI yếu) được thiết kế nhằm thực hiện một nhiệm vụ cụ thể và chuyên biệt.", "is_correct": True, "explanation": "AI hẹp (Narrow AI) giải quyết hiệu quả một tác vụ cụ thể như nhận diện khuôn mặt, chơi cờ."},
+                    {"label": "b", "statement": "Trí tuệ nhân tạo tổng quát (AGI/AI mạnh) hiện nay đã hoàn thiện và thay thế hoàn toàn tư duy của con người.", "is_correct": False, "explanation": "AGI vẫn đang trong giai đoạn nghiên cứu lý thuyết, chưa thể thay thế hoàn toàn con người."},
+                    {"label": "c", "statement": "Học máy (Machine Learning) là một lĩnh vực của AI cho phép hệ thống học hỏi từ dữ liệu để cải thiện hiệu năng.", "is_correct": True, "explanation": "Machine Learning sử dụng thuật toán phân tích dữ liệu và tự động học mẫu."},
+                    {"label": "d", "statement": "Hệ thống AI không cần nguồn dữ liệu huấn luyện vẫn có thể tự đưa ra các quyết định chính xác tuyệt đối.", "is_correct": False, "explanation": "Các mô hình AI phụ thuộc trực tiếp vào dữ liệu huấn luyện; không có dữ liệu thì không thể huấn luyện mô hình."}
+                ],
+                "explanation": "Kiến thức về Trí tuệ nhân tạo (AI) và Học máy trong chương trình Tin học 12 mới."
+            },
+            {
+                "question": "Về mạng máy tính, giao thức truyền thông và an toàn thông tin số:",
+                "sub_items": [
+                    {"label": "a", "statement": "Giao thức TCP/IP là bộ giao thức nền tảng đảm bảo việc định tuyến và truyền gói tin tin cậy trên Internet.", "is_correct": True, "explanation": "TCP đảm bảo truyền dữ liệu tin cậy và IP phụ trách đánh địa chỉ và định tuyến gói tin."},
+                    {"label": "b", "statement": "Địa chỉ IPv4 gồm 32 bit được chia thành 4 nhóm số thập phân phân cách bởi dấu chấm.", "is_correct": True, "explanation": "IPv4 gồm 32 bit, viết dưới dạng 4 số từ 0 đến 255 (ví dụ: 192.168.1.1)."},
+                    {"label": "c", "statement": "Tường lửa (Firewall) chỉ có thể được cài đặt dưới dạng phần cứng mà không thể triển khai bằng phần mềm.", "is_correct": False, "explanation": "Tường lửa có thể triển khai bằng phần cứng chuyên dụng hoặc phần mềm trên hệ điều hành."},
+                    {"label": "d", "statement": "Sử dụng mật khẩu mạnh có kết hợp chữ hoa, chữ thường, chữ số và ký tự đặc biệt giúp nâng cao độ an toàn tài khoản.", "is_correct": True, "explanation": "Mật khẩu phức tạp giảm thiểu nguy cơ bị tấn công dò quét (brute-force)."}
+                ],
+                "explanation": "Kiến thức về mạng máy tính và an ninh mạng."
+            },
+            {
+                "question": "Cho đoạn chương trình Python xử lý danh sách. Xét tính đúng sai của các khẳng định sau:",
+                "sub_items": [
+                    {"label": "a", "statement": "Trong Python, chỉ số (index) của phần tử đầu tiên trong danh sách (list) luôn bắt đầu từ 0.", "is_correct": True, "explanation": "Python đánh chỉ mục mảng/list từ 0 đến n-1."},
+                    {"label": "b", "statement": "Hàm len(a) trả về số lượng phần tử hiện có trong danh sách a.", "is_correct": True, "explanation": "Hàm len() chuẩn của Python dùng để lấy độ dài tập hợp."},
+                    {"label": "c", "statement": "Lệnh a.append(x) sẽ xóa phần tử x ra khỏi danh sách a.", "is_correct": False, "explanation": "Lệnh append(x) dùng để thêm phần tử x vào cuối danh sách, lệnh remove(x) mới là xóa."},
+                    {"label": "d", "statement": "Vòng lặp for i in range(1, 5) sẽ thực hiện đúng 4 lần lặp với i nhận giá trị lần lượt là 1, 2, 3, 4.", "is_correct": True, "explanation": "range(1, 5) sinh ra dãy [1, 2, 3, 4], gồm 4 giá trị."}
+                ],
+                "explanation": "Kiến thức lập trình căn bản với danh sách và vòng lặp trong Python."
+            }
         ]
     }
     

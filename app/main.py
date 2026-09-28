@@ -20,7 +20,7 @@ from .services.extractor import extract_file_content
 from .services.matrix_analyzer import analyze_matrix_document
 from .services.ai_generator import (
     generate_exam, get_mock_math_exam, get_mock_physics_exam, get_mock_chemistry_exam, get_mock_gdqp_exam,
-    get_mock_english_exam, get_env_api_keys, mask_key
+    get_mock_english_exam, get_mock_informatics_exam, get_env_api_keys, mask_key
 )
 from .services.shuffler import shuffle_exam
 from .services.docx_exporter import create_exam_document
@@ -209,6 +209,8 @@ async def api_sample(subject: str):
     sub = subject.lower()
     if "gdqp" in sub or "quoc_phong" in sub or "quốc phòng" in sub:
         return get_mock_gdqp_exam()
+    elif "tin" in sub or "informatics" in sub:
+        return get_mock_informatics_exam()
     elif "anh" in sub or "english" in sub:
         return get_mock_english_exam()
     elif "ly" in sub or "vật" in sub:

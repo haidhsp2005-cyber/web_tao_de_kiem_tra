@@ -100,64 +100,214 @@ QUY TẮC QUAN TRỌNG:
 def detect_subject_from_text(text: str) -> str:
     lower = text.lower()
     
-    # 1. Tiếng Anh (Kiểm tra ưu tiên để tránh nhầm lẫn từ vựng tiếng Anh với các môn khác)
-    english_keywords = [
-        "tiếng anh", "tieng anh", "english", "ielts", "toeic", "toefl",
-        "vocabulary", "grammar", "pronunciation", "phonetics", "synonym", "antonym",
-        "reading comprehension", "cloze test"
+    # 1. Kiểm tra tiêu đề / phần khai báo môn học rõ ràng ở đầu tài liệu
+    m_header = re.search(
+        r'(?:môn|môn\s*học|phân\s*môn|bài\s*kiểm\s*tra\s*môn|đề\s*(?:thi|kiểm\s*tra)\s*môn?|ma\s*trận.*?môn)\s*[:\-–—]?\s*([^\n\r,\.;]{2,35})',
+        text[:1500],
+        re.IGNORECASE
+    )
+    if m_header:
+        h = m_header.group(1).lower().strip()
+        if any(k in h for k in ['tin học', 'tin', 'informatics', 'lập trình']):
+            return 'Tin học'
+        if any(k in h for k in ['tiếng anh', 'english', 'ngoại ngữ']):
+            return 'Tiếng Anh'
+        if any(k in h for k in ['toán học', 'toán', 'giải tích', 'đại số', 'hình học']):
+            return 'Toán học'
+        if any(k in h for k in ['vật lý', 'vật lí', 'vật li']):
+            return 'Vật lý'
+        if any(k in h for k in ['hóa học', 'hóa']):
+            return 'Hóa học'
+        if any(k in h for k in ['sinh học', 'sinh']):
+            return 'Sinh học'
+        if any(k in h for k in ['quốc phòng', 'gdqp', 'quân sự']):
+            return 'Giáo dục Quốc phòng & An ninh'
+        if any(k in h for k in ['lịch sử', 'sử']):
+            return 'Lịch sử'
+        if any(k in h for k in ['địa lý', 'địa lí', 'địa li']):
+            return 'Địa lý'
+        if any(k in h for k in ['kinh tế', 'pháp luật', 'gdkt', 'gdcd']):
+            return 'Giáo dục kinh tế & Pháp luật'
+        if any(k in h for k in ['ngữ văn', 'văn học', 'văn']):
+            return 'Ngữ văn'
+        if any(k in h for k in ['công nghệ']):
+            return 'Công nghệ'
+
+    scores = {}
+
+    # --- Tin học ---
+    tin_score = 0
+    tin_high = [
+        'tin học', 'môn tin', 'trí tuệ nhân tạo', 'trí tuệ nhân tạo (ai)', 'machine learning', 
+        'học máy', 'deep learning', 'mạng máy tính', 'lập trình', 'thuật toán', 
+        'ngôn ngữ lập trình', 'cơ sở dữ liệu', 'csdl', 'hệ quản trị csdl', 'hệ điều hành'
     ]
-    if any(k in lower for k in english_keywords):
-        return "Tiếng Anh"
-        
-    # Phát hiện danh sách từ vựng dạng: "Word: Nghĩa" hoặc "Word - Nghĩa"
+    tin_med = [
+        'python', 'pascal', 'scratch', 'c++', 'bảng tính', 'excel', 'phần mềm', 'phần cứng', 
+        'bộ nhớ ram', 'địa chỉ ip', 'an toàn số', 'an toàn mạng', 'an toàn thông tin', 
+        'số nhị phân', 'bit', 'byte', 'trình duyệt', 'router', 'switch', 'lan', 'wan', 
+        'tường lửa', 'mã độc', 'truy vấn sql', 'khoa học máy tính'
+    ]
+    for k in tin_high:
+        if k in lower:
+            tin_score += 10
+    for k in tin_med:
+        if k in lower:
+            tin_score += 5
+    if re.search(r'\b(?:ai|agi|lan|wan|cpu|ram|rom|sql|html|css)\b', lower):
+        tin_score += 6
+    if re.search(r'for\s+\w+\s+in\s+range|def\s+\w+\s*\(|print\s*\(|input\s*\(', text):
+        tin_score += 10
+    scores['Tin học'] = tin_score
+
+    # --- Tiếng Anh ---
+    ta_score = 0
+    ta_high = [
+        'tiếng anh', 'english', 'ielts', 'toeic', 'toefl', 'pronunciation', 'phonetics', 
+        'stress pattern', 'closest in meaning', 'opposite in meaning', 'reading comprehension', 
+        'read the following passage', 'sentence transformation', 'word formation', 'cloze test'
+    ]
+    for k in ta_high:
+        if k in lower:
+            ta_score += 10
     vocab_pairs = len(re.findall(r'^[a-zA-Z\s\-]+(?:\([a-zA-Z\s\.,]+\))?\s*[:\-=\/]\s*[\w\s]+', text[:3000], re.MULTILINE))
     if vocab_pairs >= 3:
-        return "Tiếng Anh"
-        
-    common_en_words = {
-        "the", "be", "to", "of", "and", "in", "that", "have", "for", "not", "with", "you", 
-        "this", "but", "his", "from", "they", "say", "her", "she", "will", "one", "all", 
-        "would", "there", "their", "what", "out", "about", "who", "which", "when", "can", 
-        "time", "just", "into", "your", "good", "some", "could", "them", "other", "than", 
-        "then", "now", "only", "come", "over", "also", "after", "use", "two", "how", "our", 
-        "work", "well", "way", "even", "new", "want", "because", "any", "these", "give", 
-        "most", "advice", "community", "police", "officer", "garbage", "collector", 
-        "electrician", "firefighter", "suburb", "guess", "useful", "lesson", "unit"
-    }
-    found_en = [w for w in re.findall(r'[a-zA-Z]{2,}', lower[:2000]) if w in common_en_words]
-    if len(found_en) >= 5:
-        return "Tiếng Anh"
+        ta_score += vocab_pairs * 4
+    # Chỉ tính mật độ từ tiếng Anh nếu tài liệu không chứa các thuật ngữ Tin học chuyên ngành
+    if tin_score < 8:
+        common_en_words = {
+            'the', 'be', 'to', 'of', 'and', 'in', 'that', 'have', 'for', 'not', 'with', 'you', 
+            'this', 'but', 'his', 'from', 'they', 'say', 'her', 'she', 'will', 'one', 'all', 
+            'would', 'there', 'their', 'what', 'out', 'about', 'who', 'which', 'when', 'can', 
+            'time', 'just', 'into', 'your', 'good', 'some', 'could', 'them', 'other', 'than', 
+            'then', 'now', 'only', 'come', 'over', 'also', 'after', 'use', 'two', 'how', 'our', 
+            'work', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 
+            'most', 'advice', 'community', 'police', 'officer', 'garbage', 'collector', 
+            'electrician', 'firefighter', 'suburb', 'guess', 'useful', 'lesson', 'unit'
+        }
+        found_en = [w for w in re.findall(r'[a-zA-Z]{2,}', lower[:2000]) if w in common_en_words]
+        if len(found_en) >= 8:
+            ta_score += 8
+    scores['Tiếng Anh'] = ta_score
 
-    # 2. Các môn học chuyên biệt khác
-    if "quốc phòng" in lower or "gdqp" in lower or "quân sự" in lower or "an ninh" in lower:
-        return "Giáo dục Quốc phòng & An ninh"
-    elif "công nghệ" in lower or "cong nghe" in lower:
-        return "Công nghệ"
-    elif "tin học" in lower or "tin 10" in lower or "tin 11" in lower or "tin 12" in lower or "python" in lower or "lập trình" in lower or "thuật toán" in lower:
-        return "Tin học"
-    elif "vật lý" in lower or "vật lí" in lower or "vat li" in lower or "dao động" in lower or "sóng cơ" in lower or "quang học" in lower:
-        return "Vật lý"
-    elif "hóa học" in lower or "phản ứng hóa học" in lower or "hoa hoc" in lower or "este" in lower or "dung dịch" in lower or "kim loại" in lower or "axit" in lower:
-        return "Hóa học"
-    elif "sinh học" in lower or "di truyền" in lower or "nhiễm sắc thể" in lower or "tế bào" in lower or "quần xã" in lower or "hệ sinh thái" in lower:
-        return "Sinh học"
-    elif "lịch sử" in lower or "lich su" in lower or "chiến dịch" in lower or "khởi nghĩa" in lower or "cách mạng" in lower:
-        return "Lịch sử"
-    elif "địa lý" in lower or "địa lí" in lower or "dia ly" in lower or "khí hậu" in lower or "địa hình" in lower or "sông ngòi" in lower:
-        return "Địa lý"
-    elif "kinh tế" in lower or "gdkt" in lower or "pháp luật" in lower:
-        return "Giáo dục kinh tế & Pháp luật"
-    elif "ngữ văn" in lower or "văn học" in lower or "tác phẩm" in lower or "nhà thơ" in lower or "nhà văn" in lower:
-        return "Ngữ văn"
-    else:
-        return "Toán học"
+    # --- Toán học ---
+    toan_score = 0
+    toan_words = [
+        'toán học', 'hàm số', 'đồ thị', 'phương trình', 'hệ phương trình', 'bất đẳng thức', 
+        'đạo hàm', 'tích phân', 'nguyên hàm', 'hình chóp', 'tam giác vuông', 'đường tròn', 
+        'vectơ', 'tọa độ oxyz', 'parabol', 'tiệm cận'
+    ]
+    for k in toan_words:
+        if k in lower:
+            toan_score += 6
+    scores['Toán học'] = toan_score
+
+    # --- Hóa học ---
+    hoa_score = 0
+    hoa_words = [
+        'hóa học', 'phản ứng hóa học', 'dung dịch', 'axit', 'bazơ', 'kim loại', 'phi kim', 
+        'este', 'hiđrocacbon', 'khối lượng mol', 'nguyên tử khối', 'đồng phân', 'đồng đẳng'
+    ]
+    for k in hoa_words:
+        if k in lower:
+            hoa_score += 6
+    scores['Hóa học'] = hoa_score
+
+    # --- Vật lý ---
+    ly_score = 0
+    ly_words = [
+        'vật lý', 'vật lí', 'dao động điều hòa', 'sóng cơ', 'con lắc', 'quang học', 
+        'thấu kính', 'điện trở', 'cường độ dòng điện', 'hiệu điện thế', 'vận tốc tức thời'
+    ]
+    for k in ly_words:
+        if k in lower:
+            ly_score += 6
+    scores['Vật lý'] = ly_score
+
+    # --- Sinh học ---
+    sinh_score = 0
+    sinh_words = [
+        'sinh học', 'di truyền', 'nhiễm sắc thể', 'tế bào', 'đột biến gen', 'quần thể', 
+        'quần xã', 'hệ sinh thái', 'alen', 'kiểu gen', 'kiểu hình', 'phiên mã', 'dịch mã'
+    ]
+    for k in sinh_words:
+        if k in lower:
+            sinh_score += 6
+    scores['Sinh học'] = sinh_score
+
+    # --- Giáo dục Quốc phòng & An ninh ---
+    gdqp_score = 0
+    gdqp_words = [
+        'quốc phòng', 'an ninh', 'gdqp', 'quân đội', 'nghĩa vụ quân sự', 'chiến thuật', 
+        'bắn súng', 'sơ cấp cứu', 'bảo vệ tổ quốc', 'ngạch dự bị'
+    ]
+    for k in gdqp_words:
+        if k in lower:
+            gdqp_score += 8
+    scores['Giáo dục Quốc phòng & An ninh'] = gdqp_score
+
+    # --- Lịch sử ---
+    su_score = 0
+    su_words = ['lịch sử', 'chiến dịch', 'khởi nghĩa', 'cách mạng', 'kháng chiến', 'triều đại', 'hiệp định']
+    for k in su_words:
+        if k in lower:
+            su_score += 6
+    scores['Lịch sử'] = su_score
+
+    # --- Địa lý ---
+    dia_score = 0
+    dia_words = ['địa lý', 'địa lí', 'địa hình', 'khí hậu', 'sông ngòi', 'thổ nhưỡng', 'vùng kinh tế', 'khoáng sản']
+    for k in dia_words:
+        if k in lower:
+            dia_score += 6
+    scores['Địa lý'] = dia_score
+
+    # --- Giáo dục kinh tế & Pháp luật ---
+    gdkt_score = 0
+    gdkt_words = ['kinh tế & pháp luật', 'kinh tế và pháp luật', 'gdkt', 'gdcd', 'pháp luật', 'hiến pháp', 'lạm phát', 'cung cầu']
+    for k in gdkt_words:
+        if k in lower:
+            gdkt_score += 8
+    scores['Giáo dục kinh tế & Pháp luật'] = gdkt_score
+
+    # --- Ngữ văn ---
+    van_score = 0
+    van_words = ['ngữ văn', 'văn học', 'tác phẩm', 'nhà thơ', 'nhà văn', 'nhân vật', 'nghị luận xã hội', 'nghị luận văn học']
+    for k in van_words:
+        if k in lower:
+            van_score += 6
+    scores['Ngữ văn'] = van_score
+
+    # --- Công nghệ ---
+    cn_score = 0
+    cn_words = ['công nghệ', 'trồng trọt', 'chăn nuôi', 'lâm nghiệp', 'thủy sản', 'cơ khí', 'mạch điện', 'bản vẽ kỹ thuật']
+    for k in cn_words:
+        if k in lower:
+            cn_score += 6
+    scores['Công nghệ'] = cn_score
+
+    best_subj, max_s = max(scores.items(), key=lambda x: x[1])
+    if max_s > 0:
+        return best_subj
+    return 'Toán học'
 
 def detect_grade_from_text(text: str) -> str:
-    for g in ["12", "11", "10", "9", "8", "7", "6", "5", "4", "3"]:
-        re_pattern = rf"(?:lớp|khối|k|khóa)\s*{g}\b|_\b{g}\b|\b{g}\b"
-        if re.search(re_pattern, text[:2000], re.IGNORECASE):
-            return g
-    return "12"
+    # 1. Ưu tiên tiền tố định danh lớp/khối rõ ràng
+    patterns = [
+        r'(?:lớp|khối\s*lớp|khối|k|grade|unit)\s*([3-9]|1[0-2])\b',
+        r'(?:toán|tin|lý|hóa|sinh|anh|văn|sử|địa|gdqp|công\s*nghệ)\s*([3-9]|1[0-2])\b',
+        r'[\s_](?:lop|khoi|k)?([3-9]|1[0-2])[\s_\.]'
+    ]
+    for pat in patterns:
+        m = re.search(pat, text[:2500], re.IGNORECASE)
+        if m:
+            return m.group(1)
+            
+    # 2. Suy luận dựa trên chủ đề kiến thức đặc thù lớp 12
+    if re.search(r'trí tuệ nhân tạo|machine learning|học máy|đạo hàm|tích phân|nguyên hàm|oxyz|este\s*-\s*lipit', text[:3000], re.IGNORECASE):
+        return '12'
+        
+    return '12'
 
 def detect_duration_from_text(text: str) -> int:
     m = re.search(r"(\d+)\s*(?:phút|min|p\b)", text[:2000], re.IGNORECASE)

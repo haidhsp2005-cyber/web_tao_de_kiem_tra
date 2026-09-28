@@ -1388,6 +1388,221 @@ def get_mock_english_exam() -> ExamStructure:
         audit_report=create_default_audit_report("Tiếng Anh")
     )
 
+def get_mock_informatics_exam() -> ExamStructure:
+    mcqs = [
+        Part1Question(
+            id=1,
+            question="Hệ thống trí tuệ nhân tạo nào sau đây là ví dụ điển hình về Trí tuệ nhân tạo hẹp (Narrow AI)?",
+            options=[
+                Option(label="A", text="Hệ thống nhận diện biển số xe tự động tại trạm thu phí"),
+                Option(label="B", text="Hệ thống AI có ý thức và tư duy cảm xúc như con người"),
+                Option(label="C", text="Trí tuệ nhân tạo tổng quát có khả năng học mọi lĩnh vực của đời sống"),
+                Option(label="D", text="Siêu trí tuệ nhân tạo vượt trội toàn diện trí tuệ nhân loại")
+            ],
+            answer="A",
+            explanation="AI hẹp (Narrow AI/Weak AI) được thiết kế chuyên biệt để giải quyết tốt một tác vụ cụ thể như nhận diện biển số, nhận diện khuôn mặt."
+        ),
+        Part1Question(
+            id=2,
+            question="Trong học máy (Machine Learning), quá trình cung cấp tập dữ liệu cho thuật toán để mô hình phát hiện ra quy luật và đặc trưng được gọi là",
+            options=[
+                Option(label="A", text="Huấn luyện mô hình (Training)"),
+                Option(label="B", text="Biên dịch mã nguồn (Compiling)"),
+                Option(label="C", text="Sao lưu dữ liệu (Backing up)"),
+                Option(label="D", text="Nén tệp tin (Compressing)")
+            ],
+            answer="A",
+            explanation="Huấn luyện (Training) là giai đoạn cốt lõi để mô hình học máy tự động rút ra các trọng số và quy luật từ dữ liệu mẫu."
+        ),
+        Part1Question(
+            id=3,
+            question="Ứng dụng nào sau đây KHÔNG PHẢI là ứng dụng tiêu biểu của Trí tuệ nhân tạo trong thực tế?",
+            options=[
+                Option(label="A", text="Thực hiện phép cộng hai số nguyên bằng máy tính cầm tay thông thường"),
+                Option(label="B", text="Trợ lý ảo nhận diện và phản hồi giọng nói tự nhiên"),
+                Option(label="C", text="Hệ thống gợi ý video và âm nhạc theo sở thích người dùng"),
+                Option(label="D", text="Xe tự hành phát hiện chướng ngại vật và biển báo giao thông")
+            ],
+            answer="A",
+            explanation="Máy tính cầm tay thông thường thực hiện phép tính số học theo mạch điện tử logic cố định, không sử dụng trí tuệ nhân tạo."
+        ),
+        Part1Question(
+            id=4,
+            question="Thiết bị mạng nào sau đây có chức năng định tuyến và chuyển tiếp các gói tin giữa các mạng khác nhau dựa trên địa chỉ IP?",
+            options=[
+                Option(label="A", text="Bộ định tuyến (Router)"),
+                Option(label="B", text="Bộ chuyển mạch (Switch)"),
+                Option(label="C", text="Bộ tập trung (Hub)"),
+                Option(label="D", text="Card mạng (NIC)")
+            ],
+            answer="A",
+            explanation="Router hoạt động ở tầng Network (tầng 3) và định tuyến gói tin giữa các mạng khác nhau thông qua địa chỉ IP."
+        ),
+        Part1Question(
+            id=5,
+            question="Một địa chỉ IPv4 tiêu chuẩn theo quy chuẩn Internet quốc tế được biểu diễn bằng bao nhiêu bit nhị phân?",
+            options=[
+                Option(label="A", text="32 bit"),
+                Option(label="B", text="64 bit"),
+                Option(label="C", text="128 bit"),
+                Option(label="D", text="16 bit")
+            ],
+            answer="A",
+            explanation="Địa chỉ IPv4 gồm đúng 32 bit, thường được viết dưới dạng 4 nhóm số thập phân phân cách bởi dấu chấm (ví dụ: 192.168.1.1)."
+        ),
+        Part1Question(
+            id=6,
+            question="Biện pháp nào sau đây giúp tăng cường tính bảo mật và an toàn cho tài khoản cá nhân trên không gian mạng?",
+            options=[
+                Option(label="A", text="Kích hoạt tính năng xác thực hai yếu tố (2FA)"),
+                Option(label="B", text="Đặt mật khẩu đơn giản bằng ngày sinh để dễ nhớ"),
+                Option(label="C", text="Sử dụng chung một mật khẩu cho mọi trang mạng xã hội"),
+                Option(label="D", text="Đăng nhập tài khoản trên các máy tính công cộng mà không đăng xuất")
+            ],
+            answer="A",
+            explanation="Xác thực 2 yếu tố (2FA) yêu cầu thêm mã xác minh gửi về điện thoại, ngăn chặn xâm nhập trái phép kể cả khi lộ mật khẩu."
+        ),
+        Part1Question(
+            id=7,
+            question="Trong mô hình cơ sở dữ liệu quan hệ, một trường (hoặc tập hợp các trường) dùng để xác định duy nhất mỗi bản ghi trong bảng được gọi là",
+            options=[
+                Option(label="A", text="Khóa chính (Primary Key)"),
+                Option(label="B", text="Khóa ngoại (Foreign Key)"),
+                Option(label="C", text="Bản ghi phụ (Secondary Record)"),
+                Option(label="D", text="Kiểu dữ liệu (Data Type)")
+            ],
+            answer="A",
+            explanation="Khóa chính là thuộc tính có giá trị phân biệt duy nhất giữa các hàng trong bảng và không được mang giá trị rỗng (NULL)."
+        ),
+        Part1Question(
+            id=8,
+            question="Lệnh SQL nào sau đây được sử dụng để truy vấn và trích xuất dữ liệu từ một hoặc nhiều bảng?",
+            options=[
+                Option(label="A", text="SELECT"),
+                Option(label="B", text="DELETE"),
+                Option(label="C", text="INSERT"),
+                Option(label="D", text="UPDATE")
+            ],
+            answer="A",
+            explanation="Cú pháp `SELECT ... FROM ... WHERE ...` dùng để tìm kiếm và kết xuất thông tin trong ngôn ngữ truy vấn SQL."
+        ),
+        Part1Question(
+            id=9,
+            question="Trong ngôn ngữ lập trình Python, kết quả của biểu thức `type(10.5)` là",
+            options=[
+                Option(label="A", text="<class 'float'>"),
+                Option(label="B", text="<class 'int'>"),
+                Option(label="C", text="<class 'str'>"),
+                Option(label="D", text="<class 'bool'>")
+            ],
+            answer="A",
+            explanation="Số thực có dấu chấm thập phân 10.5 thuộc kiểu dữ liệu `float` trong Python."
+        ),
+        Part1Question(
+            id=10,
+            question="Đoạn mã Python sau: `for i in range(1, 5): print(i, end=' ')` sẽ in ra màn hình kết quả là",
+            options=[
+                Option(label="A", text="1 2 3 4"),
+                Option(label="B", text="1 2 3 4 5"),
+                Option(label="C", text="0 1 2 3 4"),
+                Option(label="D", text="1 5")
+            ],
+            answer="A",
+            explanation="`range(1, 5)` sinh ra dãy số bắt đầu từ 1 đến 4 (cận trên 5 không được tính), do đó kết quả in là `1 2 3 4`."
+        ),
+        Part1Question(
+            id=11,
+            question="Hành vi tự ý tải phần mềm bẻ khóa (crack) và phát tán trái phép lên mạng xã hội là hành vi",
+            options=[
+                Option(label="A", text="Vi phạm quyền tác giả và quyền sở hữu trí tuệ"),
+                Option(label="B", text="Được pháp luật khuyến khích để tiết kiệm chi phí"),
+                Option(label="C", text="Hoàn toàn hợp pháp vì mục đích chia sẻ phi thương mại"),
+                Option(label="D", text="Giúp nâng cao độ an toàn thông tin cho hệ thống")
+            ],
+            answer="A",
+            explanation="Phát tán phần mềm crack vi phạm Luật Sở hữu trí tuệ và Luật An ninh mạng, đồng thời tiềm ẩn nguy cơ lây nhiễm mã độc."
+        ),
+        Part1Question(
+            id=12,
+            question="Đơn vị đo dung lượng thông tin nào sau đây có giá trị lớn nhất?",
+            options=[
+                Option(label="A", text="Gigabyte (GB)"),
+                Option(label="B", text="Megabyte (MB)"),
+                Option(label="C", text="Kilobyte (KB)"),
+                Option(label="D", text="Byte (B)")
+            ],
+            answer="A",
+            explanation="Thứ tự dung lượng tăng dần: Byte < KB < MB < GB < TB. Do đó Gigabyte (GB) lớn nhất trong 4 phương án."
+        )
+    ]
+
+    tf_questions = [
+        Part2Question(
+            id=1,
+            question="Xét các phát biểu sau đây về khái niệm và đặc trưng của Trí tuệ nhân tạo (AI):",
+            sub_items=[
+                SubItem(label="a", statement="Trí tuệ nhân tạo hẹp (AI yếu) được thiết kế nhằm thực hiện một nhiệm vụ cụ thể và chuyên biệt.", is_correct=True, explanation="AI hẹp (Narrow AI) giải quyết hiệu quả một tác vụ cụ thể như nhận diện khuôn mặt, chơi cờ."),
+                SubItem(label="b", statement="Trí tuệ nhân tạo tổng quát (AGI/AI mạnh) hiện nay đã hoàn thiện và thay thế hoàn toàn tư duy của con người.", is_correct=False, explanation="AGI vẫn đang trong giai đoạn nghiên cứu lý thuyết, chưa thể thay thế hoàn toàn con người."),
+                SubItem(label="c", statement="Học máy (Machine Learning) là một lĩnh vực của AI cho phép hệ thống học hỏi từ dữ liệu để cải thiện hiệu năng.", is_correct=True, explanation="Machine Learning sử dụng thuật toán phân tích dữ liệu và tự động học mẫu."),
+                SubItem(label="d", statement="Hệ thống AI không cần nguồn dữ liệu huấn luyện vẫn có thể tự đưa ra các quyết định chính xác tuyệt đối.", is_correct=False, explanation="Các mô hình AI phụ thuộc trực tiếp vào dữ liệu huấn luyện; không có dữ liệu thì không thể huấn luyện mô hình.")
+            ],
+            explanation="Kiến thức về Trí tuệ nhân tạo (AI) và Học máy trong chương trình Tin học 12 mới."
+        ),
+        Part2Question(
+            id=2,
+            question="Về mạng máy tính, giao thức truyền thông và an toàn thông tin số:",
+            sub_items=[
+                SubItem(label="a", statement="Giao thức TCP/IP là bộ giao thức nền tảng đảm bảo việc định tuyến và truyền gói tin tin cậy trên Internet.", is_correct=True, explanation="TCP đảm bảo truyền dữ liệu tin cậy và IP phụ trách đánh địa chỉ và định tuyến gói tin."),
+                SubItem(label="b", statement="Địa chỉ IPv4 gồm 32 bit được chia thành 4 nhóm số thập phân phân cách bởi dấu chấm.", is_correct=True, explanation="IPv4 gồm 32 bit, viết dưới dạng 4 số từ 0 đến 255 (ví dụ: 192.168.1.1)."),
+                SubItem(label="c", statement="Tường lửa (Firewall) chỉ có thể được cài đặt dưới dạng phần cứng mà không thể triển khai bằng phần mềm.", is_correct=False, explanation="Tường lửa có thể triển khai bằng phần cứng chuyên dụng hoặc phần mềm trên hệ điều hành."),
+                SubItem(label="d", statement="Sử dụng mật khẩu mạnh có kết hợp chữ hoa, chữ thường, chữ số và ký tự đặc biệt giúp nâng cao độ an toàn tài khoản.", is_correct=True, explanation="Mật khẩu phức tạp giảm thiểu nguy cơ bị tấn công dò quét (brute-force).")
+            ],
+            explanation="Kiến thức về mạng máy tính và an ninh mạng."
+        )
+    ]
+
+    short_questions = [
+        Part3Question(
+            id=1,
+            question="Một địa chỉ IPv4 tiêu chuẩn của mạng Internet được tạo thành từ bao nhiêu bit nhị phân (chỉ ghi số nguyên)?",
+            answer="32",
+            explanation="Địa chỉ IPv4 gồm đúng 32 bit nhị phân chia làm 4 octet."
+        ),
+        Part3Question(
+            id=2,
+            question="Cho đoạn mã Python sau:\ns = 0\nfor i in range(1, 6):\n    s += i\nprint(s)\nGiá trị của biến s sau khi thực thi đoạn mã trên bằng bao nhiêu?",
+            answer="15",
+            explanation="Tổng các số từ 1 đến 5: $1 + 2 + 3 + 4 + 5 = 15$."
+        ),
+        Part3Question(
+            id=3,
+            question="Một tệp dữ liệu có dung lượng bằng 4096 Megabyte (MB). Dung lượng này tương đương bao nhiêu Gigabyte (GB) (chỉ ghi số nguyên)?",
+            answer="4",
+            explanation="$4096\\text{ MB} = \\frac{4096}{1024} = 4\\text{ GB}$."
+        ),
+        Part3Question(
+            id=4,
+            question="Vòng lặp `for i in range(2, 12, 3):` trong Python sẽ thực hiện bao nhiêu lần lặp (chỉ ghi số nguyên)?",
+            answer="4",
+            explanation="Dãy giá trị của $i$ là: 2, 5, 8, 11 (tổng cộng 4 lần lặp)."
+        )
+    ]
+
+    return ExamStructure(
+        title="ĐỀ KIỂM TRA ĐỊNH KỲ MÔN TIN HỌC 12",
+        subject="Tin học",
+        grade="12",
+        duration_minutes=50,
+        school_name="SỞ GD&ĐT ... - TRƯỜNG THPT ...",
+        academic_year="NĂM HỌC 2026 - 2027",
+        code="101",
+        part1_mcq=mcqs,
+        part2_tf=tf_questions,
+        part3_short=short_questions,
+        scoring=calculate_exam_scoring(num_p1=len(mcqs), num_p2=len(tf_questions), num_p3=len(short_questions), num_p4=0),
+        audit_report=create_default_audit_report("Tin học")
+    )
+
 _key_rotation_counter = 0
 
 
@@ -1931,7 +2146,9 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
         if request.api_provider == "openai":
             raise ValueError("Vui lòng cung cấp ít nhất 1 OpenAI API Key trong mục 'Cài đặt AI'.")
         sub_lower = request.subject.lower()
-        if "lý" in sub_lower or "vật lí" in sub_lower:
+        if "tin" in sub_lower or "informatics" in sub_lower:
+            return get_mock_informatics_exam()
+        elif "lý" in sub_lower or "vật lí" in sub_lower:
             return get_mock_physics_exam()
         elif "hóa" in sub_lower:
             return get_mock_chemistry_exam()
@@ -1948,12 +2165,13 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
     if request.file_content and len(request.file_content.strip()) > 50:
         from .matrix_analyzer import detect_subject_from_text
         doc_subject = detect_subject_from_text(request.file_content)
-        if doc_subject == "Tiếng Anh" and request.subject != "Tiếng Anh":
-            print(f"[Auto-Correction] Phát hiện tài liệu đính kèm là Môn Tiếng Anh (từ vựng/ngữ pháp). Tự động điều chỉnh môn từ '{request.subject}' sang 'Tiếng Anh'!")
-            request.subject = "Tiếng Anh"
-        elif request.subject in ("Toán học", "Hóa học") and doc_subject not in ("Toán học", "Hóa học"):
-            print(f"[Auto-Correction] Tự động đồng bộ môn học từ tài liệu đính kèm: '{request.subject}' -> '{doc_subject}'!")
-            request.subject = doc_subject
+        if doc_subject in [
+            "Tin học", "Tiếng Anh", "Vật lý", "Hóa học", "Sinh học", "Toán học", 
+            "Giáo dục Quốc phòng & An ninh", "Lịch sử", "Địa lý", "Ngữ văn", "Công nghệ", "Giáo dục kinh tế & Pháp luật"
+        ]:
+            if request.subject != doc_subject and (request.subject in ("Toán học", "Hóa học") or doc_subject in ("Tin học", "Tiếng Anh")):
+                print(f"[Auto-Correction] Tự động đồng bộ môn học từ tài liệu đính kèm: '{request.subject}' -> '{doc_subject}'!")
+                request.subject = doc_subject
 
     user_prompt = f"Hãy tạo một đề kiểm tra môn {request.subject}, khối {request.grade}."
     if str(request.grade) in ("3", "4", "5"):
@@ -1971,6 +2189,15 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"- Phần II (Đúng/Sai): Đưa ra một đoạn văn ngắn (reading passage) bám sát chủ đề từ vựng đã cho, kèm 4 khẳng định a, b, c, d để học sinh xác định True hay False dựa trên thông tin bài đọc.\n"
             f"- Phần III (Trả lời ngắn): Câu hỏi điền từ thích hợp vào chỗ trống, cho dạng đúng của từ trong ngoặc (Word formation) hoặc viết lại câu ngắn (Sentence transformation).\n"
             f"- Khai thác triệt để và bám sát các từ vựng, cấu trúc có trong tài liệu đính kèm!"
+        )
+    if request.subject == "Tin học":
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ MÔN TIN HỌC (LỚP {request.grade}) THEO CHƯƠNG TRÌNH GDPT 2018:\n"
+            f"- Đề thi bám sát chuẩn kiến thức kỹ năng môn Tin học lớp {request.grade}: Lập trình (Python/Scratch), Thuật toán, Mạng máy tính & Internet, Hệ điều hành, Trí tuệ nhân tạo (AI - đối với lớp 12), Cơ sở dữ liệu và Đạo đức/Pháp luật trong môi trường số.\n"
+            f"- Các đoạn mã chương trình (code) phải viết chuẩn cú pháp Python rõ ràng, thụt lề chuẩn, không có lỗi cú pháp.\n"
+            f"- Phần I: Các câu trắc nghiệm nhiều lựa chọn về cú pháp lệnh, kết quả thực thi đoạn code, chức năng thiết bị, khái niệm mạng và an toàn số.\n"
+            f"- Phần II (Đúng/Sai): Đưa ra một bài toán lập trình hoặc tình huống công nghệ (AI, mạng, an ninh mạng), kèm 4 mệnh đề a, b, c, d phân tích tính đúng/sai của giải thuật, điều kiện dừng, kết quả biến.\n"
+            f"- Phần III (Trả lời ngắn): Yêu cầu tính toán kết quả số cụ thể của đoạn mã (ví dụ: giá trị của biến đếm, tổng tích lũy, số lần lặp) hoặc chuyển đổi đơn vị dung lượng bộ nhớ (Byte, KB, MB, GB, bit)."
         )
     if request.topic:
         user_prompt += f"\nChủ đề kiến thức trọng tâm: {request.topic}"
@@ -2255,7 +2482,9 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc:
 
     # Fallback safety: If Part 2 or Part 3 are STILL short of the required count, supplement from curriculum bank
     sub_lower = request.subject.lower()
-    if "lý" in sub_lower or "vật lí" in sub_lower:
+    if "tin" in sub_lower or "informatics" in sub_lower:
+        fallback_bank = get_mock_informatics_exam()
+    elif "lý" in sub_lower or "vật lí" in sub_lower:
         fallback_bank = get_mock_physics_exam()
     elif "hóa" in sub_lower:
         fallback_bank = get_mock_chemistry_exam()
@@ -2263,6 +2492,8 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc:
         fallback_bank = get_mock_biology_exam()
     elif "gdqp" in sub_lower or "quân sự" in sub_lower or "quốc phòng" in sub_lower:
         fallback_bank = get_mock_gdqp_exam()
+    elif "anh" in sub_lower or "english" in sub_lower:
+        fallback_bank = get_mock_english_exam()
     else:
         fallback_bank = get_mock_math_exam()
 

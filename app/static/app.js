@@ -479,114 +479,137 @@ createApp({
         let detectedSubject = null;
         let detectedGrade = null;
         
-        // 1. Tiếng Anh (English): Ưu tiên kiểm tra trước để tránh nhầm lẫn từ vựng tiếng Anh
-        const englishKeywords = [
-          "tiếng anh", "tieng anh", "english", "ielts", "toeic", "toefl",
-          "vocabulary", "vocab", "grammar", "pronunciation", "phonetics",
-          "reading comprehension", "synonym", "antonym", "cloze test"
-        ];
-        const hasEnglishKeyword = englishKeywords.some(k => combinedText.includes(k)) || 
-          /(?:^|[^a-z0-9])(?:eng|tienganh|english|vocab|unit[\s_-]*\d+)(?:[^a-z0-9]|$)/i.test(fNameLower);
-
-        // Bóc tách danh sách từ vựng dạng: "Word: Nghĩa" hoặc "Word - Nghĩa"
-        const vocabMatches = (textSample.match(/^[a-zA-Z\s\-]+(?:\([a-zA-Z\s\.,]+\))?\s*[:\-=\/]\s*[\p{L}\s]+/gmu) || []).length;
-
-        // Tần suất các từ tiếng Anh thông dụng
-        const commonEnglishWords = [
-          "the", "be", "to", "of", "and", "in", "that", "have", "for", "not", "with", "you", 
-          "this", "but", "his", "from", "they", "say", "her", "she", "will", "one", "all", 
-          "would", "there", "their", "what", "out", "about", "who", "which", "when", "can", 
-          "time", "just", "into", "your", "good", "some", "could", "them", "other", "than", 
-          "then", "now", "only", "come", "over", "also", "after", "use", "two", "how", "our", 
-          "work", "well", "way", "even", "new", "want", "because", "any", "these", "give", 
-          "most", "advice", "community", "police", "officer", "garbage", "collector", 
-          "electrician", "firefighter", "suburb", "guess", "useful", "lesson", "unit"
-        ];
-        const words = textLower.match(/[a-z]{2,}/g) || [];
-        let enWordCount = 0;
-        for (const w of words) {
-          if (commonEnglishWords.includes(w)) enWordCount++;
+        // 1. Kiểm tra tiêu đề / phần khai báo môn học rõ ràng ở đầu tài liệu hoặc tên file
+        const mHeader = textSample.slice(0, 1500).match(/(?:môn|môn\s*học|phân\s*môn|bài\s*kiểm\s*tra\s*môn|đề\s*(?:thi|kiểm\s*tra)\s*môn?|ma\s*trận.*?môn)\s*[:\-–—]?\s*([^\n\r,\.;]{2,35})/i);
+        if (mHeader) {
+          const h = mHeader[1].toLowerCase().trim();
+          if (["tin học", "tin", "informatics", "lập trình"].some(k => h.includes(k))) detectedSubject = "Tin học";
+          else if (["tiếng anh", "english", "ngoại ngữ"].some(k => h.includes(k))) detectedSubject = "Tiếng Anh";
+          else if (["toán học", "toán", "giải tích", "đại số", "hình học"].some(k => h.includes(k))) detectedSubject = "Toán học";
+          else if (["vật lý", "vật lí", "vật li"].some(k => h.includes(k))) detectedSubject = "Vật lý";
+          else if (["hóa học", "hóa"].some(k => h.includes(k))) detectedSubject = "Hóa học";
+          else if (["sinh học", "sinh"].some(k => h.includes(k))) detectedSubject = "Sinh học";
+          else if (["quốc phòng", "gdqp", "quân sự"].some(k => h.includes(k))) detectedSubject = "Giáo dục Quốc phòng & An ninh";
+          else if (["lịch sử", "sử"].some(k => h.includes(k))) detectedSubject = "Lịch sử";
+          else if (["địa lý", "địa lí", "địa li"].some(k => h.includes(k))) detectedSubject = "Địa lý";
+          else if (["kinh tế", "pháp luật", "gdkt", "gdcd"].some(k => h.includes(k))) detectedSubject = "Giáo dục kinh tế & Pháp luật";
+          else if (["ngữ văn", "văn học", "văn"].some(k => h.includes(k))) detectedSubject = "Ngữ văn";
+          else if (["công nghệ"].some(k => h.includes(k))) detectedSubject = "Công nghệ";
         }
 
-        if (hasEnglishKeyword || vocabMatches >= 3 || (words.length >= 10 && enWordCount >= 5)) {
-          detectedSubject = "Tiếng Anh";
-        } else if (
-          combinedText.includes("quốc phòng") || combinedText.includes("gdqp") || combinedText.includes("an ninh") || 
-          combinedText.includes("quân sự") || /(?:^|[^a-z0-9])gdqp(?:[^a-z0-9]|$)/i.test(fNameLower)
-        ) {
-          detectedSubject = "Giáo dục Quốc phòng & An ninh";
-        } else if (
-          combinedText.includes("công nghệ") || /(?:^|[^a-z0-9])(?:cong_nghe|congnghe)(?:[^a-z0-9]|$)/i.test(fNameLower)
-        ) {
-          detectedSubject = "Công nghệ";
-        } else if (
-          combinedText.includes("tin học") || combinedText.includes("lập trình") || combinedText.includes("thuật toán") || 
-          /(?:^|[^a-z0-9])(?:tin_hoc|tinhoc|python)(?:[^a-z0-9]|$)/i.test(fNameLower) || 
-          /def\s+\w+\(|import\s+math|console\.log|for\s+i\s+in\s+range/i.test(textSample)
-        ) {
-          detectedSubject = "Tin học";
-        } else if (
-          combinedText.includes("vật lý") || combinedText.includes("vật lí") || combinedText.includes("dao động") || 
-          combinedText.includes("sóng cơ") || combinedText.includes("quang học") || 
-          /(?:^|[^a-z0-9])(?:vat_ly|vat_li|vatly|vatli|physics)(?:[^a-z0-9]|$)/i.test(fNameLower)
-        ) {
-          detectedSubject = "Vật lý";
-        } else if (
-          combinedText.includes("hóa học") || combinedText.includes("phản ứng hóa học") || combinedText.includes("dung dịch") || 
-          combinedText.includes("axit") || combinedText.includes("kim loại") || combinedText.includes("hiđrocacbon") || 
-          /(?:^|[^a-z0-9])(?:hoa_hoc|hoahoc|chemistry)(?:[^a-z0-9]|$)/i.test(fNameLower)
-        ) {
-          detectedSubject = "Hóa học";
-        } else if (
-          combinedText.includes("sinh học") || combinedText.includes("di truyền") || combinedText.includes("nhiễm sắc thể") || 
-          combinedText.includes("tế bào") || combinedText.includes("quần thể") || 
-          /(?:^|[^a-z0-9])(?:sinh_hoc|sinhhoc|biology)(?:[^a-z0-9]|$)/i.test(fNameLower)
-        ) {
-          detectedSubject = "Sinh học";
-        } else if (
-          combinedText.includes("lịch sử") || combinedText.includes("chiến dịch") || combinedText.includes("khởi nghĩa") || 
-          combinedText.includes("cách mạng") || /(?:^|[^a-z0-9])(?:lich_su|lichsu|history)(?:[^a-z0-9]|$)/i.test(fNameLower)
-        ) {
-          detectedSubject = "Lịch sử";
-        } else if (
-          combinedText.includes("địa lý") || combinedText.includes("địa lí") || combinedText.includes("khí hậu") || 
-          combinedText.includes("địa hình") || combinedText.includes("sông ngòi") || 
-          /(?:^|[^a-z0-9])(?:dia_ly|dia_li|dialy|diali|geography)(?:[^a-z0-9]|$)/i.test(fNameLower)
-        ) {
-          detectedSubject = "Địa lý";
-        } else if (
-          combinedText.includes("kinh tế") || combinedText.includes("gdkt") || combinedText.includes("pháp luật")
-        ) {
-          detectedSubject = "Giáo dục kinh tế & Pháp luật";
-        } else if (
-          combinedText.includes("ngữ văn") || combinedText.includes("văn học") || combinedText.includes("tác phẩm") || 
-          combinedText.includes("nhà thơ") || combinedText.includes("nhà văn")
-        ) {
-          detectedSubject = "Ngữ văn";
-        } else if (
-          combinedText.includes("toán học") || combinedText.includes("hình học") || combinedText.includes("đại số") || 
-          combinedText.includes("hàm số") || combinedText.includes("phương trình") || 
-          /(?:^|[^a-z0-9])(?:toan|toan_hoc|toanhoc|math)(?:[^a-z0-9]|$)/i.test(fNameLower)
-        ) {
-          detectedSubject = "Toán học";
+        // 2. Kiểm tra tên tệp (filename heuristic)
+        if (!detectedSubject) {
+          if (/(?:^|[^a-z0-9])(?:tin_hoc|tinhoc|tin[\s_-]*\d+|tin[\s_-]*k\d+|informatics|python|scratch|pascal)(?:[^a-z0-9]|$)/i.test(fNameLower)) {
+            detectedSubject = "Tin học";
+          } else if (/(?:^|[^a-z0-9])(?:tieng_anh|tienganh|english|vocab|ielts|toeic|unit[\s_-]*\d+)(?:[^a-z0-9]|$)/i.test(fNameLower)) {
+            detectedSubject = "Tiếng Anh";
+          } else if (/(?:^|[^a-z0-9])(?:toan|toan_hoc|toanhoc|math)(?:[^a-z0-9]|$)/i.test(fNameLower)) {
+            detectedSubject = "Toán học";
+          } else if (/(?:^|[^a-z0-9])(?:vat_ly|vat_li|vatly|vatli|physics)(?:[^a-z0-9]|$)/i.test(fNameLower)) {
+            detectedSubject = "Vật lý";
+          } else if (/(?:^|[^a-z0-9])(?:hoa_hoc|hoahoc|chemistry)(?:[^a-z0-9]|$)/i.test(fNameLower)) {
+            detectedSubject = "Hóa học";
+          } else if (/(?:^|[^a-z0-9])(?:sinh_hoc|sinhhoc|biology)(?:[^a-z0-9]|$)/i.test(fNameLower)) {
+            detectedSubject = "Sinh học";
+          } else if (/(?:^|[^a-z0-9])(?:gdqp|quoc_phong|quocphong)(?:[^a-z0-9]|$)/i.test(fNameLower)) {
+            detectedSubject = "Giáo dục Quốc phòng & An ninh";
+          }
+        }
+
+        // 3. Tính điểm phân loại theo nội dung chi tiết nếu chưa xác định được
+        if (!detectedSubject) {
+          const scores = {};
+
+          // Tin học
+          let tinScore = 0;
+          const tinHigh = ['tin học', 'môn tin', 'trí tuệ nhân tạo', 'trí tuệ nhân tạo (ai)', 'machine learning', 'học máy', 'deep learning', 'mạng máy tính', 'lập trình', 'thuật toán', 'ngôn ngữ lập trình', 'cơ sở dữ liệu', 'csdl', 'hệ điều hành'];
+          const tinMed = ['python', 'pascal', 'scratch', 'c++', 'bảng tính', 'excel', 'phần mềm', 'phần cứng', 'bộ nhớ ram', 'địa chỉ ip', 'an toàn số', 'an toàn mạng', 'an toàn thông tin', 'số nhị phân', 'bit', 'byte', 'trình duyệt', 'router', 'switch', 'lan', 'wan', 'tường lửa', 'mã độc', 'truy vấn sql', 'khoa học máy tính'];
+          for (const k of tinHigh) { if (combinedText.includes(k)) tinScore += 10; }
+          for (const k of tinMed) { if (combinedText.includes(k)) tinScore += 5; }
+          if (/\b(?:ai|agi|lan|wan|cpu|ram|rom|sql|html|css)\b/i.test(combinedText)) tinScore += 6;
+          if (/for\s+\w+\s+in\s+range|def\s+\w+\s*\(|print\s*\(|input\s*\(/i.test(textSample)) tinScore += 10;
+          scores['Tin học'] = tinScore;
+
+          // Tiếng Anh
+          let taScore = 0;
+          const taHigh = ['tiếng anh', 'english', 'ielts', 'toeic', 'toefl', 'pronunciation', 'phonetics', 'stress pattern', 'closest in meaning', 'opposite in meaning', 'reading comprehension', 'read the following passage', 'sentence transformation', 'word formation', 'cloze test'];
+          for (const k of taHigh) { if (combinedText.includes(k)) taScore += 10; }
+          const vocabMatches = (textSample.match(/^[a-zA-Z\s\-]+(?:\([a-zA-Z\s\.,]+\))?\s*[:\-=\/]\s*[\p{L}\s]+/gmu) || []).length;
+          if (vocabMatches >= 3) taScore += vocabMatches * 4;
+          if (tinScore < 8) {
+            const commonEnglishWords = ['the', 'be', 'to', 'of', 'and', 'in', 'that', 'have', 'for', 'not', 'with', 'you', 'this', 'but', 'his', 'from', 'they', 'say', 'her', 'she', 'will', 'one', 'all', 'would', 'there', 'their', 'what', 'out', 'about', 'who', 'which', 'when', 'can', 'time', 'just', 'into', 'your', 'good', 'some', 'could', 'them', 'other', 'than', 'then', 'now', 'only', 'come', 'over', 'also', 'after', 'use', 'two', 'how', 'our', 'work', 'well', 'way', 'even', 'new', 'want', 'because', 'any', 'these', 'give', 'most', 'advice', 'community', 'police', 'officer', 'garbage', 'collector', 'electrician', 'firefighter', 'suburb', 'guess', 'useful', 'lesson', 'unit'];
+            const words = textLower.match(/[a-z]{2,}/g) || [];
+            let enWordCount = 0;
+            for (const w of words) { if (commonEnglishWords.includes(w)) enWordCount++; }
+            if (words.length >= 10 && enWordCount >= 8) taScore += 8;
+          }
+          scores['Tiếng Anh'] = taScore;
+
+          // Toán học
+          let toanScore = 0;
+          const toanWords = ['toán học', 'hàm số', 'đồ thị', 'phương trình', 'hệ phương trình', 'bất đẳng thức', 'đạo hàm', 'tích phân', 'nguyên hàm', 'hình chóp', 'tam giác vuông', 'đường tròn', 'vectơ', 'tọa độ oxyz', 'parabol', 'tiệm cận'];
+          for (const k of toanWords) { if (combinedText.includes(k)) toanScore += 6; }
+          scores['Toán học'] = toanScore;
+
+          // Hóa học
+          let hoaScore = 0;
+          const hoaWords = ['hóa học', 'phản ứng hóa học', 'dung dịch', 'axit', 'bazơ', 'kim loại', 'phi kim', 'este', 'hiđrocacbon', 'khối lượng mol', 'nguyên tử khối', 'đồng phân', 'đồng đẳng'];
+          for (const k of hoaWords) { if (combinedText.includes(k)) hoaScore += 6; }
+          scores['Hóa học'] = hoaScore;
+
+          // Vật lý
+          let lyScore = 0;
+          const lyWords = ['vật lý', 'vật lí', 'dao động điều hòa', 'sóng cơ', 'con lắc', 'quang học', 'thấu kính', 'điện trở', 'cường độ dòng điện', 'hiệu điện thế', 'vận tốc tức thời'];
+          for (const k of lyWords) { if (combinedText.includes(k)) lyScore += 6; }
+          scores['Vật lý'] = lyScore;
+
+          // Sinh học
+          let sinhScore = 0;
+          const sinhWords = ['sinh học', 'di truyền', 'nhiễm sắc thể', 'tế bào', 'đột biến gen', 'quần thể', 'quần xã', 'hệ sinh thái', 'alen', 'kiểu gen', 'kiểu hình'];
+          for (const k of sinhWords) { if (combinedText.includes(k)) sinhScore += 6; }
+          scores['Sinh học'] = sinhScore;
+
+          // GDQP
+          let gdqpScore = 0;
+          const gdqpWords = ['quốc phòng', 'an ninh', 'gdqp', 'quân đội', 'nghĩa vụ quân sự', 'chiến thuật', 'bắn súng', 'sơ cấp cứu', 'bảo vệ tổ quốc'];
+          for (const k of gdqpWords) { if (combinedText.includes(k)) gdqpScore += 8; }
+          scores['Giáo dục Quốc phòng & An ninh'] = gdqpScore;
+
+          // Lịch sử, Địa lý, GD kinh tế & Pháp luật, Ngữ văn, Công nghệ
+          if (['lịch sử', 'chiến dịch', 'khởi nghĩa', 'cách mạng'].some(k => combinedText.includes(k))) scores['Lịch sử'] = 6;
+          if (['địa lý', 'địa lí', 'địa hình', 'khí hậu', 'sông ngòi'].some(k => combinedText.includes(k))) scores['Địa lý'] = 6;
+          if (['kinh tế & pháp luật', 'kinh tế và pháp luật', 'gdkt', 'gdcd', 'pháp luật', 'hiến pháp'].some(k => combinedText.includes(k))) scores['Giáo dục kinh tế & Pháp luật'] = 8;
+          if (['ngữ văn', 'văn học', 'tác phẩm', 'nhà thơ', 'nhà văn'].some(k => combinedText.includes(k))) scores['Ngữ văn'] = 6;
+          if (['công nghệ', 'trồng trọt', 'chăn nuôi', 'cơ khí'].some(k => combinedText.includes(k))) scores['Công nghệ'] = 6;
+
+          let maxVal = 0;
+          let bestKey = 'Toán học';
+          for (const [subj, sc] of Object.entries(scores)) {
+            if (sc > maxVal) {
+              maxVal = sc;
+              bestKey = subj;
+            }
+          }
+          if (maxVal > 0) detectedSubject = bestKey;
+          else detectedSubject = "Toán học";
         }
         
-        // Grade detection: ưu tiên tiền tố rõ ràng (lớp, khối, k, grade, unit)
+        // 4. Nhận diện lớp/khối: Ưu tiên tiền tố định danh có ngữ cảnh
         for (const g of ["12", "11", "10", "9", "8", "7", "6", "5", "4", "3"]) {
-          const reContext = new RegExp(`(?:lớp|khối|k|grade|unit|lop|khoi)\\s*${g}\\b|_${g}[_\\.]`, "i");
-          if (reContext.test(fNameLower) || reContext.test(textSample.slice(0, 1500))) {
+          const reContext = new RegExp(`(?:lớp|khối\\s*lớp|khối|k|grade|unit|lop|khoi)\\s*${g}\\b|_${g}[_\\.]|(?:toan|tin|ly|hoa|sinh|anh|van|su|dia|gdqp|congnghe)\\s*${g}\\b`, "i");
+          if (reContext.test(fNameLower) || reContext.test(textSample.slice(0, 2000))) {
             detectedGrade = g;
             break;
           }
         }
         if (!detectedGrade) {
-          for (const g of ["12", "11", "10", "9", "8", "7", "6"]) {
-            const reBoundary = new RegExp(`\\b${g}\\b`);
-            if (reBoundary.test(fNameLower)) {
-              detectedGrade = g;
-              break;
-            }
+          if (/(?:^|[^a-z0-9])(?:lop|khoi|k)?([3-9]|1[0-2])(?:[^a-z0-9]|$)/i.test(fNameLower)) {
+            const m = fNameLower.match(/(?:^|[^a-z0-9])(?:lop|khoi|k)?([3-9]|1[0-2])(?:[^a-z0-9]|$)/i);
+            if (m) detectedGrade = m[1];
           }
+        }
+        if (!detectedGrade && /trí tuệ nhân tạo|machine learning|học máy|đạo hàm|tích phân|oxyz/i.test(textSample)) {
+          detectedGrade = "12";
         }
         
         const standardList = [
