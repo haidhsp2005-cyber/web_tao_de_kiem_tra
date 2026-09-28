@@ -99,7 +99,7 @@
               <span class="w-7 h-7 rounded-lg bg-brand-100 text-brand-700 flex items-center justify-center text-sm font-bold">1</span>
               <span>Thiết lập & Khởi tạo Đề thi</span>
             </h2>
-            <p class="text-xs text-slate-500 mt-1">Chọn phương thức tạo đề từ Prompt, tải file PDF/Word hoặc thử ngay đề mẫu</p>
+            <p class="text-xs text-slate-500 mt-1">① Chọn <b>Môn học</b> và <b>Lớp</b> → ② Nhập đề tài hoặc tải tài liệu → ③ Nhấn Tạo đề</p>
           </div>
 
           <!-- Quick Action Buttons for Samples -->
@@ -266,7 +266,14 @@
                     <span v-if="uploadedFileName" class="text-brand-600">{{ uploadedFileName }}</span>
                     <span v-else>Kéo thả tập tin giáo án/đề cương vào đây hoặc <span class="text-brand-600 underline">bấm để chọn file</span></span>
                   </div>
-                  <p class="text-xs text-slate-400">Hỗ trợ các tệp: Microsoft Word (.docx), PDF (.pdf), Text (.txt)</p>
+                  <p class="text-xs text-slate-400">Hỗ trợ: Microsoft Word (.docx), PDF (.pdf), Text (.txt)</p>
+                  <!-- Hướng dẫn manual-first -->
+                  <div class="mt-1 flex items-center space-x-2 text-xs font-semibold">
+                    <span class="px-2.5 py-1 rounded-lg bg-brand-100 text-brand-700 border border-brand-200">📚 {{ form.subject }}</span>
+                    <span class="text-slate-400">·</span>
+                    <span class="px-2.5 py-1 rounded-lg bg-indigo-100 text-indigo-700 border border-indigo-200">Lớp {{ form.grade }}</span>
+                    <span class="text-slate-400 text-[11px] font-normal italic">← Thay đổi ở trên nếu cần</span>
+                  </div>
                 </div>
               </div>
 
