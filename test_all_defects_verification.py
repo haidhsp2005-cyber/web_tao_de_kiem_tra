@@ -409,6 +409,34 @@ class TestAllUserDefectsVerification(unittest.TestCase):
         self.assertEqual(healed_exam.part3_short[0].answer, "2")
         print("[PASS] Defect 16: Grade 9 linear graph has no stray cubic diagram, slope a = 2 verified.")
 
+    def test_defect_17_english_vocabulary_detection(self):
+        # Kiểm tra nhận diện tài liệu từ vựng tiếng Anh (chứa 'lính cứu hỏa' không được nhầm thành Hóa học)
+        from app.services.matrix_analyzer import detect_subject_from_text
+        from app.services.ai_generator import get_mock_english_exam
+        
+        vocab_text = """
+        Unit 2: City Life
+        Advice: lời khuyên
+        Useful advice: lời khuyên có ích
+        Community: cộng đồng
+        Electrician: thợ điện
+        Firefighter: lính cứu hỏa
+        Garbage collector: người thu gom rác
+        """
+        detected = detect_subject_from_text(vocab_text)
+        self.assertEqual(detected, "Tiếng Anh")
+        self.assertNotEqual(detected, "Hóa học")
+        
+        # Kiểm tra mock exam Tiếng Anh lớp 9 đạt chuẩn cấu trúc
+        english_exam = get_mock_english_exam()
+        self.assertEqual(english_exam.subject, "Tiếng Anh")
+        self.assertEqual(len(english_exam.part1_mcq), 12)
+        self.assertEqual(len(english_exam.part2_tf), 2)
+        self.assertEqual(len(english_exam.part2_tf[0].sub_items), 4)
+        self.assertEqual(len(english_exam.part3_short), 4)
+        print("[PASS] Defect 17: English vocabulary detection & mock exam generation verified.")
+
 if __name__ == "__main__":
     unittest.main()
+
 

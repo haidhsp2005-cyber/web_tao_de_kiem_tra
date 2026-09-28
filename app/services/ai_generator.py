@@ -750,7 +750,7 @@ def get_mock_physics_exam() -> ExamStructure:
             id=1,
             question="Một vật dao động điều hòa thực hiện được 50 dao động toàn phần trong thời gian 25 giây. Tần số dao động của vật bằng bao nhiêu Hertz?",
             answer="2",
-            explanation="Tần số dao động $f = \\frac{N}{\\\Delta t} = \\frac{50}{25} = 2\\text{ Hz}$."
+            explanation="Tần số dao động $f = \\frac{N}{\\Delta t} = \\frac{50}{25} = 2\\text{ Hz}$."
         ),
         Part3Question(
             id=2,
@@ -918,7 +918,7 @@ def get_mock_chemistry_exam() -> ExamStructure:
             id=5,
             question="Ngâm một đinh sắt ($Fe, M = 56$) vào dung dịch $CuSO_4$ dư. Sau phản ứng, lấy đinh sắt ra rửa nhẹ, sấy khô thấy khối lượng tăng thêm $0.8\\text{ gam}$. Số mol đồng bám trên thanh sắt bằng bao nhiêu mol?",
             answer="0.1",
-            explanation="Phương trình: $Fe + Cu^{2+} \\to Fe^{2+} + Cu$. Gọi số mol phản ứng là $x$. Độ tăng khối lượng: $\\\Delta m = 64x - 56x = 8x = 0.8\\text{ g} \\Rightarrow x = 0.1\\text{ mol}$."
+            explanation="Phương trình: $Fe + Cu^{2+} \\to Fe^{2+} + Cu$. Gọi số mol phản ứng là $x$. Độ tăng khối lượng: $\\Delta m = 64x - 56x = 8x = 0.8\\text{ g} \\Rightarrow x = 0.1\\text{ mol}$."
         ),
         Part3Question(
             id=6,
@@ -1220,7 +1220,176 @@ def get_mock_biology_exam() -> ExamStructure:
         audit_report=create_default_audit_report("Sinh học")
     )
 
+def get_mock_english_exam() -> ExamStructure:
+    mcqs = [
+        Part1Question(
+            id=1,
+            question="Mark the letter A, B, C, or D to indicate the word whose underlined part differs from the other three in pronunciation:\nA. pl<u>a</u>net\tB. gr<u>a</u>duate\tC. v<u>a</u>cant\tD. p<u>a</u>tent",
+            options=[Option(label="A", text="planet"), Option(label="B", text="graduate"), Option(label="C", text="vacant"), Option(label="D", text="patent")],
+            answer="C",
+            explanation="The underlined 'a' in 'vacant' is pronounced /ˈveɪ.kənt/ (sound /eɪ/), while the others are pronounced /æ/."
+        ),
+        Part1Question(
+            id=2,
+            question="Mark the letter A, B, C, or D to indicate the word that differs from the other three in the position of primary stress:\nA. community\tB. electrician\tC. firefighter\tD. advice",
+            options=[Option(label="A", text="community"), Option(label="B", text="electrician"), Option(label="C", text="firefighter"), Option(label="D", text="advice")],
+            answer="C",
+            explanation="'firefighter' has stress on the 1st syllable, while 'community' and 'advice' have stress on the 2nd syllable, and 'electrician' has stress on the 3rd syllable."
+        ),
+        Part1Question(
+            id=3,
+            question="The local ________ was called to repair the broken wiring in our neighborhood.",
+            options=[Option(label="A", text="electrician"), Option(label="B", text="firefighter"), Option(label="C", text="garbage collector"), Option(label="D", text="police officer")],
+            answer="A",
+            explanation="An electrician is a person whose job is to connect, repair, or maintain electrical equipment."
+        ),
+        Part1Question(
+            id=4,
+            question="She gave me some very useful ________ on how to prepare for the upcoming final examination.",
+            options=[Option(label="A", text="advice"), Option(label="B", text="advices"), Option(label="C", text="advise"), Option(label="D", text="advising")],
+            answer="A",
+            explanation="'Advice' is an uncountable noun meaning guidance or recommendations. 'Advices' is incorrect."
+        ),
+        Part1Question(
+            id=5,
+            question="The brave ________ quickly arrived at the scene and extinguished the massive blaze.",
+            options=[Option(label="A", text="firefighters"), Option(label="B", text="electricians"), Option(label="C", text="suburbs"), Option(label="D", text="guesses")],
+            answer="A",
+            explanation="Firefighters are trained people who put out fires."
+        ),
+        Part1Question(
+            id=6,
+            question="Many families prefer living in a quiet ________ rather than the noisy city center.",
+            options=[Option(label="A", text="suburb"), Option(label="B", text="collector"), Option(label="C", text="officer"), Option(label="D", text="fire")],
+            answer="A",
+            explanation="'Suburb' refers to an outlying district of a city, especially a residential one."
+        ),
+        Part1Question(
+            id=7,
+            question="Mark the letter A, B, C, or D to indicate the word CLOSEST in meaning to the underlined word:\nVolunteers are making a vital contribution to our local <u>community</u>.",
+            options=[Option(label="A", text="neighborhood"), Option(label="B", text="industry"), Option(label="C", text="traffic"), Option(label="D", text="entertainment")],
+            answer="A",
+            explanation="'Community' in this context is closest in meaning to 'neighborhood' (society/local area)."
+        ),
+        Part1Question(
+            id=8,
+            question="Mark the letter A, B, C, or D to indicate the word OPPOSITE in meaning to the underlined word:\nHe offered some <u>useful</u> tips for learning new English vocabulary effectively.",
+            options=[Option(label="A", text="useless"), Option(label="B", text="helpful"), Option(label="C", text="practical"), Option(label="D", text="beneficial")],
+            answer="A",
+            explanation="'Useful' (hữu ích) is opposite in meaning to 'useless' (vô ích)."
+        ),
+        Part1Question(
+            id=9,
+            question="If I ________ you, I would consult a professional counselor before making that crucial decision.",
+            options=[Option(label="A", text="were"), Option(label="B", text="am"), Option(label="C", text="will be"), Option(label="D", text="would be")],
+            answer="A",
+            explanation="Second conditional structure for advice: 'If I were you, I would + V'."
+        ),
+        Part1Question(
+            id=10,
+            question="The town council has hired additional ________ to keep public parks and streets clean.",
+            options=[Option(label="A", text="garbage collectors"), Option(label="B", text="firefighters"), Option(label="C", text="electricians"), Option(label="D", text="engineers")],
+            answer="A",
+            explanation="'Garbage collectors' are people employed to collect refuse from households and public areas."
+        ),
+        Part1Question(
+            id=11,
+            question="She had to ________ the answer because she had not reviewed the lesson beforehand.",
+            options=[Option(label="A", text="guess"), Option(label="B", text="advise"), Option(label="C", text="collect"), Option(label="D", text="spark")],
+            answer="A",
+            explanation="'Guess' means to estimate or suppose without sufficient information."
+        ),
+        Part1Question(
+            id=12,
+            question="A ________ directed traffic efficiently during the heavy morning rush hour.",
+            options=[Option(label="A", text="police officer"), Option(label="B", text="electrician"), Option(label="C", text="firefighter"), Option(label="D", text="volunteer")],
+            answer="A",
+            explanation="A police officer is responsible for directing traffic and enforcing laws."
+        )
+    ]
+    
+    tf_questions = [
+        Part2Question(
+            id=1,
+            question=(
+                "Read the following passage about community helpers:\n\n"
+                "In any thriving community, essential workers play an indispensable role in maintaining safety, hygiene, and public welfare. "
+                "Police officers uphold the law and protect residents from harm, while firefighters courageously risk their lives to extinguish blazes and rescue citizens during disasters. "
+                "Electricians ensure that our power systems run smoothly and safely, preventing dangerous electrical hazards in schools and homes. "
+                "Meanwhile, garbage collectors work diligently every dawn to keep our neighborhoods clean and sanitized. "
+                "Without the dedication of these community service members, daily life in both bustling cities and quiet suburbs would face profound disruption."
+            ),
+            sub_items=[
+                SubItem(label="a", statement="Police officers are primarily responsible for upholding the law and ensuring public safety.", is_correct=True, explanation="According to the text, 'Police officers uphold the law and protect residents from harm'."),
+                SubItem(label="b", statement="Electricians only work in large industrial factories and never service residential homes.", is_correct=False, explanation="The text mentions that electricians prevent electrical hazards 'in schools and homes'."),
+                SubItem(label="c", statement="Garbage collectors contribute significantly to maintaining sanitary conditions in neighborhoods.", is_correct=True, explanation="The passage states that they 'keep our neighborhoods clean and sanitized'."),
+                SubItem(label="d", statement="The passage suggests that suburbs do not require essential community workers because they are already quiet.", is_correct=False, explanation="The text concludes that life in 'both bustling cities and quiet suburbs would face profound disruption' without these workers.")
+            ],
+            explanation="Reading comprehension on community helpers and public services."
+        ),
+        Part2Question(
+            id=2,
+            question=(
+                "Read the following passage about seeking and giving advice:\n\n"
+                "Seeking useful advice from experienced people is a valuable habit for young students facing difficult decisions. "
+                "Parents, teachers, and school counselors can offer mature perspectives on academic paths and future careers. "
+                "However, one should not accept every recommendation blindly without critical thinking. "
+                "The best approach is to listen attentively, evaluate whether the advice aligns with one's personal values, and then make a well-informed decision."
+            ),
+            sub_items=[
+                SubItem(label="a", statement="Consulting experienced adults can provide students with beneficial guidance for career planning.", is_correct=True, explanation="The passage states adults 'offer mature perspectives on academic paths and future careers'."),
+                SubItem(label="b", statement="Students should blindly follow all suggestions given to them without question.", is_correct=False, explanation="The text advises: 'one should not accept every recommendation blindly without critical thinking'."),
+                SubItem(label="c", statement="Evaluating advice against personal values is recommended before deciding.", is_correct=True, explanation="The author encourages evaluating 'whether the advice aligns with one's personal values'."),
+                SubItem(label="d", statement="The author claims that school counselors have no practical knowledge to assist students.", is_correct=False, explanation="School counselors are explicitly listed as experienced people who can offer mature perspectives.")
+            ],
+            explanation="Reading passage on analytical thinking and advice evaluation."
+        )
+    ]
+    
+    short_questions = [
+        Part3Question(
+            id=1,
+            question="Give the correct form of the word in brackets:\nHe gave a very [USE] presentation on community development. (Write only ONE word)",
+            answer="useful",
+            explanation="Before noun 'presentation', an adjective is needed: 'use' -> 'useful'."
+        ),
+        Part3Question(
+            id=2,
+            question="Rewrite the sentence without changing its meaning:\n'You should consult a doctor immediately,' she told him.\n-> She advised him _________________ a doctor immediately. (Write the missing phrase)",
+            answer="to consult",
+            explanation="Structure: advise someone to do something -> 'to consult'."
+        ),
+        Part3Question(
+            id=3,
+            question="Give the correct form of the word in brackets:\nWe need to hire a certified [ELECTRIC] to inspect the wiring in the new library. (Write only ONE word)",
+            answer="electrician",
+            explanation="A person who works with electricity is an 'electrician'."
+        ),
+        Part3Question(
+            id=4,
+            question="Fill in the blank with ONE suitable preposition:\nMany young professionals enjoy living ________ the peaceful suburbs of Hanoi.",
+            answer="in",
+            explanation="The standard preposition with 'suburbs' is 'in the suburbs'."
+        )
+    ]
+    
+    return ExamStructure(
+        title="ĐỀ KIỂM TRA ĐỊNH KỲ MÔN TIẾNG ANH 9",
+        subject="Tiếng Anh",
+        grade="9",
+        duration_minutes=50,
+        school_name="SỞ GD&ĐT ... - TRƯỜNG THCS ...",
+        academic_year="NĂM HỌC 2026 - 2027",
+        code="101",
+        part1_mcq=mcqs,
+        part2_tf=tf_questions,
+        part3_short=short_questions,
+        scoring=calculate_exam_scoring(num_p1=len(mcqs), num_p2=len(tf_questions), num_p3=len(short_questions), num_p4=0),
+        audit_report=create_default_audit_report("Tiếng Anh")
+    )
+
 _key_rotation_counter = 0
+
 
 def get_env_api_keys(provider: str = "gemini") -> List[str]:
     load_dotenv(override=True)
@@ -1753,6 +1922,8 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             return get_mock_biology_exam()
         elif "gdqp" in sub_lower or "quân sự" in sub_lower or "quốc phòng" in sub_lower:
             return get_mock_gdqp_exam()
+        elif "anh" in sub_lower or "english" in sub_lower:
+            return get_mock_english_exam()
         else:
             return get_mock_math_exam()
             
@@ -1768,9 +1939,22 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             return get_mock_biology_exam()
         elif "gdqp" in sub_lower or "quân sự" in sub_lower or "quốc phòng" in sub_lower:
             return get_mock_gdqp_exam()
+        elif "anh" in sub_lower or "english" in sub_lower:
+            return get_mock_english_exam()
         else:
             return get_mock_math_exam()
             
+    # 0. Tự động nhận diện và đồng bộ môn học từ tài liệu đính kèm (ngăn ngừa lệch môn do chọn nhầm)
+    if request.file_content and len(request.file_content.strip()) > 50:
+        from .matrix_analyzer import detect_subject_from_text
+        doc_subject = detect_subject_from_text(request.file_content)
+        if doc_subject == "Tiếng Anh" and request.subject != "Tiếng Anh":
+            print(f"[Auto-Correction] Phát hiện tài liệu đính kèm là Môn Tiếng Anh (từ vựng/ngữ pháp). Tự động điều chỉnh môn từ '{request.subject}' sang 'Tiếng Anh'!")
+            request.subject = "Tiếng Anh"
+        elif request.subject in ("Toán học", "Hóa học") and doc_subject not in ("Toán học", "Hóa học"):
+            print(f"[Auto-Correction] Tự động đồng bộ môn học từ tài liệu đính kèm: '{request.subject}' -> '{doc_subject}'!")
+            request.subject = doc_subject
+
     user_prompt = f"Hãy tạo một đề kiểm tra môn {request.subject}, khối {request.grade}."
     if str(request.grade) in ("3", "4", "5"):
         user_prompt += (
@@ -1778,6 +1962,15 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"- Kiến thức và ngôn ngữ biên soạn phải hoàn toàn phù hợp với tâm lý lứa tuổi học sinh Tiểu học lớp {request.grade} theo chương trình GDPT mới (2018).\n"
             f"- Đề bài trong sáng, dễ hiểu, gắn liền với tình huống đời sống sinh hoạt, đồ vật, con vật gần gũi.\n"
             f"- Các phép tính, con số số học và dạng bài bám sát chuẩn kiến thức lớp {request.grade} (không cho số quá phức tạp hay vượt cấp)."
+        )
+    if request.subject == "Tiếng Anh":
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ MÔN TIẾNG ANH (LỚP {request.grade}) THEO CHƯƠNG TRÌNH GDPT 2018:\n"
+            f"- Đề thi Tiếng Anh tập trung đánh giá năng lực ngôn ngữ theo các chủ điểm giao tiếp, từ vựng và ngữ pháp của lớp {request.grade}.\n"
+            f"- Phần I (Trắc nghiệm nhiều lựa chọn): Bao gồm các câu hỏi về Phát âm (Pronunciation/Stress), Từ vựng & Ngữ pháp (Vocabulary & Grammar in context), Từ đồng nghĩa/Trái nghĩa (Synonyms/Antonyms), và Điền từ hoặc Đọc hiểu đoạn văn.\n"
+            f"- Phần II (Đúng/Sai): Đưa ra một đoạn văn ngắn (reading passage) bám sát chủ đề từ vựng đã cho, kèm 4 khẳng định a, b, c, d để học sinh xác định True hay False dựa trên thông tin bài đọc.\n"
+            f"- Phần III (Trả lời ngắn): Câu hỏi điền từ thích hợp vào chỗ trống, cho dạng đúng của từ trong ngoặc (Word formation) hoặc viết lại câu ngắn (Sentence transformation).\n"
+            f"- Khai thác triệt để và bám sát các từ vựng, cấu trúc có trong tài liệu đính kèm!"
         )
     if request.topic:
         user_prompt += f"\nChủ đề kiến thức trọng tâm: {request.topic}"
@@ -1867,12 +2060,16 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
                 model = request.model_name or "auto"
                 raw_json = await generate_with_gemini(full_prompt, current_key, model)
                 
+            if not raw_json or ("{" not in raw_json and "[" not in raw_json):
+                raise ValueError("Mô hình AI phản hồi văn bản giải thích thay vì xuất cấu trúc đề thi JSON.")
+
             print(f"[Key Pool] Đã sinh đề thành công bằng Key {masked} (Lần thử {attempt_idx}/{len(ordered_keys)})")
             break
         except Exception as e:
             err_detail = str(e)
             print(f"[Key Failover] Thất bại với Key {masked}: {err_detail}. Đang chuyển tiếp key tiếp theo trong danh sách...")
             key_errors.append(f"Key {masked}: {err_detail}")
+            raw_json = None
             continue
 
     if raw_json is None:
@@ -1939,6 +2136,13 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             parse_errors.append(f"strict=False: {e5}")
 
     if not isinstance(data, dict):
+        if "{" not in cleaned:
+            snippet = (cleaned[:300] + "...") if len(cleaned) > 300 else cleaned
+            raise ValueError(
+                f"Mô hình AI đã phản hồi văn bản thông thường thay vì xuất cấu trúc đề thi JSON.\n"
+                f"Nội dung phản hồi từ AI: \"{snippet}\"\n\n"
+                f"Gợi ý: Hệ thống đã tự động nhận diện lại môn học và tối ưu prompt. Vui lòng bấm 'Tạo đề' lại để AI biên soạn đúng chuẩn!"
+            )
         err_hint = parse_errors[0] if parse_errors else "Lỗi cấu trúc dữ liệu"
         snippet = cleaned[:400]
         m = re.search(r'char (\d+)', err_hint)

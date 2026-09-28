@@ -99,27 +99,55 @@ QUY TẮC QUAN TRỌNG:
 
 def detect_subject_from_text(text: str) -> str:
     lower = text.lower()
+    
+    # 1. Tiếng Anh (Kiểm tra ưu tiên để tránh nhầm lẫn từ vựng tiếng Anh với các môn khác)
+    english_keywords = [
+        "tiếng anh", "tieng anh", "english", "ielts", "toeic", "toefl",
+        "vocabulary", "grammar", "pronunciation", "phonetics", "synonym", "antonym",
+        "reading comprehension", "cloze test"
+    ]
+    if any(k in lower for k in english_keywords):
+        return "Tiếng Anh"
+        
+    # Phát hiện danh sách từ vựng dạng: "Word: Nghĩa" hoặc "Word - Nghĩa"
+    vocab_pairs = len(re.findall(r'^[a-zA-Z\s\-]+(?:\([a-zA-Z\s\.,]+\))?\s*[:\-=\/]\s*[\w\s]+', text[:3000], re.MULTILINE))
+    if vocab_pairs >= 3:
+        return "Tiếng Anh"
+        
+    common_en_words = {
+        "the", "be", "to", "of", "and", "in", "that", "have", "for", "not", "with", "you", 
+        "this", "but", "his", "from", "they", "say", "her", "she", "will", "one", "all", 
+        "would", "there", "their", "what", "out", "about", "who", "which", "when", "can", 
+        "time", "just", "into", "your", "good", "some", "could", "them", "other", "than", 
+        "then", "now", "only", "come", "over", "also", "after", "use", "two", "how", "our", 
+        "work", "well", "way", "even", "new", "want", "because", "any", "these", "give", 
+        "most", "advice", "community", "police", "officer", "garbage", "collector", 
+        "electrician", "firefighter", "suburb", "guess", "useful", "lesson", "unit"
+    }
+    found_en = [w for w in re.findall(r'[a-zA-Z]{2,}', lower[:2000]) if w in common_en_words]
+    if len(found_en) >= 5:
+        return "Tiếng Anh"
+
+    # 2. Các môn học chuyên biệt khác
     if "quốc phòng" in lower or "gdqp" in lower or "quân sự" in lower or "an ninh" in lower:
         return "Giáo dục Quốc phòng & An ninh"
     elif "công nghệ" in lower or "cong nghe" in lower:
         return "Công nghệ"
-    elif "tin học" in lower or "tin 10" in lower or "tin 11" in lower or "tin 12" in lower or "python" in lower:
+    elif "tin học" in lower or "tin 10" in lower or "tin 11" in lower or "tin 12" in lower or "python" in lower or "lập trình" in lower or "thuật toán" in lower:
         return "Tin học"
-    elif "vật lý" in lower or "vật lí" in lower or "vat li" in lower or "dao động" in lower:
+    elif "vật lý" in lower or "vật lí" in lower or "vat li" in lower or "dao động" in lower or "sóng cơ" in lower or "quang học" in lower:
         return "Vật lý"
-    elif "hóa học" in lower or "hóa 1" in lower or "hoa hoc" in lower or "este" in lower:
+    elif "hóa học" in lower or "phản ứng hóa học" in lower or "hoa hoc" in lower or "este" in lower or "dung dịch" in lower or "kim loại" in lower or "axit" in lower:
         return "Hóa học"
-    elif "sinh học" in lower or "sinh 1" in lower or "di truyền" in lower:
+    elif "sinh học" in lower or "di truyền" in lower or "nhiễm sắc thể" in lower or "tế bào" in lower or "quần xã" in lower or "hệ sinh thái" in lower:
         return "Sinh học"
-    elif "lịch sử" in lower or "lich su" in lower:
+    elif "lịch sử" in lower or "lich su" in lower or "chiến dịch" in lower or "khởi nghĩa" in lower or "cách mạng" in lower:
         return "Lịch sử"
-    elif "địa lý" in lower or "địa lí" in lower or "dia ly" in lower:
+    elif "địa lý" in lower or "địa lí" in lower or "dia ly" in lower or "khí hậu" in lower or "địa hình" in lower or "sông ngòi" in lower:
         return "Địa lý"
-    elif "tiếng anh" in lower or "english" in lower:
-        return "Tiếng Anh"
     elif "kinh tế" in lower or "gdkt" in lower or "pháp luật" in lower:
         return "Giáo dục kinh tế & Pháp luật"
-    elif "ngữ văn" in lower or "văn học" in lower:
+    elif "ngữ văn" in lower or "văn học" in lower or "tác phẩm" in lower or "nhà thơ" in lower or "nhà văn" in lower:
         return "Ngữ văn"
     else:
         return "Toán học"
