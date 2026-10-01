@@ -2538,6 +2538,7 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc:
         exam_obj = await audit_and_verify_exam(
             exam=exam_obj,
             api_key=chosen_key,
+            api_keys=ordered_keys,
             provider=request.api_provider,
             model=request.model_name or "auto"
         )

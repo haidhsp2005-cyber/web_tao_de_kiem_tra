@@ -1516,7 +1516,8 @@ async def run_ai_auditor_healing(
     defective_p1: List[Tuple[int, str]],
     defective_p2: List[Tuple[int, str]],
     defective_p3: List[Tuple[int, str]],
-    api_key: str,
+    api_key: Optional[str] = None,
+    api_keys: Optional[List[str]] = None,
     provider: str = "gemini",
     model: str = "auto"
 ) -> Tuple[ExamStructure, List[str]]:
@@ -1569,88 +1570,134 @@ async def run_ai_auditor_healing(
             "detected_issue": issue
         })
 
+    # Audit all questions in Part 4 (Essay) if present
+    if exam.part4_essay:
+        for idx, q in enumerate(exam.part4_essay):
+            items_to_heal.append({
+                "part": 4,
+                "index": idx,
+                "id": q.id,
+                "question": q.question,
+                "points": q.points,
+                "current_explanation": q.explanation,
+                "detected_issue": "Kiểm định câu hỏi tự luận, tính khoa học và hướng dẫn chấm"
+            })
+
     if not items_to_heal:
         return exam, notes
 
-    auditor_prompt = f"""Bạn là CHUYÊN GIA KHẢO THÍ & KIỂM ĐỊNH ĐỀ THI ĐỘC LẬP (AI Exam Auditor & Solver Agent).
-Nhiệm vụ tối quan trọng của bạn là: TỰ GIẢI ĐỘC LẬP TỪNG CÂU HỎI TRONG ĐỀ THI MÔN "{exam.subject}", LỚP {exam.grade}, KIỂM ĐỊNH TOÀN DIỆN VỀ MẶT HỌC THUẬT, TÍNH CHÍNH XÁC CỦA ĐÁP ÁN VÀ SỬA CHỮA TRIỆT ĐỂ MỌI SAI SÓT!
+    auditor_prompt = f"""Bạn là CHỦ TỊCH HỘI ĐỒNG KHẢO THÍ & KIỂM ĐỊNH ĐỀ THI ĐỘC LẬP (AI Exam Auditor & Proofreader Agent).
+Nhiệm vụ tối cao của bạn: TỰ GIẢI ĐỘC LẬP TỪNG CÂU HỎI TRONG ĐỀ THI MÔN "{exam.subject}", KHỐI LỚP {exam.grade}. RÀ SOÁT CÂU CHỮ, SỐ LIỆU VÀ ĐÁP ÁN ĐỂ SỬA CHỮA TRIỆT ĐỂ MỌI SAI SÓT, ĐẢM BẢO ĐỀ THI ĐẠT ĐỘ CHÍNH XÁC TUYỆT ĐỐI 100%!
 
-DANH SÁCH CÂU HỎI CẦN THẨM ĐỊNH:
+DANH SÁCH TOÀN BỘ CÂU HỎI TRONG ĐỀ THI CẦN THẨM ĐỊNH:
 {json.dumps(items_to_heal, ensure_ascii=False, indent=2)}
 
-QUY TẮC THẨM ĐỊNH & SỬA CHỮA BẮT BUỘC:
-1. ĐỐI VỚI PHẦN I (TRẮC NGHIỆM):
-   - BẮT BUỘC TỰ GIẢI ĐỘC LẬP từng bài toán/câu hỏi để tìm ra đáp án đúng thực tế.
+QUY TẮC THẨM ĐỊNH, GIẢI ĐỘC LẬP VÀ SỬA CHỮA:
+1. ĐỐI VỚI PHẦN I (TRẮC NGHIỆM NHIỀU LỰA CHỌN):
+   - BẮT BUỘC TỰ GIẢI ĐỘC LẬP từng bài toán/câu hỏi từ đầu đến cuối để tìm ra đáp án đúng thực tế.
    - So sánh kết quả giải được với 'current_answer' và các phương án 'current_options':
-     + NẾU ĐÁP ÁN 'current_answer' BỊ CHỌN SAI (ví dụ tính ra phương án khác): ĐỔI 'answer' VỀ CHỮ CÁI PHƯƠNG ÁN ĐÚNG.
-     + BÀI TOÁN TÌM SỐ TỰ NHIÊN / TUỔI / NGƯỜI / CÂY: Nghiệm giải ra BẮT BUỘC PHẢI LÀ SỐ TỰ NHIÊN (nguyên dương). Nếu dữ kiện dẫn đến số thập phân lẻ (như tổng 59 mà 2x - 3y = 7 ra x = 36.8): BẮT BUỘC SỬA LẠI DỮ KIỆN ĐỀ BÀI (ví dụ sửa 2x - 3y = 13 để nghiệm ra x = 38, y = 21 là số tự nhiên) và chọn phương án đúng.
-     + BÀI TOÁN DIỆN TÍCH / CHUYỂN ĐỘNG (PHƯƠNG TRÌNH BẬC HAI): Biệt thức Delta BẮT BUỘC phải là số chính phương để giải ra số nguyên / phân số đẹp. Nếu Delta không chính phương (như diện tích 300 m2 tăng dài 5m giảm rộng 4m ra Delta = 1525): BẮT BUỘC sửa lại dữ kiện (sửa giảm rộng 4m thành giảm rộng 3m để ra nghiệm chiều dài 20m) và cập nhật phương án.
-     + BÀI TOÁN VÒI NƯỚC / NĂNG SUẤT: Đảm bảo thời gian vòi chảy một mình BẮT BUỘC CÓ MẶT trong 4 phương án. Các phân số phải định dạng chuẩn $\\frac{a}{b}$.
-     + NẾU CÂU HỎI CÓ PHƯƠNG ÁN RÁC ('Phương án khác', 'Không xác định', 'Chưa đủ dữ kiện', 'Giá trị khác'...): BẮT BUỘC PHẢI VIẾT LẠI ĐỦ 4 PHƯƠNG ÁN HỌC THUẬT CHUẨN A, B, C, D.
-     + Đảm bảo 'explanation' giải thích từng bước rõ ràng, chính xác và đồng bộ kết luận đáp án.
-2. ĐỐI VỚI PHẦN II (ĐÚNG/SAI):
-   - Đảm bảo đề bài 'question' đầy đủ, học thuật rõ ràng cho môn {exam.subject}.
-   - VỚI BÀI TOÁN CHUYỂN ĐỘNG / THỰC TẾ: Đảm bảo số liệu giải ra vận tốc dự định là số nguyên đẹp (ví dụ 30 km/h, 40 km/h, 60 km/h). Đồng bộ tính đúng/sai của 4 ý con a, b, c, d chuẩn xác 100%.
-   - Đảm bảo đủ 4 mệnh đề con a, b, c, d có nội dung học thuật thực tế môn {exam.subject}, tuyệt đối không có nội dung rác hay placeholder.
-   - QUY TẮC BẮT BUỘC: TRONG 4 Ý a, b, c, d PHẢI CÓ TỪ 1 ĐẾN 3 Ý ĐÚNG (luôn có ít nhất 1 ý Đúng và ít nhất 1 ý Sai). TUYỆT ĐỐI KHÔNG TOÀN ĐÚNG (4 true) HOẶC TOÀN SAI (4 false)!
-   - Mỗi ý con gồm 'label' ('a', 'b', 'c', 'd'), 'statement', 'is_correct' (true/false) và 'explanation'.
+     + NẾU ĐÁP ÁN 'current_answer' BỊ CHỌN SAI (ví dụ giải ra phương án B mà đề đánh dấu A): ĐỔI 'answer' VỀ CHỮ CÁI PHƯƠNG ÁN ĐÚNG.
+     + NẾU 4 PHƯƠNG ÁN KHÔNG CÓ ĐÁP ÁN ĐÚNG HOẶC ĐỀ BÀI BỊ VÔ NGHIỆM / SAI SỐ LIỆU: BẮT BUỘC sửa lại dữ kiện đề bài và cập nhật 4 phương án để có đúng 1 đáp án đúng duy nhất, số liệu nguyên đẹp chuẩn sư phạm.
+     + BÀI TOÁN TÌM SỐ TỰ NHIÊN / TUỔI / NGƯỜI / CÂY: Nghiệm giải ra BẮT BUỘC là số tự nhiên (nguyên dương). Nếu ra số thập phân lẻ: sửa lại dữ kiện đề bài để ra nghiệm nguyên dương.
+     + BÀI TOÁN HÌNH HỌC / CHUYỂN ĐỘNG (BẬC HAI): Biệt thức Delta BẮT BUỘC phải là số chính phương.
+     + LOẠI BỎ TRIỆT ĐỂ PHƯƠNG ÁN RÁC: Nếu có phương án rác ('Phương án khác', 'Chưa đủ dữ kiện'...), viết lại đủ 4 phương án học thuật A, B, C, D.
+     + Lời giải 'explanation': Giải thích từng bước rõ ràng, ngắn gọn và kết luận khớp 100% với 'answer'.
+2. ĐỐI VỚI PHẦN II (TRẮC NGHIỆM ĐÚNG / SAI):
+   - Đọc kỹ đề bài dẫn và từng mệnh đề a, b, c, d.
+   - BẮT BUỘC TỰ GIẢI ĐỘC LẬP xét tính Đúng / Sai của từng mệnh đề a, b, c, d:
+     + So sánh với 'is_correct'. NẾU 'is_correct' BỊ ĐÁNH GIÁ SAI (ví dụ mệnh đề thực tế là ĐÚNG nhưng ghi false, hoặc thực tế là SAI nhưng ghi true): BẮT BUỘC SỬA LẠI 'is_correct' CHO CHUẨN XÁC 100%!
+     + Viết lại 'explanation' cho từng mệnh đề chứng minh rõ tại sao Đúng, tại sao Sai.
+     + QUY TẮC BẮT BUỘC BỘ GD&ĐT: Trong 4 mệnh đề a, b, c, d LUÔN CÓ TỪ 1 ĐẾN 3 MỆNH ĐỀ ĐÚNG (tuyệt đối không toàn Đúng [4 true] hoặc toàn Sai [4 false]).
 3. ĐỐI VỚI PHẦN III (TRẢ LỜI NGẮN):
-   - Tự giải và tính toán độc lập để xác minh đáp số 'answer'. Nếu tính ra số khác, BẮT BUỘC sửa 'answer' về đáp số chuẩn xác.
-   - VỚI BÀI TOÁN HỎI ĐỐI TƯỢNG BAN ĐẦU (ví dụ 'Hỏi lớp 9A ban đầu trồng được bao nhiêu cây?'): Đáp án BẮT BUỘC phải là số cây thực tế ban đầu của lớp 9A (ví dụ 70 cây), TUYỆT ĐỐI KHÔNG lấy số cây sau khi giả định tăng thêm (80 cây).
-   - Đảm bảo đề bài đầy đủ lệnh hỏi, dùng đúng cú pháp $\\begin{{cases}}...\\end{{cases}}$.
-   - Đảm bảo 'answer' là một số cụ thể hoặc từ ngắn gọn, chính xác.
+   - Tự giải bài toán ra con số đáp số cuối cùng.
+   - So sánh với 'current_answer'. Nếu kết quả thực tế khác (ví dụ tính ra 3 mà đề ghi 2, tính ra 12.5 mà ghi 15): BẮT BUỘC sửa 'answer' về đáp số chuẩn xác.
+   - VỚI BÀI TOÁN HỎI ĐỐI TƯỢNG BAN ĐẦU: Đáp số phải đúng đối tượng được hỏi ban đầu.
+4. ĐỐI VỚI CÂU CHỮ VÀ VĂN PHONG (TIẾNG VIỆT & CÔNG THỨC):
+   - Câu chữ phải trong sáng, đúng thuật ngữ chuẩn SGK mới (Chương trình GDPT 2018), không dùng từ ngữ lủng củng hay dịch máy thô ráp.
+   - Mọi ký hiệu, công thức toán/lý/hóa phải dùng chuẩn LaTeX đặt trong dấu $...$ (ví dụ: $x = 2$, $\\int_0^1 f(x)dx$).
 
-QUY TẮC TỐI ƯU HIỆU NĂNG VÀ BẢO TOÀN DỮ LIỆU:
-- CHỈ TRẢ VỀ CÁC CÂU CÓ LỖI HOẶC CẦN SỬA ĐỔI trong mảng 'healed_items'.
-- Những câu nào đã hoàn toàn chính xác 100% về mặt học thuật và đáp án thì TUYỆT ĐỐI KHÔNG ĐƯỢC ĐƯA VÀO 'healed_items' (để giữ nguyên câu hỏi gốc và xử lý cực nhanh).
-- Nếu toàn bộ các câu hỏi đều đã chuẩn xác, trả về {{"healed_items": []}}.
+⭐ QUY TẮC VÀNG VỀ TỐI ƯU HÓA & BẢO TOÀN DỮ LIỆU (CHỈ SỬA CÂU SAI):
+- BẠN CHỈ TRẢ VỀ CÁC CÂU THỰC SỰ CÓ LỖI HOẶC CẦN SỬA ĐỔI trong mảng 'healed_items'.
+- Những câu nào đã hoàn toàn chính xác 100% về mặt học thuật, câu chữ và đáp án thì TUYỆT ĐỐI GIỮ NGUYÊN VẸN, KHÔNG ĐƯA VÀO 'healed_items'!
+- Mỗi câu được sửa BẮT BUỘC kèm trường 'reason' giải thích ngắn gọn, rõ ràng lỗi sai đã phát hiện và nội dung đã sửa lại.
+- Nếu toàn bộ đề thi đã hoàn hảo không có bất kỳ câu nào sai, trả về: {{"healed_items": []}}.
 
-ĐỊNH DẠNG JSON TRẢ VỀ (Chỉ trả về JSON hợp lệ):
+ĐỊNH DẠNG JSON TRẢ VỀ DUY NHẤT:
 {{
   "healed_items": [
     {{
       "part": 1,
       "index": 0,
-      "question": "Câu hỏi đã chuẩn hóa...",
+      "question": "Câu hỏi đã trau chuốt câu chữ và chuẩn hóa dữ kiện...",
       "options": [
         {{"label": "A", "text": "..."}},
         {{"label": "B", "text": "..."}},
         {{"label": "C", "text": "..."}},
         {{"label": "D", "text": "..."}}
       ],
-      "answer": "A",
-      "explanation": "Lời giải thích ngắn gọn từng bước, kết luận chọn đáp án A."
+      "answer": "B",
+      "explanation": "Lời giải từng bước, kết luận chọn B.",
+      "reason": "Giải lại độc lập phát hiện đáp án thực tế là B thay vì A; đã chuẩn hóa câu chữ đề bài."
     }},
     {{
       "part": 2,
       "index": 0,
       "question": "Đề bài câu đúng sai đã chuẩn hóa...",
       "sub_items": [
-        {{"label": "a", "statement": "Mệnh đề a thực tế...", "is_correct": true, "explanation": "Giải thích a"}},
-        {{"label": "b", "statement": "Mệnh đề b thực tế...", "is_correct": false, "explanation": "Giải thích b"}},
-        {{"label": "c", "statement": "Mệnh đề c thực tế...", "is_correct": true, "explanation": "Giải thích c"}},
-        {{"label": "d", "statement": "Mệnh đề d thực tế...", "is_correct": false, "explanation": "Giải thích d"}}
+        {{"label": "a", "statement": "Mệnh đề a...", "is_correct": true, "explanation": "Chứng minh a đúng"}},
+        {{"label": "b", "statement": "Mệnh đề b...", "is_correct": false, "explanation": "Chứng minh b sai"}},
+        {{"label": "c", "statement": "Mệnh đề c...", "is_correct": true, "explanation": "Chứng minh c đúng"}},
+        {{"label": "d", "statement": "Mệnh đề d...", "is_correct": false, "explanation": "Chứng minh d sai"}}
       ],
-      "explanation": "Hướng dẫn chấm chung..."
+      "explanation": "Hướng dẫn chấm chung...",
+      "reason": "Sửa mệnh đề c từ Sai thành Đúng do tính toán ra kết quả thỏa mãn; đảm bảo tỉ lệ Đúng/Sai chuẩn."
     }},
     {{
       "part": 3,
       "index": 0,
       "question": "Câu hỏi ngắn đầy đủ lệnh hỏi...",
-      "answer": "12.5",
-      "explanation": "Lời giải ngắn gọn từng bước, kết luận đáp số là 12.5."
+      "answer": "3",
+      "explanation": "Lời giải chi tiết từng bước, đáp số là 3.",
+      "reason": "Giải lại hệ phương trình ra tổng x0 + y0 = 3, đã sửa đáp số từ 2 thành 3."
     }}
   ]
 }}
 """
 
+    # Pool of keys to try with automatic rotation if rate limit / temporary demand spike occurs
+    keys_pool = []
+    if api_keys:
+        for k in api_keys:
+            if k and len(k) > 5 and k not in keys_pool:
+                keys_pool.append(k)
+    if api_key and len(api_key) > 5 and api_key not in keys_pool:
+        keys_pool.insert(0, api_key)
+
+    if not keys_pool:
+        return exam, notes
+
+    raw_res = None
+    last_err = None
+
+    for active_key in keys_pool:
+        try:
+            chosen_model = model if model and model not in ("auto", "default", "") else "gemini-2.5-flash"
+            if provider == "openai":
+                raw_res = await generate_with_openai(auditor_prompt, active_key, model if model != "auto" else "gpt-4o-mini")
+            else:
+                raw_res = await generate_with_gemini(auditor_prompt, active_key, chosen_model)
+            if raw_res and len(raw_res.strip()) > 10:
+                break
+        except Exception as call_err:
+            last_err = call_err
+            print(f"[Auditor Agent Warning] Key {active_key[:8]}... gặp lỗi: {call_err}. Đang chuyển tiếp key dự phòng...")
+            continue
+
+    if not raw_res:
+        print(f"[Auditor Agent] Không thể gọi AI phản biện qua các key có sẵn: {last_err}")
+        return exam, notes
+
     try:
-        chosen_model = model if model and model not in ("auto", "default", "") else "gemini-2.5-flash"
-        if provider == "openai":
-            raw_res = await generate_with_openai(auditor_prompt, api_key, model if model != "auto" else "gpt-4o-mini")
-        else:
-            raw_res = await generate_with_gemini(auditor_prompt, api_key, chosen_model)
-            
         cleaned = clean_json_string(raw_res)
         data = json.loads(cleaned)
         healed_list = data.get("healed_items") or []
@@ -1658,6 +1705,8 @@ QUY TẮC TỐI ƯU HIỆU NĂNG VÀ BẢO TOÀN DỮ LIỆU:
         for item in healed_list:
             part = item.get("part")
             idx = item.get("index")
+            custom_reason = item.get("reason")
+            
             if part == 1 and 0 <= idx < len(exam.part1_mcq):
                 target_q = exam.part1_mcq[idx]
                 new_opts = [Option(label=o.get("label", "A"), text=normalize_latex_delimiters(o.get("text", ""))) for o in item.get("options", [])]
@@ -1669,7 +1718,9 @@ QUY TẮC TỐI ƯU HIỆU NĂNG VÀ BẢO TOÀN DỮ LIỆU:
                     target_q.answer = str(item.get("answer")).strip().upper()
                 if item.get("explanation"):
                     target_q.explanation = str(item.get("explanation")).strip()
-                notes.append(f"Câu {target_q.id} (Phần I): AI Auditor Solver đã giải lại, chuẩn hóa đề bài và xác minh đáp án {target_q.answer}.")
+                r_text = custom_reason or f"AI Auditor đã giải lại độc lập, trau chuốt câu chữ và xác minh đáp án {target_q.answer}."
+                notes.append(f"Câu {target_q.id} (Phần I): {r_text}")
+                
             elif part == 2 and 0 <= idx < len(exam.part2_tf):
                 target_q = exam.part2_tf[idx]
                 sub_data = item.get("sub_items") or []
@@ -1697,7 +1748,9 @@ QUY TẮC TỐI ƯU HIỆU NĂNG VÀ BẢO TOÀN DỮ LIỆU:
                     elif t_count == 0:
                         target_q.sub_items[0].is_correct = True
                         
-                    notes.append(f"Câu {target_q.id} (Phần II): AI Auditor Agent đã thẩm định, viết lại đề bài và chuẩn hóa 4 mệnh đề Đúng/Sai.")
+                    r_text = custom_reason or "AI Auditor đã thẩm định từng mệnh đề, chuẩn hóa câu chữ và xác minh tính Đúng/Sai."
+                    notes.append(f"Câu {target_q.id} (Phần II): {r_text}")
+                    
             elif part == 3 and 0 <= idx < len(exam.part3_short):
                 target_q = exam.part3_short[idx]
                 if item.get("question") and len(str(item.get("question")).strip()) >= 8:
@@ -1706,15 +1759,27 @@ QUY TẮC TỐI ƯU HIỆU NĂNG VÀ BẢO TOÀN DỮ LIỆU:
                     target_q.answer = str(item.get("answer")).strip()
                 if item.get("explanation"):
                     target_q.explanation = str(item.get("explanation")).strip()
-                notes.append(f"Câu {target_q.id} (Phần III): AI Auditor Solver đã giải lại và chuẩn hóa đáp số {target_q.answer}.")
+                r_text = custom_reason or f"AI Auditor Solver đã giải lại độc lập và chuẩn hóa đáp số {target_q.answer}."
+                notes.append(f"Câu {target_q.id} (Phần III): {r_text}")
+
+            elif part == 4 and exam.part4_essay and 0 <= idx < len(exam.part4_essay):
+                target_q = exam.part4_essay[idx]
+                if item.get("question") and len(str(item.get("question")).strip()) >= 5:
+                    target_q.question = normalize_latex_delimiters(str(item.get("question")).strip())
+                if item.get("explanation"):
+                    target_q.explanation = str(item.get("explanation")).strip()
+                r_text = custom_reason or "AI Auditor đã trau chuốt câu từ đề bài và biểu điểm hướng dẫn chấm."
+                notes.append(f"Câu {target_q.id} (Tự luận): {r_text}")
+                
     except Exception as e:
-        print(f"[Auditor Agent] Lỗi khi gọi AI phản biện: {e}")
+        print(f"[Auditor Agent] Lỗi khi xử lý phản hồi từ AI thẩm định: {e}")
         
     return exam, notes
 
 async def audit_and_verify_exam(
     exam: ExamStructure,
     api_key: Optional[str] = None,
+    api_keys: Optional[List[str]] = None,
     provider: str = "gemini",
     model: str = "auto"
 ) -> ExamStructure:
@@ -1764,10 +1829,23 @@ async def audit_and_verify_exam(
             
     initial_issues_count = len(defective_p1) + len(defective_p2) + len(defective_p3) + len(math_notes)
     
-    # 3. AI Auditor Solver & Independent Verification Pass
-    if api_key and len(api_key) > 5 and total_q > 0:
+    # 3. AI Auditor Solver & Independent Verification Pass (With multi-key pool rotation)
+    effective_keys = []
+    if api_keys:
+        effective_keys.extend([k for k in api_keys if k and len(k) > 5])
+    if api_key and len(api_key) > 5 and api_key not in effective_keys:
+        effective_keys.insert(0, api_key)
+
+    if effective_keys and total_q > 0:
         exam, ai_notes = await run_ai_auditor_healing(
-            exam, defective_p1, defective_p2, defective_p3, api_key, provider, model
+            exam=exam,
+            defective_p1=defective_p1,
+            defective_p2=defective_p2,
+            defective_p3=defective_p3,
+            api_key=effective_keys[0],
+            api_keys=effective_keys,
+            provider=provider,
+            model=model
         )
         notes.extend(ai_notes)
         
