@@ -980,18 +980,38 @@ def auto_attach_diagrams_to_exam(exam: Any) -> Any:
                             b64, cap = draw_cubic_graph(caption="Hình: Đồ thị hàm số bậc ba y = f(x)")
                             q.image_base64 = b64
                             q.image_caption = cap
+                            try:
+                                from .exam_auditor import heal_cubic_graph_mcq
+                                q, _, _ = heal_cubic_graph_mcq(q)
+                            except Exception:
+                                pass
                         elif "trùng phương" in q_text or "bậc bốn" in q_text or "x^4" in q_text or "bac bon" in q_text:
                             b64, cap = draw_quartic_graph(caption="Hình: Đồ thị hàm số bậc bốn trùng phương")
                             q.image_base64 = b64
                             q.image_caption = cap
+                            try:
+                                from .exam_auditor import heal_quartic_graph_mcq
+                                q, _, _ = heal_quartic_graph_mcq(q)
+                            except Exception:
+                                pass
                         elif "phân thức" in q_text or "tiệm cận" in q_text or "hữu tỉ" in q_text or (("cx + d" in q_text or "cx+d" in q_text) and "x^3" not in q_text):
                             b64, cap = draw_rational_graph(caption="Hình: Đồ thị hàm phân thức hữu tỉ")
                             q.image_base64 = b64
                             q.image_caption = cap
+                            try:
+                                from .exam_auditor import heal_rational_graph_mcq
+                                q, _, _ = heal_rational_graph_mcq(q)
+                            except Exception:
+                                pass
                         elif "đường cong" in q_text or "đồ thị" in q_text:
                             b64, cap = draw_cubic_graph(caption="Hình: Đồ thị hàm số y = f(x)")
                             q.image_base64 = b64
                             q.image_caption = cap
+                            try:
+                                from .exam_auditor import heal_cubic_graph_mcq
+                                q, _, _ = heal_cubic_graph_mcq(q)
+                            except Exception:
+                                pass
                         
             # 2. VẬT LÝ
             elif "vật" in subject_lower or "lý" in subject_lower or "ly" in subject_lower:

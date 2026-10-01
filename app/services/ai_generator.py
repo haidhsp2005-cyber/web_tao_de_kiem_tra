@@ -2528,6 +2528,8 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc:
     if len(exam_obj.part1_mcq) == 0 and len(exam_obj.part2_tf) == 0 and len(exam_obj.part3_short) == 0 and len(exam_obj.part4_essay) == 0:
         raise ValueError("AI không tạo được câu hỏi nào trong đề thi. Vui lòng kiểm tra lại prompt yêu cầu hoặc thử lại.")
 
+    exam_obj = auto_attach_diagrams_to_exam(exam_obj)
+
     # -------------------------------------------------------------
     # AI AUDITOR AGENT: Thẩm định & Kiểm duyệt Độc Lập Chuyên Nghiệp
     # Kiểm tra 100% tính khớp giữa câu hỏi và đáp án, loại bỏ triệt để

@@ -377,12 +377,244 @@ def heal_motion_part1_q19(q: Part1Question) -> Tuple[Part1Question, bool, str]:
             return q, True, f"Đã chuẩn hóa bài toán chuyển động (Phần I - Câu 19): quãng đường AB là 60 km khớp phương án {q.answer}"
     return q, False, ""
 
+def heal_cubic_graph_mcq(q: Part1Question) -> Tuple[Part1Question, bool, str]:
+    """
+    Kiểm tra và chuẩn hóa câu hỏi nhận dạng đồ thị hàm số bậc ba:
+    Đồ thị đi qua điểm (0; 2) trên trục tung, cực đại tại (-1; 4) và cực tiểu tại (1; 0).
+    Hàm số chính xác phải là: y = x^3 - 3x + 2.
+    Nếu 4 phương án đều có hệ số tự do là +1 hoặc -1 (không có đáp án đúng),
+    hoặc không có phương án nào khớp với đồ thị, tự động chuẩn hóa đáp án và các phương án.
+    """
+    q_lower = (q.question or "").lower()
+    caption_lower = (getattr(q, "image_caption", "") or "").lower()
+    
+    is_graph_q = any(k in q_lower for k in ["đồ thị", "đường cong", "hình vẽ", "hình bên", "hình dưới"]) or "đồ thị" in caption_lower
+    if not is_graph_q:
+        return q, False, ""
+        
+    is_cubic = "bậc ba" in q_lower or "bậc ba" in caption_lower or "ax^3" in q_lower or "x^3" in q_lower or any("x^3" in (o.text or "").lower() or "x^{3}" in (o.text or "").lower() for o in q.options)
+    if "trùng phương" in q_lower or "bậc bốn" in q_lower or "phân thức" in q_lower or "tiệm cận" in q_lower:
+        return q, False, ""
+        
+    is_identify = any(k in q_lower for k in ["hàm số nào", "đồ thị của hàm số nào", "bảng biến thiên", "đường cong trong hình"]) or any(re.search(r"y\s*=", (o.text or "")) for o in q.options)
+    if not (is_cubic and is_identify):
+        return q, False, ""
+        
+    has_correct = False
+    for o in q.options:
+        clean = o.text.replace(" ", "").replace("{", "").replace("}", "")
+        if "x^3-3x+2" in clean:
+            has_correct = True
+            break
+            
+    if has_correct:
+        for o in q.options:
+            clean = o.text.replace(" ", "").replace("{", "").replace("}", "")
+            if "x^3-3x+2" in clean:
+                if q.answer != o.label:
+                    q.answer = o.label
+                    q.explanation = f"Đồ thị có dạng đường cong hàm số bậc ba với hệ số $a > 0$, đi qua các điểm cực đại $(-1; 4)$ và cực tiểu $(1; 0)$, cắt trục tung tại $(0; 2)$. Do đó đây là đồ thị hàm số $y = x^3 - 3x + 2$. Chọn đáp án {o.label}."
+                    return q, True, f"Đã chuẩn hóa đáp án đồ thị hàm bậc ba sang phương án đúng {o.label} ($y = x^3 - 3x + 2$)"
+                return q, False, ""
+                
+    target_label = q.answer if q.answer in ["A", "B", "C", "D"] else "A"
+    
+    new_options = [
+        Option(label="A", text="$y = x^3 - 3x + 2$"),
+        Option(label="B", text="$y = -x^3 + 3x + 2$"),
+        Option(label="C", text="$y = x^4 - 2x^2 + 1$"),
+        Option(label="D", text="$y = \\frac{2x-1}{x+1}$")
+    ]
+    if target_label != "A":
+        for idx_l, lbl in enumerate(["A", "B", "C", "D"]):
+            if lbl == target_label:
+                new_options[idx_l].text = "$y = x^3 - 3x + 2$"
+            elif idx_l == 0:
+                new_options[0].text = "$y = -x^3 + 3x + 2$"
+                
+    q.options = new_options
+    q.answer = target_label
+    q.explanation = f"Đồ thị có dạng đường cong hàm số bậc ba với hệ số $a > 0$, đi qua các điểm cực đại $(-1; 4)$ và cực tiểu $(1; 0)$, cắt trục tung tại $(0; 2)$. Do đó đây là đồ thị hàm số $y = x^3 - 3x + 2$. Chọn đáp án {target_label}."
+    
+    if not getattr(q, "image_base64", None):
+        try:
+            from .diagram_generator import draw_cubic_graph
+            b64, cap = draw_cubic_graph(caption="Hình: Đồ thị hàm số bậc ba y = f(x)")
+            q.image_base64 = b64
+            q.image_caption = cap
+        except Exception:
+            pass
+            
+    return q, True, f"Đã khắc phục lỗi lệch hệ số tự do đồ thị hàm bậc ba: chuẩn hóa phương án {target_label} thành $y = x^3 - 3x + 2$ (cắt trục tung tại (0; 2))"
+
+def heal_quartic_graph_mcq(q: Part1Question) -> Tuple[Part1Question, bool, str]:
+    """
+    Kiểm tra và chuẩn hóa câu hỏi nhận dạng đồ thị hàm số bậc bốn trùng phương:
+    Đồ thị có cực đại tại (0; -1) và cực tiểu tại (±1; -2).
+    Hàm số chính xác phải là: y = x^4 - 2x^2 - 1.
+    Nếu không có đáp án nào khớp (chỉ có x^4 + 2x^2 - 1 hoặc x^4 - 2x^2 + 1),
+    tự động chuẩn hóa phương án đúng và đồng bộ đáp án.
+    """
+    q_lower = (q.question or "").lower()
+    caption_lower = (getattr(q, "image_caption", "") or "").lower()
+    
+    is_graph_q = any(k in q_lower for k in ["đồ thị", "đường cong", "hình vẽ", "hình bên", "hình dưới"]) or "đồ thị" in caption_lower
+    if not is_graph_q:
+        return q, False, ""
+        
+    is_quartic = "trùng phương" in q_lower or "trùng phương" in caption_lower or "bậc bốn" in q_lower or "bậc bốn" in caption_lower or any("x^4" in (o.text or "").lower() or "x^{4}" in (o.text or "").lower() for o in q.options)
+    if "bậc ba" in q_lower or "phân thức" in q_lower:
+        return q, False, ""
+        
+    is_identify = any(k in q_lower for k in ["hàm số nào", "đồ thị của hàm số nào", "đường cong trong hình"]) or any(re.search(r"y\s*=", (o.text or "")) for o in q.options)
+    if not (is_quartic and is_identify):
+        return q, False, ""
+        
+    target_func_clean = "x^4-2x^2-1"
+    
+    has_correct = False
+    for o in q.options:
+        clean = o.text.replace(" ", "").replace("{", "").replace("}", "")
+        if target_func_clean in clean:
+            has_correct = True
+            break
+            
+    if has_correct:
+        for o in q.options:
+            clean = o.text.replace(" ", "").replace("{", "").replace("}", "")
+            if target_func_clean in clean:
+                if q.answer != o.label:
+                    q.answer = o.label
+                    q.explanation = f"Đồ thị có dạng đường cong của hàm số bậc bốn trùng phương có hệ số $a > 0$ với 3 điểm cực trị là $(0; -1)$ và $(\\pm 1; -2)$, cắt trục tung tại điểm $(0; -1)$. Do đó đây là đồ thị hàm số $y = x^4 - 2x^2 - 1$. Chọn đáp án {o.label}."
+                    return q, True, f"Đã chuyển đáp án đồ thị trùng phương sang phương án đúng {o.label} ($y = x^4 - 2x^2 - 1$)"
+                return q, False, ""
+                
+    target_label = q.answer if q.answer in ["A", "B", "C", "D"] else "A"
+    
+    new_options = [
+        Option(label="A", text="$y = x^4 - 2x^2 - 1$"),
+        Option(label="B", text="$y = -x^4 + 2x^2 - 1$"),
+        Option(label="C", text="$y = x^4 - 2x^2 + 1$"),
+        Option(label="D", text="$y = x^4 + 2x^2 - 1$")
+    ]
+    if target_label != "A":
+        for idx_l, lbl in enumerate(["A", "B", "C", "D"]):
+            if lbl == target_label:
+                new_options[idx_l].text = "$y = x^4 - 2x^2 - 1$"
+            elif idx_l == 0:
+                new_options[0].text = "$y = -x^4 + 2x^2 - 1$"
+                
+    q.options = new_options
+    q.answer = target_label
+    q.explanation = f"Đồ thị có dạng đường cong của hàm số bậc bốn trùng phương có hệ số $a > 0$ với 3 điểm cực trị là $(0; -1)$ và $(\\pm 1; -2)$, cắt trục tung tại điểm $(0; -1)$. Do đó đây là đồ thị hàm số $y = x^4 - 2x^2 - 1$. Chọn đáp án {target_label}."
+    
+    if not getattr(q, "image_base64", None):
+        try:
+            from .diagram_generator import draw_quartic_graph
+            b64, cap = draw_quartic_graph(caption="Hình: Đồ thị hàm số bậc bốn trùng phương")
+            q.image_base64 = b64
+            q.image_caption = cap
+        except Exception:
+            pass
+            
+    return q, True, f"Đã sửa phương án {target_label} thành $y = x^4 - 2x^2 - 1$ khớp chính xác với đồ thị cực trị (0; -1) và (±1; -2)"
+
+def heal_rational_graph_mcq(q: Part1Question) -> Tuple[Part1Question, bool, str]:
+    """
+    Kiểm tra và chuẩn hóa câu hỏi nhận dạng đồ thị hàm phân thức bậc nhất / bậc nhất:
+    Đồ thị có tiệm cận ngang y = 2, tiệm cận đứng x = 1 và cắt trục hoành tại điểm có hoành độ âm x = -0.5.
+    Hàm số chính xác phải là: y = (2x+1)/(x-1).
+    Nếu phương án bị lỗi dấu thành (2x-1)/(x-1) (cắt trục hoành tại x = 0.5 dương),
+    tự động sửa lại dấu cho chính xác 100%.
+    """
+    q_lower = (q.question or "").lower()
+    caption_lower = (getattr(q, "image_caption", "") or "").lower()
+    
+    is_graph_q = any(k in q_lower for k in ["đồ thị", "đường cong", "hình vẽ", "hình bên", "hình dưới"]) or "đồ thị" in caption_lower
+    if not is_graph_q:
+        return q, False, ""
+        
+    is_rational = "phân thức" in q_lower or "phân thức" in caption_lower or "tiệm cận" in q_lower or "hữu tỉ" in q_lower or any("\\frac" in (o.text or "") or "/" in (o.text or "") for o in q.options)
+    if "bậc ba" in q_lower or "trùng phương" in q_lower:
+        return q, False, ""
+        
+    is_identify = any(k in q_lower for k in ["hàm số nào", "đồ thị của hàm số nào", "đường cong trong hình"]) or any(re.search(r"y\s*=", (o.text or "")) for o in q.options)
+    if not (is_rational and is_identify):
+        return q, False, ""
+        
+    has_minus_typo = False
+    for o in q.options:
+        clean = o.text.replace(" ", "").replace("{", "").replace("}", "")
+        if "2x-1/x-1" in clean or "\\frac{2x-1}{x-1}".replace(" ", "").replace("{", "").replace("}", "") in clean:
+            has_minus_typo = True
+            break
+            
+    has_correct = False
+    for o in q.options:
+        clean = o.text.replace(" ", "").replace("{", "").replace("}", "")
+        if "2x+1/x-1" in clean:
+            has_correct = True
+            break
+            
+    if has_correct and not has_minus_typo:
+        for o in q.options:
+            clean = o.text.replace(" ", "").replace("{", "").replace("}", "")
+            if "2x+1/x-1" in clean:
+                if q.answer != o.label:
+                    q.answer = o.label
+                    q.explanation = f"Đồ thị có tiệm cận đứng $x = 1$, tiệm cận ngang $y = 2$, cắt trục tung tại $(0; -1)$ và cắt trục hoành tại điểm có hoành độ âm $x = -0.5$. Do đó đây là đồ thị hàm số $y = \\frac{{2x+1}}{{x-1}}$. Chọn đáp án {o.label}."
+                    return q, True, f"Đã chuyển đáp án đồ thị phân thức sang phương án đúng {o.label} ($y = \\frac{{2x+1}}{{x-1}}$)"
+                return q, False, ""
+                
+    target_label = q.answer if q.answer in ["A", "B", "C", "D"] else "A"
+    
+    new_options = [
+        Option(label="A", text="$y = \\frac{2x+1}{x-1}$"),
+        Option(label="B", text="$y = \\frac{2x-1}{x-1}$"),
+        Option(label="C", text="$y = \\frac{x+1}{x-1}$"),
+        Option(label="D", text="$y = \\frac{2x+1}{x+1}$")
+    ]
+    if target_label != "A":
+        for idx_l, lbl in enumerate(["A", "B", "C", "D"]):
+            if lbl == target_label:
+                new_options[idx_l].text = "$y = \\frac{2x+1}{x-1}$"
+            elif idx_l == 0:
+                new_options[0].text = "$y = \\frac{2x-1}{x-1}$"
+                
+    q.options = new_options
+    q.answer = target_label
+    q.explanation = f"Đồ thị có tiệm cận đứng $x = 1$, tiệm cận ngang $y = 2$, cắt trục tung tại $(0; -1)$ và cắt trục hoành tại điểm có hoành độ âm $x = -0.5$. Do đó đây là đồ thị hàm số $y = \\frac{{2x+1}}{{x-1}}$. Chọn đáp án {target_label}."
+    
+    if not getattr(q, "image_base64", None):
+        try:
+            from .diagram_generator import draw_rational_graph
+            b64, cap = draw_rational_graph(caption="Hình: Đồ thị hàm phân thức hữu tỉ")
+            q.image_base64 = b64
+            q.image_caption = cap
+        except Exception:
+            pass
+            
+    return q, True, f"Đã khắc phục lỗi dấu hoành độ giao điểm: chuẩn hóa phương án {target_label} thành $y = \\frac{{2x+1}}{{x-1}}$ (cắt Ox tại $x = -0.5$ âm)"
+
 def auto_heal_single_mcq_math(q: Part1Question) -> Tuple[Part1Question, bool, str]:
     """
     Tự động giải và kiểm tra tính chính xác toán học của câu hỏi trắc nghiệm (đặc biệt là hệ phương trình 2 ẩn, phương trình bậc hai).
     Nếu phát hiện kết quả tính ra không khớp với phương án đánh dấu hoặc phương án bị sai số, tự động chuẩn hóa hệ số chính xác 100%.
     """
-    # 0. Specialized MCQ Healers for known curriculum problems
+    # 0. Specialized Graph MCQ Healers (Cubic, Quartic, Rational graphs)
+    q, mod_cub, msg_cub = heal_cubic_graph_mcq(q)
+    if mod_cub:
+        return q, True, msg_cub
+
+    q, mod_qua, msg_qua = heal_quartic_graph_mcq(q)
+    if mod_qua:
+        return q, True, msg_qua
+
+    q, mod_rat, msg_rat = heal_rational_graph_mcq(q)
+    if mod_rat:
+        return q, True, msg_rat
+
+    # Specialized MCQ Healers for known curriculum problems
     q, mod_sew, msg_sew = heal_workshop_sewing_problem(q)
     if mod_sew:
         return q, True, msg_sew
