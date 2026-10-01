@@ -8,7 +8,7 @@ createApp({
       duration_minutes: 50,
       school_name: "SỞ GD&ĐT ... - TRƯỜNG THPT ...",
       academic_year: "NĂM HỌC 2026 - 2027",
-      num_part1: 20,
+      num_part1: 12,
       num_part2: 4,
       num_part3: 6,
       num_essay: 0,
@@ -601,6 +601,9 @@ createApp({
         isCustomSubject.value = false;
         form.grade = data.grade;
         form.duration_minutes = data.duration_minutes;
+        form.num_part1 = data.part1_mcq ? data.part1_mcq.length : 12;
+        form.num_part2 = data.part2_tf ? data.part2_tf.length : 4;
+        form.num_part3 = data.part3_short ? data.part3_short.length : 6;
         form.num_essay = data.part4_essay ? data.part4_essay.length : 0;
         showToast(`Đã nạp đề mẫu môn ${data.subject}! Đang tự động trộn 4 mã đề...`);
         await startShuffle();

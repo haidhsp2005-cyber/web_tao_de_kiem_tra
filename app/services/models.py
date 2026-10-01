@@ -375,7 +375,7 @@ class GenerateRequest(BaseModel):
     subject: str = 'Toán học'
     grade: str = '12'
     topic: Optional[str] = ''
-    num_part1: int = 20
+    num_part1: int = 12
     num_part2: int = 4
     num_part3: int = 6
     num_essay: int = 0  # Số câu tự luận (mặc định 0 - nếu là 0 thì không tạo câu tự luận)

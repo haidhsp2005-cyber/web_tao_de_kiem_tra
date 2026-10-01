@@ -500,7 +500,7 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
                 points=5.0
             )
         ]
-        num_part1 = 20
+        num_part1 = 12
         num_part2 = 4
         num_part3 = 6
         num_essay = 0
@@ -516,7 +516,7 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
 
     # Đảm bảo các giá trị tối thiểu hợp lệ nếu bảng chỉ có tiêu đề
     if num_part1 == 0 and num_part2 == 0 and num_part3 == 0 and num_essay == 0:
-        num_part1, num_part2, num_part3, num_essay = 20, 4, 6, 0
+        num_part1, num_part2, num_part3, num_essay = 12, 4, 6, 0
 
     total_q = total_biet + total_hieu + total_vd
     if total_q == 0:
@@ -529,6 +529,11 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
     hieu_pct = round((total_hieu / total_q) * 100, 1) if total_q > 0 else 30.0
     vd_pct = round(100.0 - biet_pct - hieu_pct, 1)
 
+    s1_pts = round(num_part1 * 0.25, 2) if num_part1 > 0 else 0.0
+    s2_pts = round(num_part2 * 1.0, 2) if num_part2 > 0 else 0.0
+    s4_pts = 3.0 if num_essay > 0 else 0.0
+    s3_pts = round(max(0.0, 10.0 - s1_pts - s2_pts - s4_pts), 2) if num_part3 > 0 else 0.0
+
     return ExamMatrixSpec(
         title=title,
         subject=subject,
@@ -540,10 +545,10 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
         num_essay=num_essay,
         total_points=10.0,
         scoring_summary={
-            "part1_points": round(num_part1 * 0.25, 2) if num_part1 > 0 else 0.0,
-            "part2_points": round(num_part2 * 1.0, 2) if num_part2 > 0 else 0.0,
-            "part3_points": 2.0,
-            "part4_points": 3.0 if num_essay > 0 else 0.0
+            "part1_points": s1_pts,
+            "part2_points": s2_pts,
+            "part3_points": s3_pts,
+            "part4_points": s4_pts
         },
         cognitive_summary=CognitiveSummary(
             biet_count=total_biet,

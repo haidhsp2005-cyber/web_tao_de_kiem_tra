@@ -535,7 +535,7 @@ def get_mock_math_exam() -> ExamStructure:
         ("Cho hình nón có bán kính đáy $r = 3$ và đường sinh $l = 5$. Diện tích xung quanh của hình nón là", [("A", "$15\\pi$"), ("B", "$30\\pi$"), ("C", "$12\\pi$"), ("D", "$45\\pi$")], "A", "Diện tích xung quanh hình nón: $S_{xq} = \\pi r l = \\pi \\times 3 \\times 5 = 15\\pi$."),
         ("Cho hai biến cố độc lập $A$ và $B$ với $P(A) = 0.4$ và $P(B) = 0.5$. Xác suất của biến cố giao $P(AB)$ là", [("A", "$0.2$"), ("B", "$0.9$"), ("C", "$0.1$"), ("D", "$0.45$")], "A", "Vì hai biến cố độc lập nên $P(AB) = P(A) \\cdot P(B) = 0.4 \\times 0.5 = 0.2$.")
     ]
-    for i, (q_text, opts, ans, exp) in enumerate(math_p1_samples, start=1):
+    for i, (q_text, opts, ans, exp) in enumerate(math_p1_samples[:12], start=1):
         img_b64 = None
         img_cap = None
         if i == 1:
