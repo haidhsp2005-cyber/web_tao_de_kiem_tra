@@ -26,6 +26,7 @@ createApp({
       }
     };
     const uploadedFileName = ref("");
+    const uploadedFiles = ref([]);
     const extractedPreview = ref("");
     const fileInput = ref(null);
 
@@ -451,14 +452,56 @@ createApp({
       // KaTeX is rendered reactively through v-html="renderMath(...)"
     };
 
-    // File Upload Handler — Manual-first: subject & grade are set by user BEFORE upload
-    const uploadFile = async (file) => {
-      if (!file) return;
-      uploadedFileName.value = file.name;
+    // File Upload Handler — Hỗ trợ nhiều tệp cùng lúc (Word, PDF, Ảnh OCR, Text)
+    const totalExtractedLength = computed(() => {
+      return uploadedFiles.value.reduce((acc, f) => acc + (f.length || 0), 0);
+    });
+
+    const rebuildCombinedText = () => {
+      if (uploadedFiles.value.length === 0) {
+        uploadedFileName.value = "";
+        extractedPreview.value = "";
+        form.file_content = "";
+        return;
+      }
+      const total = uploadedFiles.value.length;
+      const sections = uploadedFiles.value.map((f, i) => {
+        const header = `=== [TỆP ${i + 1}/${total}]: ${f.filename} (${(f.category || 'TÀI LIỆU').toUpperCase()}) - Dung lượng: ${f.size_formatted || ''} ===`;
+        return `${header}\n${f.text || ''}\n`;
+      });
+      const combined = `================================================================================\nTỔNG HỢP NỘI DUNG TỪ ${total} TÀI LIỆU, GIÁO ÁN, ĐỀ CƯƠNG VÀ HÌNH ẢNH ĐÍNH KÈM\n================================================================================\n\n` + sections.join('\n\n');
+      extractedPreview.value = combined;
+      form.file_content = combined;
+      uploadedFileName.value = total === 1 ? uploadedFiles.value[0].filename : `${total} tệp đã tải lên (${uploadedFiles.value.map(f => f.category).join(', ')})`;
+    };
+
+    const removeFile = (index) => {
+      uploadedFiles.value.splice(index, 1);
+      rebuildCombinedText();
+      showToast("Đã xóa tệp khỏi danh sách tài liệu.");
+    };
+
+    const clearAllFiles = () => {
+      uploadedFiles.value = [];
+      uploadedFileName.value = "";
+      extractedPreview.value = "";
+      form.file_content = "";
+      if (fileInput.value) fileInput.value.value = "";
+      showToast("Đã xóa toàn bộ tài liệu đã tải lên.");
+    };
+
+    const triggerAddMoreFiles = () => {
+      if (fileInput.value) fileInput.value.click();
+    };
+
+    const uploadFiles = async (filesList) => {
+      if (!filesList || filesList.length === 0) return;
       isExtracting.value = true;
       try {
         const fd = new FormData();
-        fd.append("file", file);
+        for (let i = 0; i < filesList.length; i++) {
+          fd.append("files", filesList[i]);
+        }
         const res = await fetch("/api/extract", {
           method: "POST",
           body: fd
@@ -468,17 +511,35 @@ createApp({
           throw new Error(err.detail || "Lỗi đọc tệp");
         }
         const data = await res.json();
-        extractedPreview.value = data.text;
-        form.file_content = data.text;
 
-        // Gợi ý chủ đề từ tên file (nếu chưa nhập) — KHÔNG tự động thay đổi Môn/Lớp
-        const cleanName = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]+/g, " ");
-        if (!form.topic) {
-          form.topic = cleanName;
+        if (data.files && data.files.length) {
+          const existingNames = new Set(uploadedFiles.value.map(f => f.filename));
+          for (const newF of data.files) {
+            if (existingNames.has(newF.filename)) {
+              const idx = uploadedFiles.value.findIndex(f => f.filename === newF.filename);
+              if (idx !== -1) uploadedFiles.value[idx] = newF;
+            } else {
+              uploadedFiles.value.push(newF);
+            }
+          }
         }
 
-        showToast(`✅ Trích xuất ${data.text.length} ký tự — AI sẽ tạo đề Môn: ${form.subject} | Lớp ${form.grade}`, "info");
+        rebuildCombinedText();
 
+        if (data.suggested_topic && !form.topic) {
+          form.topic = data.suggested_topic;
+        }
+
+        const imgCount = uploadedFiles.value.filter(f => f.category === 'Ảnh').length;
+        const wordCount = uploadedFiles.value.filter(f => f.category === 'Word').length;
+        const pdfCount = uploadedFiles.value.filter(f => f.category === 'PDF').length;
+        let details = [];
+        if (wordCount) details.push(`${wordCount} Word`);
+        if (pdfCount) details.push(`${pdfCount} PDF`);
+        if (imgCount) details.push(`${imgCount} Ảnh`);
+        const detailsStr = details.length ? ` (${details.join(', ')})` : '';
+
+        showToast(`✅ Đã trích xuất thành công ${uploadedFiles.value.length} tệp${detailsStr} — Tổng cộng ${totalExtractedLength.value} ký tự!`, "info");
       } catch (err) {
         showToast(err.message, "error");
       } finally {
@@ -486,14 +547,19 @@ createApp({
       }
     };
 
+    const uploadFile = (file) => {
+      if (file) uploadFiles([file]);
+    };
+
     const handleFileSelect = (e) => {
-      const file = e.target.files[0];
-      if (file) uploadFile(file);
+      const files = Array.from(e.target.files || []);
+      if (files.length > 0) uploadFiles(files);
+      if (fileInput.value) fileInput.value.value = "";
     };
 
     const handleFileDrop = (e) => {
-      const file = e.dataTransfer.files[0];
-      if (file) uploadFile(file);
+      const files = Array.from(e.dataTransfer.files || []);
+      if (files.length > 0) uploadFiles(files);
     };
 
     // Xử lý tải lên và phân tích Ma trận theo chuẩn Công văn 7991/BGDĐT-GDTrH
@@ -847,6 +913,13 @@ createApp({
       isCustomSubject,
       handleSubjectSelectChange,
       uploadedFileName,
+      uploadedFiles,
+      totalExtractedLength,
+      removeFile,
+      clearAllFiles,
+      triggerAddMoreFiles,
+      uploadFiles,
+      uploadFile,
       extractedPreview,
       fileInput,
       matrixSpec,

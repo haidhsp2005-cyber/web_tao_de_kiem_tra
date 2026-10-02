@@ -16,7 +16,7 @@ from .services.models import (
     ExamStructure, ExamVariant, ShuffleRequest, ShuffleResponse,
     GenerateRequest, ExportDocxRequest, ExamMatrixSpec, MatrixAnalyzeResponse
 )
-from .services.extractor import extract_file_content
+from .services.extractor import extract_file_content, extract_file_content_async, extract_multiple_files
 from .services.matrix_analyzer import analyze_matrix_document
 from .services.ai_generator import (
     generate_exam, get_mock_math_exam, get_mock_physics_exam, get_mock_chemistry_exam, get_mock_gdqp_exam,
@@ -143,17 +143,31 @@ async def api_save_env(req: SaveEnvRequest):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Không thể lưu file .env: {str(e)}")
 
-# 1. Trích xuất file Word/PDF
+# 1. Trích xuất file Word / PDF / Ảnh / Text (Hỗ trợ đơn tệp và đa tệp cùng lúc)
 @app.post("/api/extract")
-async def api_extract(file: UploadFile = File(...)):
+async def api_extract(
+    files: Optional[List[UploadFile]] = File(None),
+    file: Optional[UploadFile] = File(None)
+):
     try:
-        content_bytes = await file.read()
-        extracted_text = extract_file_content(file.filename, content_bytes)
-        return {
-            "filename": file.filename,
-            "length": len(extracted_text),
-            "text": extracted_text
-        }
+        uploaded_files: List[UploadFile] = []
+        if files:
+            uploaded_files.extend([f for f in files if f.filename])
+        if file and file.filename:
+            uploaded_files.append(file)
+
+        if not uploaded_files:
+            raise HTTPException(status_code=400, detail="Không tìm thấy tệp tải lên nào.")
+
+        files_data = []
+        for f in uploaded_files:
+            content_bytes = await f.read()
+            files_data.append((f.filename, content_bytes))
+
+        result = await extract_multiple_files(files_data)
+        return result
+    except HTTPException:
+        raise
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=f"Lỗi đọc tệp: {str(e)}")

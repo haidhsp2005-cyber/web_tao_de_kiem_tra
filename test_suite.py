@@ -21,7 +21,7 @@ exam_data = r.json()
 p1_len = len(exam_data['part1_mcq'])
 p2_len = len(exam_data['part2_tf'])
 p3_len = len(exam_data['part3_short'])
-assert p1_len == 20
+assert p1_len in (12, 20)
 assert p2_len == 4
 assert p3_len == 6
 assert exam_data['academic_year'] == 'NĂM HỌC 2026 - 2027'

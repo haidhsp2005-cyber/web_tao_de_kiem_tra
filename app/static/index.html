@@ -254,19 +254,28 @@
               </div>
             </div>
 
-            <!-- Tab Content: File Upload -->
+            <!-- Tab Content: File Upload (Hỗ trợ nhiều file: Ảnh, Word, PDF, Text) -->
             <div v-if="inputMode === 'file'" class="pt-4 space-y-4">
-              <div class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-brand-500 transition bg-slate-50 relative cursor-pointer" @dragover.prevent @drop.prevent="handleFileDrop">
-                <input type="file" ref="fileInput" @change="handleFileSelect" accept=".docx,.doc,.pdf,.txt" class="absolute inset-0 opacity-0 cursor-pointer">
+              <div class="border-2 border-dashed border-slate-300 rounded-2xl p-6 text-center hover:border-brand-500 hover:bg-brand-50/20 transition bg-slate-50 relative cursor-pointer" @dragover.prevent @drop.prevent="handleFileDrop">
+                <input type="file" ref="fileInput" @change="handleFileSelect" accept=".docx,.doc,.pdf,.txt,.png,.jpg,.jpeg,.webp,.bmp" multiple class="absolute inset-0 opacity-0 cursor-pointer">
                 <div class="flex flex-col items-center justify-center space-y-2">
-                  <div class="w-12 h-12 rounded-full bg-brand-50 text-brand-600 flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-brand-100 to-indigo-100 text-brand-600 flex items-center justify-center shadow-xs">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
                   </div>
-                  <div class="text-sm font-semibold text-slate-700">
-                    <span v-if="uploadedFileName" class="text-brand-600">{{ uploadedFileName }}</span>
-                    <span v-else>Kéo thả tập tin giáo án/đề cương vào đây hoặc <span class="text-brand-600 underline">bấm để chọn file</span></span>
+                  <div class="text-sm font-bold text-slate-800">
+                    <span v-if="isExtracting" class="text-brand-600 flex items-center justify-center space-x-2">
+                      <svg class="animate-spin h-4 w-4 text-brand-600 inline" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                      <span>Đang trích xuất nội dung từ các tệp (OCR ảnh & tài liệu)...</span>
+                    </span>
+                    <span v-else>Kéo thả <b>nhiều tệp</b> giáo án, đề cương hoặc ảnh chụp vào đây hoặc <span class="text-brand-600 underline">bấm để chọn file</span></span>
                   </div>
-                  <p class="text-xs text-slate-400">Hỗ trợ: Microsoft Word (.docx), PDF (.pdf), Text (.txt)</p>
+                  <div class="flex flex-wrap items-center justify-center gap-1.5 pt-1 text-[11px] text-slate-500">
+                    <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-semibold border border-blue-200">📄 Word (.docx)</span>
+                    <span class="px-2 py-0.5 rounded-md bg-rose-50 text-rose-700 font-semibold border border-rose-200">📕 PDF (.pdf)</span>
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">🖼️ Ảnh chụp SGK/Đề (.jpg, .png, .webp)</span>
+                    <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 font-semibold border border-amber-200">📝 Text (.txt)</span>
+                  </div>
+                  <p class="text-[11px] text-slate-400 italic">Cho phép chọn nhiều file cùng lúc. AI tự động OCR công thức toán học và tổng hợp toàn bộ nội dung để tạo đề.</p>
                   <!-- Hướng dẫn manual-first -->
                   <div class="mt-1 flex items-center space-x-2 text-xs font-semibold">
                     <span class="px-2.5 py-1 rounded-lg bg-brand-100 text-brand-700 border border-brand-200">📚 {{ form.subject }}</span>
@@ -277,10 +286,58 @@
                 </div>
               </div>
 
+              <!-- Danh sách các tệp đã tải lên -->
+              <div v-if="uploadedFiles.length > 0" class="space-y-3">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-bold text-slate-800">Danh sách tài liệu đã đính kèm ({{ uploadedFiles.length }} tệp):</span>
+                    <span class="text-[11px] px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-semibold">{{ totalExtractedLength }} ký tự</span>
+                  </div>
+                  <div class="flex items-center space-x-2 text-xs">
+                    <button @click="triggerAddMoreFiles" class="text-brand-600 hover:text-brand-700 font-semibold flex items-center space-x-1 cursor-pointer">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                      <span>Thêm tệp khác</span>
+                    </button>
+                    <span class="text-slate-300">|</span>
+                    <button @click="clearAllFiles" class="text-rose-600 hover:text-rose-700 font-semibold cursor-pointer">Xóa tất cả</button>
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                  <div v-for="(file, idx) in uploadedFiles" :key="idx" class="flex items-center justify-between p-2.5 bg-white border border-slate-200 rounded-xl shadow-2xs hover:border-slate-300 transition group">
+                    <div class="flex items-center space-x-2.5 min-w-0 flex-1 mr-2">
+                      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0"
+                           :class="{
+                             'bg-blue-100 text-blue-700': file.category === 'Word',
+                             'bg-rose-100 text-rose-700': file.category === 'PDF',
+                             'bg-emerald-100 text-emerald-700': file.category === 'Ảnh',
+                             'bg-slate-100 text-slate-700': file.category !== 'Word' && file.category !== 'PDF' && file.category !== 'Ảnh'
+                           }">
+                        <span v-if="file.category === 'Word'">DOC</span>
+                        <span v-else-if="file.category === 'PDF'">PDF</span>
+                        <span v-else-if="file.category === 'Ảnh'">IMG</span>
+                        <span v-else>TXT</span>
+                      </div>
+                      <div class="min-w-0 flex-1">
+                        <p class="text-xs font-semibold text-slate-800 truncate" :title="file.filename">{{ file.filename }}</p>
+                        <p class="text-[10px] text-slate-400">{{ file.size_formatted }} • {{ file.length }} ký tự</p>
+                      </div>
+                    </div>
+                    <button @click.stop="removeFile(idx)" class="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition opacity-80 group-hover:opacity-100 cursor-pointer" title="Xóa tệp này">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Preview nội dung tổng hợp đã trích xuất -->
               <div v-if="extractedPreview" class="bg-slate-100 rounded-xl p-4 border border-slate-200 shadow-sm">
                 <div class="flex items-center justify-between mb-2">
-                  <span class="text-xs font-bold text-slate-700">Trích xuất nội dung thành công ({{ extractedPreview.length }} ký tự)</span>
-                  <button @click="extractedPreview = ''" class="text-xs text-rose-600 hover:underline">Xóa</button>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-xs font-bold text-slate-700">Nội dung tổng hợp từ {{ uploadedFiles.length || 1 }} tệp ({{ extractedPreview.length }} ký tự)</span>
+                    <span class="text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold border border-emerald-200">Đã sẵn sàng tạo đề</span>
+                  </div>
+                  <button @click="clearAllFiles" class="text-xs text-rose-600 hover:underline cursor-pointer">Xóa</button>
                 </div>
                 <div class="text-xs text-slate-600 max-h-36 overflow-y-auto whitespace-pre-wrap font-mono bg-white p-2.5 rounded-lg border border-slate-200">{{ extractedPreview }}</div>
                 
@@ -290,10 +347,10 @@
                     <span class="inline-flex items-center px-2 py-0.5 rounded bg-brand-50 text-brand-700 font-semibold border border-brand-200">Môn: {{ form.subject }}</span>
                     <span class="inline-flex items-center px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold border border-indigo-200">Lớp: {{ form.grade }}</span>
                   </div>
-                  <button @click="startGenerate" :disabled="isGenerating || isExtracting" class="inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-xs shadow-md hover:from-brand-700 hover:to-indigo-700 active:scale-95 transition disabled:opacity-50">
+                  <button @click="startGenerate" :disabled="isGenerating || isExtracting" class="inline-flex items-center justify-center space-x-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-indigo-600 text-white font-bold text-xs shadow-md hover:from-brand-700 hover:to-indigo-700 active:scale-95 transition disabled:opacity-50 cursor-pointer">
                     <svg v-if="isGenerating" class="animate-spin h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-                    <span>{{ isGenerating ? 'Đang tạo đề từ tài liệu...' : 'BẮT ĐẦU TẠO ĐỀ TỪ TÀI LIỆU NÀY' }}</span>
+                    <span>{{ isGenerating ? 'Đang tạo đề từ tài liệu...' : 'BẮT ĐẦU TẠO ĐỀ TỪ CÁC TÀI LIỆU NÀY' }}</span>
                   </button>
                 </div>
               </div>

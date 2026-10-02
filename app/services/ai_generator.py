@@ -388,12 +388,14 @@ async def generate_with_gemini(prompt: str, api_key: str, model: str = "auto") -
             
         # Priority: active high-quality reasoning models on Google AI Studio
         for pref in [
-            "gemini-2.5-flash",
             "gemini-flash-latest",
-            "gemini-2.0-flash",
-            "gemini-1.5-flash",
+            "gemini-3.8-flash",
+            "gemini-3.5-flash",
+            "gemini-3.1-flash-lite",
             "gemini-flash-lite-latest",
-            "gemini-3.1-flash-lite"
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash"
         ]:
             if pref not in candidate_models:
                 candidate_models.append(pref)
@@ -2246,12 +2248,14 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
 
     if request.file_content:
         user_prompt += (
-            f"\n\nNỘI DUNG TÀI LIỆU/GIÁO ÁN/ĐỀ CƯƠNG ĐÍNH KÈM (TOÀN VĂN):\n"
-            f"{request.file_content[:120000]}\n\n"
-            f"CHỈ DẪN QUAN TRỌNG KHI BIÊN SOẠN ĐỀ TỪ TÀI LIỆU ĐÍNH KÈM:\n"
-            f"1. Toàn bộ các câu hỏi ở Phần I (trắc nghiệm 4 lựa chọn), Phần II (Đúng/Sai) và Phần III (trả lời ngắn) "
-            f"BẮT BUỘC PHẢI BÁM SÁT VÀO CÁC KIẾN THỨC, KHÁI NIỆM, VÍ DỤ, ĐOẠN MÃ CODE, CÔNG THỨC HOẶC BÀI TẬP CÓ TRONG TÀI LIỆU ĐÍNH KÈM Ở TRÊN.\n"
-            f"2. Nếu tài liệu đính kèm thể hiện rõ môn học và khối lớp cụ thể (ví dụ: Tin học 10, Vật lí 11, Hóa học 10...), "
+            f"\n\nNỘI DUNG TÀI LIỆU/GIÁO ÁN/ĐỀ CƯƠNG/HÌNH ẢNH ĐÍNH KÈM (TOÀN VĂN):\n"
+            f"{request.file_content[:140000]}\n\n"
+            f"CHỈ DẪN QUAN TRỌNG KHI BIÊN SOẠN ĐỀ TỪ TÀI LIỆU/HÌNH ẢNH ĐÍNH KÈM:\n"
+            f"1. Toàn bộ các câu hỏi ở Phần I (trắc nghiệm 4 lựa chọn), Phần II (Đúng/Sai), Phần III (trả lời ngắn) và Phần IV (Tự luận nếu có) "
+            f"BẮT BUỘC PHẢI BÁM SÁT VÀO TẤT CẢ CÁC KIẾN THỨC, KHÁI NIỆM, VÍ DỤ, BÀI TẬP, CÔNG THỨC HOẶC DẠNG CÂU HỎI ĐÃ ĐƯỢC TRÍCH XUẤT TỪ CÁC TỆP ĐÍNH KÈM (bao gồm cả file Word, file PDF và các hình ảnh chụp SGK/đề cương).\n"
+            f"2. Nếu tài liệu bao gồm nhiều tệp (ví dụ gồm cả giáo án lý thuyết, đề cương ôn tập và các ảnh bài tập), hãy tổng hợp và bao quát đầy đủ nội dung từ TẤT CẢ các tệp, không được bỏ qua tệp nào.\n"
+            f"3. Ưu tiên chuyển hóa trực tiếp các bài tập, câu hỏi, dữ liệu số trong tài liệu/ảnh thành các câu trắc nghiệm, đúng sai và trả lời ngắn chuẩn GDPT 2025.\n"
+            f"4. Nếu tài liệu đính kèm thể hiện rõ môn học và khối lớp cụ thể (ví dụ: Tin học 10, Vật lí 11, Hóa học 10, Toán 12...), "
             f"hãy tự động ưu tiên lấy đúng môn học và khối lớp của tài liệu để đặt tiêu đề 'title' và biên soạn toàn bộ đề thi chuẩn xác nhất."
         )
         
