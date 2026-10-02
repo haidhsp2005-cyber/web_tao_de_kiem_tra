@@ -1913,7 +1913,7 @@ QUY TẮC THẨM ĐỊNH, GIẢI ĐỘC LẬP VÀ SỬA CHỮA:
 
     for active_key in keys_pool:
         try:
-            chosen_model = model if model and model not in ("auto", "default", "") else "gemini-2.5-flash"
+            chosen_model = model if model and model not in ("auto", "default", "") else "auto"
             if provider == "openai":
                 raw_res = await generate_with_openai(auditor_prompt, active_key, model if model != "auto" else "gpt-4o-mini")
             else:

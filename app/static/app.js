@@ -389,11 +389,10 @@ createApp({
       nextTick(triggerKaTeX);
     };
 
-    // KaTeX Math Rendering
+    // KaTeX Math & Code Rendering
     const renderMath = (text) => {
       if (!text) return "";
-      if (typeof window.katex === "undefined") return escapeHtml(text);
-      
+
       try {
         let sanitized = text;
         // 1. Normalize fragile matrix syntax into robust cases
@@ -410,30 +409,47 @@ createApp({
           sanitized = sanitized.trim() + "$";
         }
 
-        // Replace $$...$$ and $...$ with KaTeX rendered HTML
-        return sanitized.replace(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g, (match) => {
-          const isBlock = match.startsWith("$$");
-          let formula = isBlock ? match.slice(2, -2) : match.slice(1, -1);
+        // Split by $$...$$ and $...$, safely escaping non-math text and rendering math formulas
+        const segments = sanitized.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$)/g);
+        return segments.map((seg) => {
+          if (!seg) return "";
+          if (seg.startsWith("$") && seg.endsWith("$") && seg.length >= 2) {
+            const isBlock = seg.startsWith("$$");
+            let formula = isBlock ? seg.slice(2, -2) : seg.slice(1, -1);
 
-          // Extra safety inside formula
-          formula = formula.replace(/\\left\\{\s*\\begin\{(?:matrix|array)\}/g, "\\begin{cases}");
-          formula = formula.replace(/\\end\{(?:matrix|array)\}\s*\\right\.?/g, "\\end{cases}");
-          if (formula.includes("\\begin{cases}") && !formula.includes("\\end{cases}")) {
-            formula = formula.trim() + " \\end{cases}";
-          }
-          if (formula.includes("\\left\\{") && !formula.includes("\\right")) {
-            formula = formula.trim() + " \\right.";
-          }
+            // Kiểm tra nếu là câu lệnh SQL hoặc mã lập trình bị bao nhầm trong $...$
+            const isCodeOrSql = /\b(SELECT|FROM|WHERE|INSERT|UPDATE|DELETE|JOIN|GROUP BY|ORDER BY|def |class |import |print\(|<[a-zA-Z]+>)\b/i.test(formula);
+            if (isCodeOrSql) {
+              return `<code class="px-1.5 py-0.5 bg-slate-100 rounded text-slate-800 font-mono text-xs font-semibold">${escapeHtml(formula)}</code>`;
+            }
 
-          try {
-            return window.katex.renderToString(formula, {
-              displayMode: isBlock,
-              throwOnError: false
-            });
-          } catch (e) {
-            return match;
+            if (typeof window.katex === "undefined") {
+              return escapeHtml(formula);
+            }
+
+            // Extra safety inside formula
+            formula = formula.replace(/\\left\\{\s*\\begin\{(?:matrix|array)\}/g, "\\begin{cases}");
+            formula = formula.replace(/\\end\{(?:matrix|array)\}\s*\\right\.?/g, "\\end{cases}");
+            if (formula.includes("\\begin{cases}") && !formula.includes("\\end{cases}")) {
+              formula = formula.trim() + " \\end{cases}";
+            }
+            if (formula.includes("\\left\\{") && !formula.includes("\\right")) {
+              formula = formula.trim() + " \\right.";
+            }
+
+            try {
+              return window.katex.renderToString(formula, {
+                displayMode: isBlock,
+                throwOnError: false
+              });
+            } catch (e) {
+              return escapeHtml(formula);
+            }
+          } else {
+            // Phần văn bản thông thường: Escape HTML để không bị mất các thẻ như <link>, <a>, <img> trong câu hỏi Tin học
+            return escapeHtml(seg);
           }
-        });
+        }).join("");
       } catch (err) {
         return escapeHtml(text);
       }

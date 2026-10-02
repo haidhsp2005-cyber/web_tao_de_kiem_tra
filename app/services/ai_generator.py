@@ -35,7 +35,7 @@ SYSTEM_PROMPT = """Bạn là một chuyên gia khảo thí và biên soạn đ�
 Nhiệm vụ của bạn là biên soạn một đề kiểm tra chuẩn định dạng mới nhất (áp dụng theo chương trình GDPT mới 2025).
 
 CẤU TRÚC ĐỀ THEO SỐ LƯỢNG YÊU CẦU:
-- PHẦN I: Câu trắc nghiệm nhiều phương án lựa chọn (Thí sinh chọn 1 trong 4 phương án A, B, C, D). Số lượng yêu cầu: {num_part1} câu (khóa 'part1_mcq'). Nếu {num_part1} = 0 thì để mảng rỗng [].
+- PHẦN I: Câu trắc nghiệm nhiều phương án lựa chọn (Thí sinh chọn 1 trong 4 phương án A, B, C, D). Số lượng yêu cầu BẮT BUỘC: ĐÚNG {num_part1} CÂU (khóa 'part1_mcq', đánh số id từ 1 đến {num_part1}). NẾU {num_part1} = 0 THÌ ĐỂ MẢNG RỖNG []. NẾU {num_part1} > 0 THÌ BẮT BUỘC TẠO ĐỦ ĐÚNG {num_part1} CÂU, TUYỆT ĐỐI KHÔNG ĐƯỢC TỰ Ý DỪNG Ở 12 HAY 18 CÂU NẾU YÊU CẦU LỚN HƠN (ví dụ yêu cầu 28 câu thì bắt buộc phải tạo đủ 28 câu).
   * QUY ĐỊNH BẮT BUỘC VỀ PHƯƠNG ÁN LỰA CHỌN PHẦN I:
     + Mỗi câu hỏi BẮT BUỘC CHỈ CÓ ĐÚNG 4 PHƯƠNG ÁN LỰA CHỌN: "A", "B", "C", "D".
     + TUYỆT ĐỐI KHÔNG TẠO PHƯƠNG ÁN THỨ 5 (E, F,...).
@@ -2126,42 +2126,124 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
         "scoring": scoring_obj.model_dump()
     }
 
+def get_base_mock_exam(subject: str) -> ExamStructure:
+    sub_lower = subject.lower()
+    if "tin" in sub_lower or "informatics" in sub_lower:
+        return get_mock_informatics_exam()
+    elif "lý" in sub_lower or "vật lí" in sub_lower:
+        return get_mock_physics_exam()
+    elif "hóa" in sub_lower:
+        return get_mock_chemistry_exam()
+    elif "sinh" in sub_lower:
+        return get_mock_biology_exam()
+    elif "gdqp" in sub_lower or "quân sự" in sub_lower or "quốc phòng" in sub_lower:
+        return get_mock_gdqp_exam()
+    elif "anh" in sub_lower or "english" in sub_lower:
+        return get_mock_english_exam()
+    else:
+        return get_mock_math_exam()
+
+def adjust_exam_structure_counts(exam: ExamStructure, request: GenerateRequest) -> ExamStructure:
+    """Đảm bảo số lượng câu hỏi trong đề luôn khớp 100% với yêu cầu của người dùng."""
+    num_p1 = max(0, getattr(request, "num_part1", 12))
+    num_p2 = max(0, getattr(request, "num_part2", 4))
+    num_p3 = max(0, getattr(request, "num_part3", 6))
+    num_essay = max(0, getattr(request, "num_essay", 0))
+
+    fallback_bank = get_base_mock_exam(exam.subject or request.subject)
+
+    # 1. Part 1 MCQ
+    if num_p1 == 0:
+        exam.part1_mcq = []
+    else:
+        while len(exam.part1_mcq) < num_p1:
+            idx = len(exam.part1_mcq)
+            bank_idx = idx % len(fallback_bank.part1_mcq)
+            item = fallback_bank.part1_mcq[bank_idx].model_copy(deep=True)
+            item.id = idx + 1
+            exam.part1_mcq.append(item)
+        if len(exam.part1_mcq) > num_p1:
+            exam.part1_mcq = exam.part1_mcq[:num_p1]
+
+    # 2. Part 2 TF
+    if num_p2 == 0:
+        exam.part2_tf = []
+    else:
+        while len(exam.part2_tf) < num_p2:
+            idx = len(exam.part2_tf)
+            bank_idx = idx % len(fallback_bank.part2_tf)
+            item = fallback_bank.part2_tf[bank_idx].model_copy(deep=True)
+            item.id = idx + 1
+            exam.part2_tf.append(item)
+        if len(exam.part2_tf) > num_p2:
+            exam.part2_tf = exam.part2_tf[:num_p2]
+
+    # 3. Part 3 Short
+    if num_p3 == 0:
+        exam.part3_short = []
+    else:
+        while len(exam.part3_short) < num_p3:
+            idx = len(exam.part3_short)
+            bank_idx = idx % len(fallback_bank.part3_short)
+            item = fallback_bank.part3_short[bank_idx].model_copy(deep=True)
+            item.id = idx + 1
+            exam.part3_short.append(item)
+        if len(exam.part3_short) > num_p3:
+            exam.part3_short = exam.part3_short[:num_p3]
+
+    # 4. Part 4 Essay
+    if num_essay == 0:
+        exam.part4_essay = []
+    else:
+        while len(exam.part4_essay) < num_essay:
+            idx = len(exam.part4_essay)
+            item = Part4EssayQuestion(
+                id=idx + 1,
+                question=f"Vận dụng kiến thức môn {request.subject} lớp {request.grade} để giải quyết bài toán/tình huống sau...",
+                points=1.0,
+                answer="Tóm tắt kết quả phân tích then chốt.",
+                explanation="- Nêu được cơ sở lý thuyết.\n- Vận dụng vào tình huống cụ thể.\n- Rút ra kết luận chính xác."
+            )
+            exam.part4_essay.append(item)
+        if len(exam.part4_essay) > num_essay:
+            exam.part4_essay = exam.part4_essay[:num_essay]
+
+    # Renumber IDs
+    for i, q in enumerate(exam.part1_mcq, 1):
+        q.id = i
+    for i, q in enumerate(exam.part2_tf, 1):
+        q.id = i
+    for i, q in enumerate(exam.part3_short, 1):
+        q.id = i
+    for i, q in enumerate(exam.part4_essay, 1):
+        q.id = i
+
+    p4_total_pts = sum(q.points or 1.0 for q in exam.part4_essay) if exam.part4_essay else 0.0
+    exam.scoring = calculate_exam_scoring(
+        num_p1=len(exam.part1_mcq),
+        num_p2=len(exam.part2_tf),
+        num_p3=len(exam.part3_short),
+        num_p4=len(exam.part4_essay),
+        p4_points_total=p4_total_pts
+    )
+    if exam.scoring and exam.part4_essay:
+        from .models import sync_part4_essay_points
+        sync_part4_essay_points(exam.part4_essay, exam.scoring.part4_points)
+
+    return exam
+
 async def generate_exam(request: GenerateRequest) -> ExamStructure:
     keys = extract_api_keys(request)
     
     if request.mode == "mock" or (not keys and request.mode != "prompt"):
-        sub_lower = request.subject.lower()
-        if "lý" in sub_lower or "vật lí" in sub_lower:
-            return get_mock_physics_exam()
-        elif "hóa" in sub_lower:
-            return get_mock_chemistry_exam()
-        elif "sinh" in sub_lower:
-            return get_mock_biology_exam()
-        elif "gdqp" in sub_lower or "quân sự" in sub_lower or "quốc phòng" in sub_lower:
-            return get_mock_gdqp_exam()
-        elif "anh" in sub_lower or "english" in sub_lower:
-            return get_mock_english_exam()
-        else:
-            return get_mock_math_exam()
+        base_exam = get_base_mock_exam(request.subject)
+        return adjust_exam_structure_counts(base_exam, request)
             
     if not keys:
         if request.api_provider == "openai":
             raise ValueError("Vui lòng cung cấp ít nhất 1 OpenAI API Key trong mục 'Cài đặt AI'.")
-        sub_lower = request.subject.lower()
-        if "tin" in sub_lower or "informatics" in sub_lower:
-            return get_mock_informatics_exam()
-        elif "lý" in sub_lower or "vật lí" in sub_lower:
-            return get_mock_physics_exam()
-        elif "hóa" in sub_lower:
-            return get_mock_chemistry_exam()
-        elif "sinh" in sub_lower:
-            return get_mock_biology_exam()
-        elif "gdqp" in sub_lower or "quân sự" in sub_lower or "quốc phòng" in sub_lower:
-            return get_mock_gdqp_exam()
-        elif "anh" in sub_lower or "english" in sub_lower:
-            return get_mock_english_exam()
-        else:
-            return get_mock_math_exam()
+        base_exam = get_base_mock_exam(request.subject)
+        return adjust_exam_structure_counts(base_exam, request)
             
     # 0. Tự động nhận diện và đồng bộ môn học từ tài liệu đính kèm (ngăn ngừa lệch môn do chọn nhầm)
     if request.file_content and len(request.file_content.strip()) > 50:
@@ -2175,7 +2257,14 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
                 print(f"[Auto-Correction] Tự động đồng bộ môn học từ tài liệu đính kèm: '{request.subject}' -> '{doc_subject}'!")
                 request.subject = doc_subject
 
-    user_prompt = f"Hãy tạo một đề kiểm tra môn {request.subject}, khối {request.grade}."
+    user_prompt = (
+        f"Hãy tạo một đề kiểm tra môn {request.subject}, khối {request.grade}.\n\n"
+        f"QUY ĐỊNH BẮT BUỘC VỀ SỐ LƯỢNG CÂU HỎI:\n"
+        f"- PHẦN I (Trắc nghiệm nhiều lựa chọn): BẮT BUỘC TẠO ĐỦ {request.num_part1} CÂU (id từ 1 đến {request.num_part1}). TUYỆT ĐỐI KHÔNG TỰ Ý DỪNG Ở 12 HAY 18 CÂU NẾU YÊU CẦU LỚN HƠN. Phải tạo đủ {request.num_part1} câu trong mảng 'part1_mcq'!\n"
+        f"- PHẦN II (Trắc nghiệm Đúng/Sai): BẮT BUỘC TẠO ĐỦ {request.num_part2} CÂU trong mảng 'part2_tf' (đánh số id từ 1 đến {request.num_part2}, mỗi câu gồm 4 ý a, b, c, d).\n"
+        f"- PHẦN III (Trả lời ngắn): BẮT BUỘC TẠO ĐỦ {request.num_part3} CÂU trong mảng 'part3_short'.\n"
+        f"- PHẦN IV (Tự luận): BẮT BUỘC TẠO ĐỦ {request.num_essay} CÂU trong mảng 'part4_essay'.\n"
+    )
     if str(request.grade) in ("3", "4", "5"):
         user_prompt += (
             f"\nLƯU Ý ĐẶC THÙ TIỂU HỌC (LỚP {request.grade}):\n"
@@ -2396,52 +2485,51 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
     if request.num_part3 == 0:
         normalized["part3_short"] = []
 
-    # Guarantee Part 2 and Part 3: If missing or incomplete and requested > 0, auto-complete
+    # Guarantee All Parts (Part 1 MCQ, Part 2 TF, Part 3 Short, Part 4 Essay):
+    # If missing or incomplete and requested > 0, auto-complete with targeted AI call & fallback bank
+    num_p1_needed = request.num_part1
     num_p2_needed = request.num_part2
     num_p3_needed = request.num_part3
+    num_essay_needed = request.num_essay
 
+    current_p1_count = len(normalized.get("part1_mcq", []))
     current_p2_count = len(normalized.get("part2_tf", []))
     current_p3_count = len(normalized.get("part3_short", []))
+    current_essay_count = len(normalized.get("part4_essay", []))
 
+    missing_p1 = max(0, num_p1_needed - current_p1_count) if num_p1_needed > 0 else 0
     missing_p2 = max(0, num_p2_needed - current_p2_count) if num_p2_needed > 0 else 0
     missing_p3 = max(0, num_p3_needed - current_p3_count) if num_p3_needed > 0 else 0
+    missing_essay = max(0, num_essay_needed - current_essay_count) if num_essay_needed > 0 else 0
 
-    # If AI stopped or missed Part 2 or Part 3, attempt focused completion call with AI
-    if (missing_p2 > 0 or missing_p3 > 0) and keys:
-        print(f"[Exam Completion] Phần 2 hiện có {current_p2_count}/{num_p2_needed}, Phần 3 hiện có {current_p3_count}/{num_p3_needed}. Đang tự động gọi AI sinh bổ sung...")
-        
-        prompt_completion = f"""Bạn là chuyên gia biên soạn đề thi chuẩn Bộ GD&ĐT năm học 2026 - 2027. Hãy biên soạn bổ sung cho đề thi môn {request.subject}, khối {request.grade} (chủ đề: {request.topic or request.prompt or 'kiến thức trọng tâm'}):
-{f"- BẮT BUỘC TẠO {missing_p2} câu PHẦN II (Trắc nghiệm Đúng/Sai). Mỗi câu gồm đề bài và đúng 4 ý a, b, c, d (ghi rõ is_correct: true/false). BẮT BUỘC trong 4 ý phải có từ 1 đến 3 ý đúng (không được toàn đúng hoặc toàn sai)." if missing_p2 > 0 else ""}
-{f"- BẮT BUỘC TẠO {missing_p3} câu PHẦN III (Trả lời ngắn). Điền đáp số ngắn gọn." if missing_p3 > 0 else ""}
+    # If AI stopped early on ANY part (e.g. only 18 questions instead of 28), attempt focused completion call
+    if (missing_p1 > 0 or missing_p2 > 0 or missing_p3 > 0 or missing_essay > 0) and keys:
+        print(f"[Exam Completion] Cần sinh bổ sung: P1={current_p1_count}/{num_p1_needed} (thiếu {missing_p1}), P2={current_p2_count}/{num_p2_needed} (thiếu {missing_p2}), P3={current_p3_count}/{num_p3_needed} (thiếu {missing_p3}), P4={current_essay_count}/{num_essay_needed} (thiếu {missing_essay}). Đang gọi AI bổ sung...")
+
+        completion_instructions = []
+        if missing_p1 > 0:
+            completion_instructions.append(f"- BẮT BUỘC TẠO ĐỦ ĐÚNG {missing_p1} CÂU PHẦN I (Trắc nghiệm 4 lựa chọn A, B, C, D). Mỗi câu có 4 phương án độc lập và trường 'answer' ('A'/'B'/'C'/'D').")
+        if missing_p2 > 0:
+            completion_instructions.append(f"- BẮT BUỘC TẠO ĐỦ ĐÚNG {missing_p2} CÂU PHẦN II (Trắc nghiệm Đúng/Sai). Mỗi câu gồm đề bài và đúng 4 ý a, b, c, d (is_correct: true/false, có từ 1 đến 3 ý đúng).")
+        if missing_p3 > 0:
+            completion_instructions.append(f"- BẮT BUỘC TẠO ĐỦ ĐÚNG {missing_p3} CÂU PHẦN III (Trả lời ngắn). Điền đáp số ngắn gọn.")
+        if missing_essay > 0:
+            completion_instructions.append(f"- BẮT BUỘC TẠO ĐỦ ĐÚNG {missing_essay} CÂU PHẦN IV (Tự luận). Gạch đầu dòng các ý chính.")
+
+        prompt_completion = f"""Bạn là chuyên gia biên soạn đề thi chuẩn Bộ GD&ĐT. Hãy biên soạn bổ sung câu hỏi cho đề thi môn {request.subject}, khối {request.grade} (chủ đề: {request.topic or request.prompt or 'kiến thức trọng tâm'}):
+{chr(10).join(completion_instructions)}
 
 YÊU CẦU:
-- Không dùng dấu ngoặc kép đôi bên trong văn bản (dùng nháy đơn '...').
-- Công thức toán/lý/hóa đặt trong $...$.
+- Không dùng ngoặc kép đôi bên trong văn bản (dùng nháy đơn '...').
+- Công thức toán/lý/hóa đặt trong $...$. Nếu là mã lệnh/SQL/HTML thì viết văn bản thường hoặc bọc trong dấu nháy `...`, tuyệt đối không bọc SQL/code trong $...$.
 - Lời giải 'explanation' chỉ viết ngắn gọn 1 dòng.
 
-Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc:
+Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc các phần cần bổ sung:
 {{
-  "part2_tf": [
-    {{
-      "id": 1,
-      "question": "Nội dung câu hỏi đúng sai...",
-      "sub_items": [
-        {{"label": "a", "statement": "Mệnh đề a...", "is_correct": true, "explanation": "Giải thích ngắn"}},
-        {{"label": "b", "statement": "Mệnh đề b...", "is_correct": false, "explanation": "Giải thích ngắn"}},
-        {{"label": "c", "statement": "Mệnh đề c...", "is_correct": true, "explanation": "Giải thích ngắn"}},
-        {{"label": "d", "statement": "Mệnh đề d...", "is_correct": false, "explanation": "Giải thích ngắn"}}
-      ],
-      "explanation": "Hướng dẫn ngắn"
-    }}
-  ],
-  "part3_short": [
-    {{
-      "id": 1,
-      "question": "Nội dung câu hỏi ngắn...",
-      "answer": "10",
-      "explanation": "Giải thích ngắn"
-    }}
-  ]
+  {"\"part1_mcq\": [ {\"id\": 1, \"question\": \"Câu hỏi trắc nghiệm...\", \"options\": [{\"label\": \"A\", \"text\": \"Phương án A\"}, {\"label\": \"B\", \"text\": \"Phương án B\"}, {\"label\": \"C\", \"text\": \"Phương án C\"}, {\"label\": \"D\", \"text\": \"Phương án D\"}], \"answer\": \"A\", \"explanation\": \"Giải thích ngắn\"} ]," if missing_p1 > 0 else ""}
+  {"\"part2_tf\": [ {\"id\": 1, \"question\": \"Câu hỏi đúng sai...\", \"sub_items\": [{\"label\": \"a\", \"statement\": \"Mệnh đề a...\", \"is_correct\": true, \"explanation\": \"Giải thích\"}, {\"label\": \"b\", \"statement\": \"Mệnh đề b...\", \"is_correct\": false, \"explanation\": \"Giải thích\"}, {\"label\": \"c\", \"statement\": \"Mệnh đề c...\", \"is_correct\": true, \"explanation\": \"Giải thích\"}, {\"label\": \"d\", \"statement\": \"Mệnh đề d...\", \"is_correct\": false, \"explanation\": \"Giải thích\"}], \"explanation\": \"Hướng dẫn\"} ]," if missing_p2 > 0 else ""}
+  {"\"part3_short\": [ {\"id\": 1, \"question\": \"Câu hỏi ngắn...\", \"answer\": \"10\", \"explanation\": \"Giải thích\"} ]," if missing_p3 > 0 else ""}
+  {"\"part4_essay\": [ {\"id\": 1, \"question\": \"Câu tự luận...\", \"points\": 1.0, \"answer\": \"Tóm tắt kết quả\", \"explanation\": \"- Ý 1\\n- Ý 2\"} ]" if missing_essay > 0 else ""}
 }}
 """
         try:
@@ -2468,23 +2556,23 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc:
 
             if isinstance(comp_data, dict):
                 comp_norm = normalize_exam_data(comp_data, default_subject=request.subject, default_grade=request.grade)
+                if missing_p1 > 0 and comp_norm.get("part1_mcq"):
+                    for q in comp_norm["part1_mcq"][:missing_p1]:
+                        normalized["part1_mcq"].append(q)
                 if missing_p2 > 0 and comp_norm.get("part2_tf"):
-                    start_id = len(normalized["part2_tf"]) + 1
                     for q in comp_norm["part2_tf"][:missing_p2]:
-                        q["id"] = start_id
-                        start_id += 1
                         normalized["part2_tf"].append(q)
                 if missing_p3 > 0 and comp_norm.get("part3_short"):
-                    start_id = len(normalized["part3_short"]) + 1
                     for q in comp_norm["part3_short"][:missing_p3]:
-                        q["id"] = start_id
-                        start_id += 1
                         normalized["part3_short"].append(q)
-                print(f"[Exam Completion] Đã bổ sung thành công! Hiện có: P1={len(normalized['part1_mcq'])}, P2={len(normalized['part2_tf'])}, P3={len(normalized['part3_short'])}")
+                if missing_essay > 0 and comp_norm.get("part4_essay"):
+                    for q in comp_norm["part4_essay"][:missing_essay]:
+                        normalized["part4_essay"].append(q)
+                print(f"[Exam Completion] Bổ sung thành công! Hiện có: P1={len(normalized['part1_mcq'])}, P2={len(normalized['part2_tf'])}, P3={len(normalized['part3_short'])}, P4={len(normalized['part4_essay'])}")
         except Exception as comp_err:
             print(f"[Exam Completion Warning] Không thể gọi AI sinh bổ sung: {comp_err}")
 
-    # Fallback safety: If Part 2 or Part 3 are STILL short of the required count, supplement from curriculum bank
+    # Fallback safety: If ANY part is STILL short of the requested count, supplement from curriculum bank
     sub_lower = request.subject.lower()
     if "tin" in sub_lower or "informatics" in sub_lower:
         fallback_bank = get_mock_informatics_exam()
@@ -2501,6 +2589,15 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc:
     else:
         fallback_bank = get_mock_math_exam()
 
+    # Part 1 Fallback Guarantee
+    while num_p1_needed > 0 and len(normalized["part1_mcq"]) < num_p1_needed:
+        idx = len(normalized["part1_mcq"])
+        bank_idx = idx % len(fallback_bank.part1_mcq)
+        item = fallback_bank.part1_mcq[bank_idx].model_dump()
+        item["id"] = idx + 1
+        normalized["part1_mcq"].append(item)
+
+    # Part 2 Fallback Guarantee
     while num_p2_needed > 0 and len(normalized["part2_tf"]) < num_p2_needed:
         idx = len(normalized["part2_tf"])
         bank_idx = idx % len(fallback_bank.part2_tf)
@@ -2508,12 +2605,44 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc:
         item["id"] = idx + 1
         normalized["part2_tf"].append(item)
 
+    # Part 3 Fallback Guarantee
     while num_p3_needed > 0 and len(normalized["part3_short"]) < num_p3_needed:
         idx = len(normalized["part3_short"])
         bank_idx = idx % len(fallback_bank.part3_short)
         item = fallback_bank.part3_short[bank_idx].model_dump()
         item["id"] = idx + 1
         normalized["part3_short"].append(item)
+
+    # Part 4 Essay Fallback Guarantee
+    while num_essay_needed > 0 and len(normalized.get("part4_essay", [])) < num_essay_needed:
+        idx = len(normalized["part4_essay"])
+        item = {
+            "id": idx + 1,
+            "question": f"Vận dụng kiến thức môn {request.subject} lớp {request.grade} để giải quyết bài toán/tình huống thực tiễn sau...",
+            "points": 1.0,
+            "answer": "Tóm tắt kết quả phân tích then chốt.",
+            "explanation": "- Nêu được cơ sở lý thuyết.\n- Vận dụng vào tình huống cụ thể.\n- Rút ra kết luận chính xác."
+        }
+        normalized["part4_essay"].append(item)
+
+    # Enforce EXACT question counts if exceeded and renumber IDs sequentially
+    if num_p1_needed > 0 and len(normalized["part1_mcq"]) > num_p1_needed:
+        normalized["part1_mcq"] = normalized["part1_mcq"][:num_p1_needed]
+    if num_p2_needed > 0 and len(normalized["part2_tf"]) > num_p2_needed:
+        normalized["part2_tf"] = normalized["part2_tf"][:num_p2_needed]
+    if num_p3_needed > 0 and len(normalized["part3_short"]) > num_p3_needed:
+        normalized["part3_short"] = normalized["part3_short"][:num_p3_needed]
+    if num_essay_needed > 0 and len(normalized["part4_essay"]) > num_essay_needed:
+        normalized["part4_essay"] = normalized["part4_essay"][:num_essay_needed]
+
+    for i, q in enumerate(normalized["part1_mcq"], 1):
+        q["id"] = i
+    for i, q in enumerate(normalized["part2_tf"], 1):
+        q["id"] = i
+    for i, q in enumerate(normalized["part3_short"], 1):
+        q["id"] = i
+    for i, q in enumerate(normalized["part4_essay"], 1):
+        q["id"] = i
 
     p4_total_pts = sum(q.get("points", 1.0) for q in normalized.get("part4_essay", []))
     normalized["scoring"] = calculate_exam_scoring(
