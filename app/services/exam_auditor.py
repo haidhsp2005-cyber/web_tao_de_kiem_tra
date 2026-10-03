@@ -1453,34 +1453,34 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
         ],
         "tin": [
             {
-                "question": "Xét các phát biểu sau đây về khái niệm và đặc trưng của Trí tuệ nhân tạo (AI):",
+                "question": "Một nhóm kỹ sư phát triển hệ thống camera AI giao thông thông minh để nhận diện và phân loại phương tiện (xe con, xe buýt, xe tải) tại một nút giao thông trọng điểm. Hệ thống ứng dụng mô hình học máy thị giác máy tính được huấn luyện trên 60.000 hình ảnh chụp vào ban ngày trong điều kiện trời nắng ráo với độ chính xác đạt 96%. Tuy nhiên, khi thử nghiệm thực tế vào ban đêm trời mưa, độ chính xác nhận diện sụt giảm chỉ còn 62%.",
                 "sub_items": [
-                    {"label": "a", "statement": "Trí tuệ nhân tạo hẹp (AI yếu) được thiết kế nhằm thực hiện một nhiệm vụ cụ thể và chuyên biệt.", "is_correct": True, "explanation": "AI hẹp (Narrow AI) giải quyết hiệu quả một tác vụ cụ thể như nhận diện khuôn mặt, chơi cờ."},
-                    {"label": "b", "statement": "Trí tuệ nhân tạo tổng quát (AGI/AI mạnh) hiện nay đã hoàn thiện và thay thế hoàn toàn tư duy của con người.", "is_correct": False, "explanation": "AGI vẫn đang trong giai đoạn nghiên cứu lý thuyết, chưa thể thay thế hoàn toàn con người."},
-                    {"label": "c", "statement": "Học máy (Machine Learning) là một lĩnh vực của AI cho phép hệ thống học hỏi từ dữ liệu để cải thiện hiệu năng.", "is_correct": True, "explanation": "Machine Learning sử dụng thuật toán phân tích dữ liệu và tự động học mẫu."},
-                    {"label": "d", "statement": "Hệ thống AI không cần nguồn dữ liệu huấn luyện vẫn có thể tự đưa ra các quyết định chính xác tuyệt đối.", "is_correct": False, "explanation": "Các mô hình AI phụ thuộc trực tiếp vào dữ liệu huấn luyện; không có dữ liệu thì không thể huấn luyện mô hình."}
+                    {"label": "a", "statement": "Hệ thống camera phân loại phương tiện giao thông nêu trên là một ứng dụng điển hình của Trí tuệ nhân tạo hẹp (Narrow AI).", "is_correct": True, "explanation": "Hệ thống được thiết kế chuyên biệt để giải quyết tác vụ thị giác phân loại phương tiện cụ thể."},
+                    {"label": "b", "statement": "Nguyên nhân trực tiếp khiến độ chính xác của hệ thống giảm mạnh vào ban đêm là do sự khác biệt lớn về phân phối dữ liệu (Data Drift / Out-of-Distribution) so với tập dữ liệu huấn luyện ban ngày.", "is_correct": True, "explanation": "Mô hình học máy phụ thuộc mật thiết vào tập huấn luyện; điều kiện ban đêm trời mưa có độ nhiễu và độ tương phản sáng khác biệt hoàn toàn với ảnh huấn luyện ban ngày."},
+                    {"label": "c", "statement": "Để nâng cao độ chính xác vào ban đêm mà không cần đào tạo lại toàn bộ mô hình từ đầu, giải pháp hiệu quả là áp dụng kỹ thuật học chuyển giao (Transfer Learning) bằng cách tinh chỉnh mô hình với tập dữ liệu bổ sung chụp ban đêm trời mưa.", "is_correct": True, "explanation": "Transfer learning cho phép tái sử dụng các tầng trích xuất đặc trưng đã học và chỉ cần tinh chỉnh (fine-tune) trên tập dữ liệu đặc thù ban đêm."},
+                    {"label": "d", "statement": "Nếu hệ thống tự động nhận diện biển số xe vi phạm và tự ý công khai toàn bộ họ tên, số điện thoại, địa chỉ nhà của chủ phương tiện lên mạng xã hội để phạt nguội thì hành vi này hoàn toàn hợp pháp và không vi phạm quy định về bảo vệ dữ liệu cá nhân.", "is_correct": False, "explanation": "Hành vi tự ý công khai dữ liệu cá nhân vi phạm Nghị định 13/2023/NĐ-CP về bảo vệ dữ liệu cá nhân và các nguyên tắc đạo đức trong AI."}
                 ],
-                "explanation": "Kiến thức về Trí tuệ nhân tạo (AI) và Học máy trong chương trình Tin học 12 mới."
+                "explanation": "Bài toán ứng dụng Trí tuệ nhân tạo trong đô thị thông minh, xử lý dữ liệu học máy và đạo đức số."
             },
             {
-                "question": "Về mạng máy tính, giao thức truyền thông và an toàn thông tin số:",
+                "question": "Một bệnh viện đa khoa triển khai hệ thống Cơ sở dữ liệu quan hệ quản lý khám chữa bệnh điện tử gồm hai bảng: BENH_NHAN(MaBN, HoTen, NgaySinh, BHYT) với MaBN là khóa chính; và HO_SO_KHAM(MaHS, MaBN, NgayKham, ChuanDoan, BacSi) với MaHS là khóa chính, MaBN là khóa ngoại tham chiếu đến bảng BENH_NHAN. Bệnh viện kết nối mạng nội bộ bảo mật để các y bác sĩ truy cập hồ sơ.",
                 "sub_items": [
-                    {"label": "a", "statement": "Giao thức TCP/IP là bộ giao thức nền tảng đảm bảo việc định tuyến và truyền gói tin tin cậy trên Internet.", "is_correct": True, "explanation": "TCP đảm bảo truyền dữ liệu tin cậy và IP phụ trách đánh địa chỉ và định tuyến gói tin."},
-                    {"label": "b", "statement": "Địa chỉ IPv4 gồm 32 bit được chia thành 4 nhóm số thập phân phân cách bởi dấu chấm.", "is_correct": True, "explanation": "IPv4 gồm 32 bit, viết dưới dạng 4 số từ 0 đến 255 (ví dụ: 192.168.1.1)."},
-                    {"label": "c", "statement": "Tường lửa (Firewall) chỉ có thể được cài đặt dưới dạng phần cứng mà không thể triển khai bằng phần mềm.", "is_correct": False, "explanation": "Tường lửa có thể triển khai bằng phần cứng chuyên dụng hoặc phần mềm trên hệ điều hành."},
-                    {"label": "d", "statement": "Sử dụng mật khẩu mạnh có kết hợp chữ hoa, chữ thường, chữ số và ký tự đặc biệt giúp nâng cao độ an toàn tài khoản.", "is_correct": True, "explanation": "Mật khẩu phức tạp giảm thiểu nguy cơ bị tấn công dò quét (brute-force)."}
+                    {"label": "a", "statement": "Thuộc tính MaBN trong bảng HO_SO_KHAM đóng vai trò khóa ngoại nhằm đảm bảo tính toàn vẹn tham chiếu giữa hồ sơ khám bệnh và dữ liệu bệnh nhân.", "is_correct": True, "explanation": "Khóa ngoại MaBN liên kết mỗi đợt khám với đúng hồ sơ nhân khẩu học của bệnh nhân."},
+                    {"label": "b", "statement": "Hệ quản trị CSDL cho phép thêm một bản ghi mới vào bảng HO_SO_KHAM với giá trị MaBN = 'BN999' ngay cả khi mã bệnh nhân này chưa từng xuất hiện trong bảng BENH_NHAN.", "is_correct": False, "explanation": "Ràng buộc toàn vẹn tham chiếu sẽ ngăn chặn việc chèn bản ghi con có khóa ngoại không tồn tại ở bảng cha."},
+                    {"label": "c", "statement": "Để ngăn chặn nguy cơ đánh cắp dữ liệu bệnh án khi truyền tải trong mạng nội bộ và qua Internet, hệ thống bắt buộc phải áp dụng giao thức truyền thông mã hóa HTTPS/TLS và phân quyền truy cập theo vai trò (RBAC).", "is_correct": True, "explanation": "HTTPS/TLS mã hóa dữ liệu truyền tải, còn RBAC đảm bảo chỉ bác sĩ phụ trách mới được đọc hồ sơ chuyên môn."},
+                    {"label": "d", "statement": "Để thuận tiện cho công việc hàng ngày, việc cấp tài khoản có quyền quản trị tối cao (DBA) có toàn quyền xóa dữ liệu cho toàn bộ nhân viên bệnh viện là phương pháp quản trị CSDL an toàn và được khuyến nghị.", "is_correct": False, "explanation": "Nguyên tắc an toàn thông tin là trao đặc quyền tối thiểu (Least Privilege); không được cấp quyền DBA bừa bãi."}
                 ],
-                "explanation": "Kiến thức về mạng máy tính và an ninh mạng."
+                "explanation": "Kiến thức về mô hình cơ sở dữ liệu quan hệ, tính toàn vẹn dữ liệu và an toàn thông tin y tế."
             },
             {
-                "question": "Cho đoạn chương trình Python xử lý danh sách. Xét tính đúng sai của các khẳng định sau:",
+                "question": "Một cửa hàng trực tuyến áp dụng chương trình khuyến mãi tự động bằng đoạn mã Python sau để tính số tiền thanh toán cuối cùng của đơn hàng:\n```python\ndef tinh_tien(gia_goc, so_luong, ma_giam):\n    tong = gia_goc * so_luong\n    if tong >= 1000000 and ma_giam == 'VIP':\n        tong = tong * 0.85\n    elif tong >= 500000:\n        tong = tong * 0.90\n    return tong\n```\nMột khách hàng đặt mua 4 sản phẩm có đơn giá gốc 300.000 VNĐ/sản phẩm và nhập mã giảm giá 'VIP'.",
                 "sub_items": [
-                    {"label": "a", "statement": "Trong Python, chỉ số (index) của phần tử đầu tiên trong danh sách (list) luôn bắt đầu từ 0.", "is_correct": True, "explanation": "Python đánh chỉ mục mảng/list từ 0 đến n-1."},
-                    {"label": "b", "statement": "Hàm len(a) trả về số lượng phần tử hiện có trong danh sách a.", "is_correct": True, "explanation": "Hàm len() chuẩn của Python dùng để lấy độ dài tập hợp."},
-                    {"label": "c", "statement": "Lệnh a.append(x) sẽ xóa phần tử x ra khỏi danh sách a.", "is_correct": False, "explanation": "Lệnh append(x) dùng để thêm phần tử x vào cuối danh sách, lệnh remove(x) mới là xóa."},
-                    {"label": "d", "statement": "Vòng lặp for i in range(1, 5) sẽ thực hiện đúng 4 lần lặp với i nhận giá trị lần lượt là 1, 2, 3, 4.", "is_correct": True, "explanation": "range(1, 5) sinh ra dãy [1, 2, 3, 4], gồm 4 giá trị."}
+                    {"label": "a", "statement": "Giá trị ban đầu của biến tong trước khi kiểm tra các điều kiện rẽ nhánh là 1.200.000 VNĐ.", "is_correct": True, "explanation": "tong = 300000 * 4 = 1200000 VNĐ."},
+                    {"label": "b", "statement": "Với đơn hàng trên, biểu thức logic (tong >= 1000000 and ma_giam == 'VIP') nhận giá trị True.", "is_correct": True, "explanation": "Cả hai vế tong >= 1000000 (1.200.000 >= 1.000.000) và ma_giam == 'VIP' đều đúng."},
+                    {"label": "c", "statement": "Số tiền thực tế khách hàng phải thanh toán sau khi thực thi hàm tinh_tien(300000, 4, 'VIP') là 960.000 VNĐ.", "is_correct": False, "explanation": "Sau khi giảm giá 15%, số tiền là: 1.200.000 * 0.85 = 1.020.000 VNĐ (chứ không phải 960.000 VNĐ)."},
+                    {"label": "d", "statement": "Nếu một khách hàng khác mua 2 sản phẩm (đơn giá gốc 300.000 VNĐ) nhưng không có mã 'VIP', hệ thống sẽ áp dụng nhánh elif và tính số tiền thanh toán là 540.000 VNĐ.", "is_correct": True, "explanation": "Tổng gốc là 600.000 VNĐ (>= 500.000), rơi vào nhánh elif giảm 10%: 600.000 * 0.90 = 540.000 VNĐ."}
                 ],
-                "explanation": "Kiến thức lập trình căn bản với danh sách và vòng lặp trong Python."
+                "explanation": "Kiến thức lập trình Python cấu trúc rẽ nhánh, biểu thức logic và ứng dụng thương mại điện tử."
             }
         ]
     }
@@ -1488,14 +1488,14 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
     # Generic fallback bank
     default_bank = [
         {
-            "question": f"Xét tính đúng sai của các nhận định sau trong chương trình môn {subject}:",
+            "question": f"Trong một đề tài nghiên cứu ứng dụng thực tiễn môn {subject}, nhóm học sinh tiến hành khảo sát dữ liệu thực nghiệm và xây dựng mô hình phân tích để giải quyết vấn đề đặt ra. Dữ liệu thu thập được kiểm chứng độc lập qua các giai đoạn thử nghiệm có đối chứng.",
             "sub_items": [
-                {"label": "a", "statement": "Các nguyên lý khoa học luôn được xây dựng và kiểm chứng dựa trên thực nghiệm khách quan.", "is_correct": True, "explanation": "Khoa học thực nghiệm luôn đòi hỏi việc kiểm chứng lý thuyết qua thực nghiệm."},
-                {"label": "b", "statement": "Mọi giả thuyết khoa học đều tự động đúng mà không cần thông qua quá trình thử nghiệm.", "is_correct": False, "explanation": "Mọi giả thuyết đều cần được kiểm nghiệm và phản biện chặt chẽ trước khi được công nhận."},
-                {"label": "c", "statement": "Tư duy phản biện và khả năng tổng hợp kiến thức là kỹ năng cốt lõi trong học tập.", "is_correct": True, "explanation": "Tư duy phản biện giúp phân biệt thông tin chính xác và giải quyết vấn đề hiệu quả."},
-                {"label": "d", "statement": "Các hiện tượng tự nhiên và quy luật khoa học đều có mối liên hệ nội tại mật thiết.", "is_correct": True, "explanation": "Tính thống nhất của thế giới vật chất thể hiện qua mối liên hệ giữa các quy luật."}
+                {"label": "a", "statement": "Dữ liệu thực nghiệm ban đầu cần được thu thập theo phương pháp khoa học chuẩn xác để đảm bảo tính khách quan của mô hình.", "is_correct": True, "explanation": "Thu thập dữ liệu chuẩn xác là nền tảng của mọi nghiên cứu khoa học thực nghiệm."},
+                {"label": "b", "statement": "Mô hình ứng dụng có thể bỏ qua bước kiểm chứng giả thuyết mà vẫn đảm bảo độ tin cậy tuyệt đối khi đưa vào thực tiễn.", "is_correct": False, "explanation": "Mọi mô hình khoa học bắt buộc phải trải qua bước kiểm định và thẩm định trước khi ứng dụng."},
+                {"label": "c", "statement": "Việc so sánh kết quả tính toán định lượng của mô hình với số liệu thực tế giúp phát hiện và hiệu chỉnh các sai số hệ thống.", "is_correct": True, "explanation": "Đối chiếu thực nghiệm cho phép tối ưu hóa các tham số của mô hình."},
+                {"label": "d", "statement": "Để giải quyết triệt để vấn đề thực tiễn, việc kết hợp kiến thức liên môn và đánh giá tác động nhiều chiều là giải pháp khoa học tối ưu.", "is_correct": True, "explanation": "Tư duy liên môn và đánh giá toàn diện giúp giải pháp có tính khả thi và bền vững cao."}
             ],
-            "explanation": f"Kiến thức phương pháp luận và nền tảng môn {subject}."
+            "explanation": f"Bài toán phương pháp luận nghiên cứu và ứng dụng thực tiễn môn {subject}."
         }
     ]
 
@@ -1779,7 +1779,21 @@ async def run_ai_auditor_healing(
         
     # Audit all questions in Part 2 (True/False)
     for idx, q in enumerate(exam.part2_tf):
-        issue = defect_map_p2.get(idx, "Kiểm định tính chính xác của 4 mệnh đề đúng/sai và phân bổ Đúng/Sai")
+        q_text = q.question or ""
+        is_too_simple = len(q_text.split()) < 30 or any(pat in q_text.lower() for pat in [
+            "xét các phát biểu sau", "xét tính đúng sai", "cho các khẳng định sau", 
+            "khẳng định nào sau đây", "về khái niệm và đặc trưng"
+        ])
+        
+        issue = defect_map_p2.get(idx, "")
+        if is_too_simple:
+            if issue:
+                issue += " | CẢNH BÁO ĐỀ BÀI QUÁ ĐƠN GIẢN THIẾU NGỮ CẢNH: Bắt buộc nâng cấp đề bài thành bài toán tình huống thực tế hấp dẫn (40-100 từ) có số liệu/dữ liệu cụ thể và nâng cấp 4 ý con theo thang bậc tư duy 4 tầng (Biết -> Hiểu -> Vận dụng -> Vận dụng cao)."
+            else:
+                issue = "ĐỀ BÀI CÂU ĐÚNG SAI QUÁ ĐƠN GIẢN, THIẾU NGỮ CẢNH: Bắt buộc nâng cấp đề bài thành tình huống thực tế hấp dẫn (40-100 từ) có số liệu/dự án cụ thể và nâng cấp 4 ý con theo thang bậc tư duy 4 tầng (a: Biết ngữ cảnh, b: Hiểu cơ chế, c: Vận dụng tính toán, d: Vận dụng cao đánh giá)."
+        elif not issue:
+            issue = "Kiểm định tính chính xác của 4 mệnh đề đúng/sai và phân bổ Đúng/Sai"
+
         items_to_heal.append({
             "part": 2,
             "index": idx,
@@ -1834,8 +1848,13 @@ QUY TẮC THẨM ĐỊNH, GIẢI ĐỘC LẬP VÀ SỬA CHỮA:
      + BÀI TOÁN HÌNH HỌC / CHUYỂN ĐỘNG (BẬC HAI): Biệt thức Delta BẮT BUỘC phải là số chính phương.
      + LOẠI BỎ TRIỆT ĐỂ PHƯƠNG ÁN RÁC: Nếu có phương án rác ('Phương án khác', 'Chưa đủ dữ kiện'...), viết lại đủ 4 phương án học thuật A, B, C, D.
      + Lời giải 'explanation': Giải thích từng bước rõ ràng, ngắn gọn và kết luận khớp 100% với 'answer'.
-2. ĐỐI VỚI PHẦN II (TRẮC NGHIỆM ĐÚNG / SAI):
+2. ĐỐI VỚI PHẦN II (TRẮC NGHIỆM ĐÚNG / SAI - NÂNG CẤP NGỮ CẢNH HẤP DẪN & THANG BẬC TƯ DUY 4 TẦNG):
    - Đọc kỹ đề bài dẫn và từng mệnh đề a, b, c, d.
+   - NÂNG CẤP NGỮ CẢNH TÌNH HUỐNG THỰC TẾ: Nếu đề bài quá đơn giản, cộc lốc (dưới 35 từ, dạng lý thuyết khô khan "Xét các phát biểu sau:"), BẮT BUỘC bạn phải viết lại đề bài thành một BỐI CẢNH/TÌNH HUỐNG THỰC TẾ HẤP DẪN (40-100 từ) có số liệu/dự án/đoạn mã/thí nghiệm cụ thể, và nâng cấp 4 ý con a, b, c, d theo thang bậc tư duy 4 tầng:
+     • Ý a [Biết]: Trích xuất hoặc nhận biết thông số/khái niệm trong ngữ cảnh.
+     • Ý b [Hiểu]: Phân tích cơ chế hoạt động, nguyên nhân - kết quả của tình huống.
+     • Ý c [Vận dụng]: Tính toán định lượng cụ thể từ số liệu hoặc kiểm tra kết quả thực thi.
+     • Ý d [Vận dụng cao]: Đánh giá quyết định tối ưu, dự đoán kịch bản hoặc phân tích khía cạnh an toàn / đạo đức / hiệu năng.
    - BẮT BUỘC TỰ GIẢI ĐỘC LẬP xét tính Đúng / Sai của từng mệnh đề a, b, c, d:
      + So sánh với 'is_correct'. NẾU 'is_correct' BỊ ĐÁNH GIÁ SAI (ví dụ mệnh đề thực tế là ĐÚNG nhưng ghi false, hoặc thực tế là SAI nhưng ghi true): BẮT BUỘC SỬA LẠI 'is_correct' CHO CHUẨN XÁC 100%!
      + Viết lại 'explanation' cho từng mệnh đề chứng minh rõ tại sao Đúng, tại sao Sai.

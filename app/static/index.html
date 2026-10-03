@@ -790,10 +790,18 @@
               </div>
 
               <div class="space-y-4">
-                <div v-for="(q, idx) in activeExam.part2_tf" :key="q.id" class="p-3.5 rounded-xl border border-slate-200 hover:border-brand-300 transition bg-white space-y-2">
-                  <div class="flex items-start space-x-2">
-                    <span class="font-bold text-slate-900 text-sm whitespace-nowrap">Câu {{ idx + 1 }}:</span>
-                    <div class="text-sm text-slate-800 math-content" v-html="renderMath(q.question)"></div>
+                <div v-for="(q, idx) in activeExam.part2_tf" :key="q.id" class="p-4 rounded-xl border border-slate-200 hover:border-brand-400 transition bg-white space-y-3 shadow-2xs">
+                  <div class="space-y-2">
+                    <div class="flex items-center space-x-2">
+                      <span class="px-2.5 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200 font-extrabold text-xs">
+                        Câu {{ idx + 1 }}
+                      </span>
+                      <span class="inline-flex items-center space-x-1 text-[11px] font-semibold text-slate-500">
+                        <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                        <span>Tình huống thực tế / Dữ liệu bài toán:</span>
+                      </span>
+                    </div>
+                    <div class="p-3 bg-slate-50/70 rounded-lg border border-slate-200/80 text-sm text-slate-800 leading-relaxed math-content" v-html="renderMath(q.question)"></div>
                   </div>
 
                   <!-- Image / Diagram if present -->
@@ -802,10 +810,12 @@
                     <p v-if="q.image_caption" class="text-xs italic text-slate-500 mt-1">{{ q.image_caption }}</p>
                   </div>
 
-                  <div class="space-y-1.5 pl-4 pt-1">
-                    <div v-for="sub in q.sub_items" :key="sub.label" class="flex items-start space-x-2 text-xs text-slate-700">
-                      <span class="font-bold text-slate-900">{{ sub.label }})</span>
-                      <span class="math-content" v-html="renderMath(sub.statement)"></span>
+                  <!-- 4 Sub-items with clean styling -->
+                  <div class="space-y-2 pt-1">
+                    <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider pl-1">Các khẳng định (Chọn Đúng hoặc Sai):</div>
+                    <div v-for="sub in q.sub_items" :key="sub.label" class="flex items-start space-x-2.5 p-2 rounded-lg bg-white hover:bg-slate-50 border border-slate-100 transition text-xs text-slate-700">
+                      <span class="font-extrabold text-slate-900 w-5 text-center shrink-0 text-xs py-0.5 rounded bg-slate-100 border border-slate-200">{{ sub.label }}</span>
+                      <div class="flex-1 math-content leading-relaxed" v-html="renderMath(sub.statement)"></div>
                     </div>
                   </div>
                 </div>
