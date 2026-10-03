@@ -1,6 +1,7 @@
 import unittest
-from app.services.models import GenerateRequest
+from app.services.models import GenerateRequest, Part2Question, SubItem
 from app.services.ai_generator import get_mock_informatics_exam, generate_exam
+from app.services.exam_auditor import heal_tf_offline
 
 class TestPart2ContextEnhancement(unittest.TestCase):
     def test_mock_informatics_tf_rich_contexts(self):
@@ -45,6 +46,44 @@ class TestPart2ContextEnhancement(unittest.TestCase):
             self.assertGreaterEqual(len(q.question.split()), 30)
             self.assertEqual(len(q.sub_items), 4)
         print("[PASS] generate_exam in mock mode yields 4 rich-context True/False questions!")
+
+    def test_heal_tf_offline_all_subjects(self):
+        """
+        Verify that heal_tf_offline generates rich context scenario questions for all subjects:
+        Lịch sử, Địa lí, GD Kinh tế và Pháp luật, GDQP&AN, Mỹ thuật, Công nghệ, Tiếng Anh, Ngữ văn, Sinh học.
+        """
+        subjects = [
+            "Lịch sử",
+            "Địa lí",
+            "Giáo dục Kinh tế và Pháp luật",
+            "Giáo dục Quốc phòng và An ninh",
+            "Mỹ thuật",
+            "Công nghệ",
+            "Tiếng Anh",
+            "Ngữ văn",
+            "Sinh học"
+        ]
+        
+        for subj in subjects:
+            dummy_q = Part2Question(
+                id=1,
+                question="Xét các phát biểu sau:", # dry defective stem
+                sub_items=[]
+            )
+            healed = heal_tf_offline(dummy_q, subject=subj, index=0, grade="12")
+            
+            words = healed.question.split()
+            self.assertGreaterEqual(len(words), 25, f"Subject {subj} healed stem is too short ({len(words)} words): {healed.question}")
+            self.assertFalse(healed.question.startswith("Xét các phát biểu"), f"Subject {subj} should have rich context, not dry placeholder")
+            self.assertEqual(len(healed.sub_items), 4, f"Subject {subj} must have 4 sub-items")
+            
+            t_count = sum(1 for s in healed.sub_items if s.is_correct)
+            self.assertTrue(1 <= t_count <= 3, f"Subject {subj} must have 1..3 True items, got {t_count}")
+            
+            labels = [s.label for s in healed.sub_items]
+            self.assertEqual(labels, ["a", "b", "c", "d"], f"Subject {subj} labels must be a,b,c,d")
+
+        print(f"[PASS] Successfully verified rich-context True/False generation and healing across all {len(subjects)} subjects!")
 
 if __name__ == '__main__':
     unittest.main()

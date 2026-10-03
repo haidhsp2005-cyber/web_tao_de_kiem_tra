@@ -42,13 +42,20 @@ CẤU TRÚC ĐỀ THEO SỐ LƯỢNG YÊU CẦU:
     + TUYỆT ĐỐI KHÔNG SỬ DỤNG các phương án dạng: "Tất cả các phương án trên đều đúng", "Tất cả các đáp án đều sai", "Không có đáp án nào đúng", "Cả A và B đều đúng" vì đề thi sẽ được xáo trộn ngẫu nhiên vị trí các phương án A, B, C, D. Tất cả 4 phương án phải là các mệnh đề hoặc giá trị độc lập, cụ thể.
 - PHẦN II: Câu trắc nghiệm Đúng / Sai theo NGỮ CẢNH TÌNH HUỐNG THỰC TIỄN (Context-based / Case study). Số lượng yêu cầu: {num_part2} câu (khóa 'part2_tf'). Nếu {num_part2} = 0 thì để mảng rỗng [].
   * QUY CHUẨN ĐẶC BIỆT NÂNG CAO ĐỘ HẤP DẪN & Ý NGHĨA THỰC TIỄN CHO PHẦN II:
-    + ĐỀ BÀI DẪN ('question'): BẮT BUỘC LÀ MỘT BÀI TOÁN TÌNH HUỐNG THỰC TẾ / NGỮ CẢNH DỰ ÁN / THÍ NGHIỆM / ĐOẠN MÃ NGUỒN / BẢNG SỐ LIỆU (Độ dài từ 40 đến 120 từ).
-      - Môn Tin học: Bối cảnh dự án CNTT thực tế (ví dụ: xây dựng hệ thống cơ sở dữ liệu quản lý bệnh viện/thư viện; đoạn mã Python phân tích dữ liệu bán hàng có kiểm tra điều kiện; kịch bản an ninh mạng/tấn công lừa đảo; ứng dụng AI nhận diện khuôn mặt điểm danh và vấn đề đạo đức số).
-      - Môn Toán: Bài toán mô hình hóa thực tế (tối ưu hóa chi phí sản xuất, doanh thu, quy hoạch tài chính, quỹ đạo chuyển động của drone/vệ tinh, hình học Oxyz kiến trúc/công trình, xác suất thống kê dịch tễ).
-      - Môn Vật lý: Thí nghiệm thực nghiệm, thiết bị công nghệ (radar, địa chấn kế, mạch cảm biến thông minh, chu trình nhiệt động lực học làm lạnh).
-      - Môn Hóa học: Quy trình sản xuất công nghiệp, xử lý ô nhiễm môi trường, chuẩn độ hóa học, hóa học đời sống và dược phẩm.
-      - Môn Sinh học: Nghiên cứu di truyền người (phả hệ, tư vấn hôn nhân), sinh thái học môi trường rừng ngập mặn, công nghệ sinh học y tế.
-      - Môn Tiếng Anh: Đoạn văn đọc hiểu bài báo khoa học/công nghệ/đời sống thực tế.
+    + ĐỀ BÀI DẪN ('question'): BẮT BUỘC LÀ MỘT BÀI TOÁN TÌNH HUỐNG THỰC TẾ / NGỮ CẢNH DỰ ÁN / THÍ NGHIỆM / ĐOẠN MÃ NGUỒN / BẢNG SỐ LIỆU / ĐOẠN TRÍCH TƯ LIỆU SỬ LIỆU - PHÁP LÝ (Độ dài từ 40 đến 120 từ).
+      - Môn Tin học: Bối cảnh dự án CNTT thực tế (xây dựng hệ thống CSDL, đoạn mã Python xử lý dữ liệu, an ninh mạng/phòng chống lừa đảo, ứng dụng AI thị giác/LLM kèm đạo đức số).
+      - Môn Toán: Bài toán mô hình hóa thực tế (tối ưu hóa chi phí/doanh thu, quy hoạch tài chính, quỹ đạo chuyển động, hình học không gian Oxyz công trình kiến trúc, xác suất dịch bệnh).
+      - Môn Vật lý: Thí nghiệm thực nghiệm, thiết bị đo lường/cảm biến công nghệ, sóng âm, quang học, chu trình nhiệt động lực học.
+      - Môn Hóa học: Quy trình sản xuất hóa chất công nghiệp, xử lý ô nhiễm môi trường nước/khí thải, phản ứng hữu cơ, hóa dược.
+      - Môn Sinh học: Nghiên cứu di truyền người (phả hệ, đột biến), công nghệ sinh học y tế, cân bằng sinh thái môi trường.
+      - Môn Lịch sử: Trích đoạn sử liệu gốc, văn kiện lịch sử, tuyên ngôn, hiệp định ngoại giao, hoặc hồi ký/nhật ký chiến trường (50-100 từ). 4 ý con: a (Nhận biết sự kiện/nhân vật/mốc thời gian) - b (Hiểu nguyên nhân/bản chất) - c (Vận dụng liên hệ bài học kinh nghiệm lịch sử) - d (Đánh giá tác động/ý nghĩa đối với dân tộc và thời đại).
+      - Môn Địa lí: Bảng số liệu thống kê kinh tế - xã hội, biểu đồ hoặc đoạn thông tin địa lý chuyên đề về biến đổi khí hậu, chuyển dịch cơ cấu ngành kinh tế, phân bố tài nguyên hoặc liên kết vùng (50-100 từ). 4 ý con: a (Nhận dạng đặc điểm/đọc dữ liệu) - b (Giải thích nguyên nhân tự nhiên/kinh tế) - c (Tính toán định lượng: cơ cấu %, tốc độ tăng trưởng, cán cân) - d (Đánh giá giải pháp phát triển bền vững/thích ứng).
+      - Môn Giáo dục Kinh tế và Pháp luật (GDKT&PL): Kịch bản tình huống pháp lý đời sống thực tế, tranh chấp hợp đồng kinh doanh/thương mại điện tử, bảo vệ quyền lợi người tiêu dùng, quan hệ lao động hoặc an ninh mạng (50-100 từ). 4 ý con: a (Nhận diện chủ thể/quan hệ pháp lý) - b (Phân tích hành vi vi phạm pháp luật) - c (Vận dụng quyền và nghĩa vụ công dân) - d (Đánh giá bài học tuân thủ pháp luật và văn hóa kinh doanh).
+      - Môn Giáo dục Quốc phòng và An ninh (GDQP&AN): Tình huống bảo vệ chủ quyền biên giới hải đảo, an ninh phi truyền thống, cứu nạn cứu hộ, phòng cháy chữa cháy, sơ cấp cứu ban đầu hoặc kỹ năng an toàn quân sự (50-100 từ). 4 ý con: a (Nhận biết quy định/vũ khí/biện pháp) - b (Hiểu nguyên tắc chiến thuật/pháp luật quốc phòng) - c (Vận dụng xử trí tình huống giả định) - d (Đánh giá trách nhiệm công dân trong sự nghiệp bảo vệ Tổ quốc).
+      - Môn Mỹ thuật / Nghệ thuật: Tình huống phân tích tác phẩm mỹ thuật, di sản văn hóa truyền thống (tranh lụa, sơn mài, kiến trúc cổ), trường phái tạo hình, hoặc ứng dụng thiết kế đồ họa / mỹ thuật số đương đại (50-100 từ). 4 ý con: a (Nhận biết tác giả/tác phẩm/chất liệu) - b (Hiểu ngôn ngữ tạo hình/bố cục/màu sắc) - c (Vận dụng nguyên lý thị giác) - d (Đánh giá giá trị thẩm mỹ, nhân văn và bảo tồn di sản).
+      - Môn Công nghệ: Tình huống thiết kế hệ thống kỹ thuật, mạch điều khiển thông minh Smart Home/IoT, cơ khí chế tạo, tự động hóa, kỹ thuật điện dân dụng/công nghiệp, hoặc nông nghiệp công nghệ cao (50-100 từ). 4 ý con: a (Nhận biết linh kiện/thông số) - b (Hiểu nguyên lý hoạt động/sơ đồ khối) - c (Tính toán công suất/thông số kỹ thuật) - d (Đánh giá giải pháp tiết kiệm năng lượng/an toàn lao động).
+      - Môn Tiếng Anh: Đoạn trích bài báo khoa học/công nghệ/đời sống thực tế (60-120 từ) kèm 4 nhận định đánh giá đọc hiểu chuyên sâu (main idea, specific detail, contextual inference, vocabulary in context).
+      - Môn Ngữ văn: Trích đoạn ngữ liệu ngoài SGK (thơ, truyện ngắn, tản văn, nghị luận xã hội 60-120 từ) kèm 4 nhận định đánh giá đọc hiểu phân tích thẩm mỹ và tư tưởng tác phẩm.
       - TUYỆT ĐỐI KHÔNG ra đề cộc lốc, lý thuyết suông như "Xét các phát biểu sau:" hay "Khẳng định nào đúng/sai về...".
     + CẤU TRÚC 4 Ý CON a, b, c, d THEO THANG BẬC TƯ DUY 4 TẦNG (4-TIER COGNITIVE LADDER):
       - Ý a) [Mức Biết - Nhận biết]: Trích xuất hoặc nhận diện trực tiếp thông số, khái niệm, sự kiện đã nêu trong ngữ cảnh tình huống.
@@ -2336,6 +2343,66 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN KHTN (VẬT LÝ, HÓA HỌC, SINH HỌC):\n"
             f"- BẮT BUỘC xây dựng đề bài gắn liền với Thí nghiệm khoa học thực nghiệm, quy trình sản xuất công nghiệp, thiết bị đo lường đời sống, hoặc nghiên cứu y sinh học/môi trường.\n"
             f"- 4 ý con a, b, c, d dẫn dắt học sinh khám phá từ hiện tượng ban đầu, cơ chế phản ứng/vật lý, tính toán số liệu và kết luận ứng dụng thực tiễn."
+        )
+    if any(s in request.subject.lower() for s in ["sử", "lịch sử"]):
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN LỊCH SỬ:\n"
+            f"- BẮT BUỘC mỗi câu hỏi Phần II phải trích dẫn một đoạn SỬ LIỆU GỐC, VĂN KIỆN LỊCH SỬ, TUYÊN NGÔN, HIỆP ĐỊNH hoặc HỒI KÝ NHÂN CHỨNG (50-100 từ) có nguồn trích rõ ràng.\n"
+            f"- 4 ý con a, b, c, d phân hóa chặt chẽ theo thang bậc:\n"
+            f"  + a) [Biết]: Xác định đúng thời gian, nhân vật, sự kiện hoặc chủ trương nêu trực tiếp trong đoạn tư liệu.\n"
+            f"  + b) [Hiểu]: Phân tích nguyên nhân lịch sử, bối cảnh thời đại hoặc bản chất sự kiện phản ánh qua tư liệu.\n"
+            f"  + c) [Vận dụng]: Liên hệ bài học kinh nghiệm, nghệ thuật quân sự hoặc đường lối ngoại giao vào thực tiễn dựng nước và giữ nước.\n"
+            f"  + d) [Vận dụng cao]: Đánh giá tác động, tầm vóc lịch sử hoặc ý nghĩa thời đại đối với phong trào cách mạng Việt Nam và thế giới."
+        )
+    if any(s in request.subject.lower() for s in ["địa", "địa lý", "địa lí"]):
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN ĐỊA LÍ:\n"
+            f"- BẮT BUỘC mỗi câu hỏi Phần II phải cung cấp BẢNG SỐ LIỆU THỐNG KÊ, BIỂU ĐỒ hoặc TƯ LIỆU ĐỊA LÝ KINH TẾ - XÃ HỘI / TỰ NHIÊN cụ thể (50-100 từ).\n"
+            f"- 4 ý con a, b, c, d phân hóa chặt chẽ:\n"
+            f"  + a) [Biết]: Đọc và nhận dạng trực tiếp số liệu cao nhất, thấp nhất hoặc xu hướng tăng/giảm từ ngữ cảnh.\n"
+            f"  + b) [Hiểu]: Giải thích nguyên nhân tự nhiên hoặc kinh tế - xã hội dẫn đến xu thế hoặc sự phân hóa lãnh thổ.\n"
+            f"  + c) [Vận dụng]: Tính toán định lượng cụ thể (tốc độ tăng trưởng %, tỉ trọng cơ cấu %, cán cân xuất nhập khẩu, mật độ dân số).\n"
+            f"  + d) [Vận dụng cao]: Đề xuất và đánh giá tính khả thi của giải pháp quy hoạch vùng, phát triển bền vững hoặc thích ứng biến đổi khí hậu."
+        )
+    if any(s in request.subject.lower() for s in ["kinh tế", "pháp luật", "gdkt", "gdcd"]):
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN GIÁO DỤC KINH TẾ VÀ PHÁP LUẬT (GDKT&PL):\n"
+            f"- BẮT BUỘC mỗi câu hỏi Phần II phải xây dựng dưới dạng KỊCH BẢN TÌNH HUỐNG THỰC TẾ (Case Study 60-120 từ) gồm các nhân vật và tình tiết cụ thể (ví dụ: giao kết hợp đồng qua mạng, bán hàng online có vi phạm nhãn mác, khiếu nại bồi thường lao động, quyền bình đẳng giới, vay vốn tín dụng đen, an ninh mạng).\n"
+            f"- 4 ý con a, b, c, d phân hóa chặt chẽ:\n"
+            f"  + a) [Biết]: Nhận diện các chủ thể pháp lý và quan hệ xã hội được điều chỉnh trong tình huống.\n"
+            f"  + b) [Hiểu]: Phân tích hành vi nào đúng, hành vi nào vi phạm pháp luật và căn cứ theo quy định của pháp luật hiện hành.\n"
+            f"  + c) [Vận dụng]: Xác định quyền, nghĩa vụ và trách nhiệm pháp lý (dân sự, hình sự, hành chính, kỷ luật) của từng chủ thể.\n"
+            f"  + d) [Vận dụng cao]: Rút ra bài học ứng xử công dân, văn hóa tiêu dùng/kinh doanh có đạo đức và kỹ năng phòng ngừa rủi ro pháp lý."
+        )
+    if any(s in request.subject.lower() for s in ["quốc phòng", "an ninh", "gdqp"]):
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN GIÁO DỤC QUỐC PHÒNG VÀ AN NINH (GDQP&AN):\n"
+            f"- BẮT BUỘC xây dựng tình huống thực tế hoặc tình huống giả định (50-100 từ) về bảo vệ chủ quyền biên giới hải đảo, an ninh mạng/an ninh phi truyền thống, phòng chống tội phạm học đường, phòng cháy chữa cháy, kỹ năng cứu nạn cứu hộ và sơ cấp cứu ban đầu.\n"
+            f"- 4 ý con a, b, c, d phân hóa từ nhận biết quy định pháp luật -> hiểu nguyên tắc tác chiến/phòng thủ -> vận dụng kỹ năng xử lý tình huống -> đánh giá ý thức trách nhiệm bảo vệ Tổ quốc của học sinh."
+        )
+    if any(s in request.subject.lower() for s in ["mỹ thuật", "nghệ thuật", "âm nhạc"]):
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN MỸ THUẬT / NGHỆ THUẬT:\n"
+            f"- BẮT BUỘC xây dựng bối cảnh thẩm mỹ thực tế (50-100 từ): nghiên cứu tác phẩm nghệ thuật, di sản văn hóa vật thể/phi vật thể (tranh dân gian Đông Hồ, gốm Chu Đậu, điêu khắc đình làng, mỹ thuật hiện đại), hoặc dự án thiết kế đồ họa / mỹ thuật ứng dụng đương đại.\n"
+            f"- 4 ý con a, b, c, d phân hóa: nhận biết tác giả/chất liệu -> hiểu ngôn ngữ thị giác (đường nét, mảng miếng, hòa sắc) -> vận dụng nguyên lý tạo hình -> đánh giá giá trị thẩm mỹ, nhân văn và giải pháp bảo tồn di sản."
+        )
+    if "công nghệ" in request.subject.lower():
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN CÔNG NGHỆ:\n"
+            f"- BẮT BUỘC xây dựng tình huống kỹ thuật thực tế (50-100 từ): thiết kế hệ thống nhà thông minh Smart Home, mạch điều khiển đèn tự động dùng quang trở/cảm biến hồng ngoại, hệ thống tưới tiêu tự động IoT, quy trình gia công cơ khí hoặc kỹ thuật điện dân dụng.\n"
+            f"- 4 ý con a, b, c, d phân hóa: nhận dạng linh kiện/thông số kỹ thuật -> giải thích nguyên lý hoạt động của sơ đồ mạch -> tính toán công suất, dòng điện, định mức an toàn -> đánh giá giải pháp tối ưu năng lượng và an toàn lao động."
+        )
+    if any(s in request.subject.lower() for s in ["tiếng anh", "tieng anh", "english"]):
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN TIẾNG ANH:\n"
+            f"- BẮT BUỘC cung cấp đoạn văn đọc hiểu (Reading Passage 70-120 từ) về các chủ đề thời sự, công nghệ, môi trường hoặc văn hóa xã hội.\n"
+            f"- 4 ý con a, b, c, d là 4 nhận định (Statements) bằng Tiếng Anh kiểm tra kỹ năng đọc hiểu chuyên sâu: a (Main idea / General understanding) - b (Factual detail retrieval) - c (Contextual inference / deduction) - d (Vocabulary in context or author's tone/attitude)."
+        )
+    if any(s in request.subject.lower() for s in ["văn", "ngữ văn"]):
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN NGỮ VĂN:\n"
+            f"- BẮT BUỘC trích dẫn một đoạn ngữ liệu văn học hoặc văn bản thông tin/nghị luận xã hội ngoài SGK (60-120 từ).\n"
+            f"- 4 ý con a, b, c, d kiểm tra năng lực tiếp nhận văn bản: nhận diện phương thức biểu đạt/hình tượng -> hiểu ý nghĩa biểu tượng/thông điệp -> vận dụng phân tích cảm thụ nghệ thuật -> đánh giá tác động tư tưởng nhân văn."
         )
     if request.topic:
         user_prompt += f"\nChủ đề kiến thức trọng tâm: {request.topic}"

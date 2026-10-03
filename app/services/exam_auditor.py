@@ -1441,14 +1441,158 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
         ],
         "gdqp": [
             {
-                "question": "Về các quy định pháp luật và truyền thống bảo vệ Tổ quốc của dân tộc Việt Nam:",
+                "question": "Trong bối cảnh bùng nổ công nghệ thông tin và trí tuệ nhân tạo, nguy cơ đe dọa an ninh quốc gia từ không gian mạng ngày càng phức tạp. Các thế lực thù địch lợi dụng mạng xã hội để phát tán thông tin xấu độc, cắt ghép video giả mạo (Deepfake) xuyên tạc chủ quyền biên giới hải đảo của Tổ quốc, kích động biểu tình trái phép và phá hoại khối đại đoàn kết toàn dân tộc.",
                 "sub_items": [
-                    {"label": "a", "statement": "Quân đội nhân dân Việt Nam có 3 chức năng: đội quân chiến đấu, đội quân công tác, đội quân lao động sản xuất.", "is_correct": True, "explanation": "Đây là 3 chức năng cơ bản của Quân đội nhân dân Việt Nam."},
-                    {"label": "b", "statement": "Luật Nghĩa vụ quân sự 2015 quy định độ tuổi gọi nhập ngũ trong thời bình từ đủ 18 tuổi đến hết 25 tuổi.", "is_correct": True, "explanation": "Đúng theo quy định tại Điều 30 Luật NVQS 2015."},
-                    {"label": "c", "statement": "Ngày 22 tháng 12 hàng năm là Ngày thành lập QĐND Việt Nam và Ngày hội Quốc phòng toàn dân.", "is_correct": True, "explanation": "Đúng theo chỉ thị và quy định của Nhà nước."},
-                    {"label": "d", "statement": "Công dân có quyền tự do chia sẻ thông tin chưa kiểm chứng lên không gian mạng mà không chịu trách nhiệm pháp lý.", "is_correct": False, "explanation": "Luật An ninh mạng nghiêm cấm chia sẻ thông tin giả mạo, sai sự thật."}
+                    {"label": "a", "statement": "Không gian mạng là môi trường tác chiến chiến lược mới, liên quan trực tiếp đến bảo vệ chủ quyền và an ninh quốc gia trong tình hình mới.", "is_correct": True, "explanation": "Không gian mạng được xác định là môi trường chiến lược thứ năm trong tác chiến hiện đại."},
+                    {"label": "b", "statement": "Công dân khi phát hiện video giả mạo xuyên tạc chủ quyền có quyền chia sẻ rộng rãi lên các hội nhóm mạng xã hội để 'mọi người cùng vào bình luận phản bác'.", "is_correct": False, "explanation": "Hành vi tự ý phát tán video xấu độc vi phạm Luật An ninh mạng; công dân cần báo cáo cơ quan chức năng xử lý."},
+                    {"label": "c", "statement": "Luật An ninh mạng nghiêm cấm hành vi sản xuất, tán phát thông tin chống phá Nhà nước, kích động gây rối an ninh trật tự công cộng.", "is_correct": True, "explanation": "Quy định rõ ràng tại Điều 8 Luật An ninh mạng 2018."},
+                    {"label": "d", "statement": "Học sinh có trách nhiệm nâng cao cảnh giác cách mạng, kiểm chứng nguồn tin chính thống và không tham gia chia sẻ các bài viết chưa được xác thực.", "is_correct": True, "explanation": "Thể hiện ý thức trách nhiệm của công dân trong bảo vệ nền tảng tư tưởng và an ninh quốc gia."}
                 ],
-                "explanation": "Quy định pháp luật về quốc phòng và an ninh quốc gia."
+                "explanation": "Kiến thức về bảo vệ an ninh quốc gia trên không gian mạng và trách nhiệm công dân."
+            }
+        ],
+        "sử": [
+            {
+                "question": "Trích đoạn Chỉ thị của Ban Thường vụ Trung ương Đảng (tháng 12/1953) về Chiến dịch Điện Biên Phủ: 'Chiến dịch Điện Biên Phủ là một chiến dịch lịch sử rất quan trọng. Thắng lợi của chiến dịch này sẽ tạo nên bước ngoặt mới trong cục diện chiến tranh... Toàn Đảng, toàn dân, toàn quân phải tập trung mọi lực lượng cần thiết để tiêu diệt tập đoàn cứ điểm mạnh nhất của địch tại Đông Dương'.",
+                "sub_items": [
+                    {"label": "a", "statement": "Chỉ thị của Đảng xác định mục tiêu của quân và dân ta trong chiến dịch là tiêu diệt tập đoàn cứ điểm Điện Biên Phủ do quân Pháp xây dựng.", "is_correct": True, "explanation": "Đúng theo nội dung chỉ thị của Trung ương Đảng tháng 12/1953."},
+                    {"label": "b", "statement": "Điện Biên Phủ là tập đoàn cứ điểm nằm trong kế hoạch tác chiến ban đầu khi tướng Nava mới sang nhậm chức Tổng chỉ huy quân viễn chinh Pháp.", "is_correct": False, "explanation": "Điện Biên Phủ không có trong kế hoạch Nava ban đầu; do các đòn tiến công chiến lược Đông - Xuân 1953-1954 của ta buộc Pháp phải phân tán lực lượng lên Điện Biên Phủ."},
+                    {"label": "c", "statement": "Trong chiến dịch này, Bộ Chỉ huy chiến dịch đứng đầu là Đại tướng Võ Nguyên Giáp đã có quyết định sáng suốt chuyển phương châm từ 'đánh nhanh, thắng nhanh' sang 'đánh chắc, tiến chắc'.", "is_correct": True, "explanation": "Quyết định thay đổi phương châm tác chiến lịch sử mang tính then chốt dẫn đến thắng lợi."},
+                    {"label": "d", "statement": "Thắng lợi của chiến dịch Điện Biên Phủ đã làm phá sản hoàn toàn kế hoạch Nava, giáng đòn quyết định buộc Pháp phải ký Hiệp định Giơ-ne-vơ năm 1954 về Đông Dương.", "is_correct": True, "explanation": "Chiến thắng Điện Biên Phủ tạo ưu thế đàm phán quyết định trên bàn ngoại giao Giơ-ne-vơ."}
+                ],
+                "explanation": "Chiến dịch lịch sử Điện Biên Phủ năm 1954 và nghệ thuật quân sự Việt Nam."
+            }
+        ],
+        "địa": [
+            {
+                "question": "Bảng số liệu cơ cấu GDP phân theo khu vực kinh tế của Việt Nam giai đoạn 2010 - 2022 (Đơn vị: %):\n- Nông, lâm nghiệp và thủy sản: Năm 2010 đạt 18,4%; Năm 2022 giảm còn 11,9%.\n- Công nghiệp và xây dựng: Năm 2010 đạt 38,2%; Năm 2022 tăng lên 38,3%.\n- Dịch vụ: Năm 2010 đạt 43,4%; Năm 2022 tăng lên 49,8%.\nSố liệu phản ánh xu thế chuyển dịch kinh tế trong quá trình công nghiệp hóa, hiện đại hóa đất nước.",
+                "sub_items": [
+                    {"label": "a", "statement": "Trong cơ cấu GDP của nước ta giai đoạn 2010 - 2022, khu vực dịch vụ luôn chiếm tỉ trọng lớn nhất và có xu hướng tăng liên tục.", "is_correct": True, "explanation": "Dịch vụ tăng từ 43,4% lên 49,8%, giữ tỉ trọng cao nhất trong cơ cấu GDP."},
+                    {"label": "b", "statement": "Tỉ trọng khu vực nông, lâm nghiệp và thủy sản giảm từ 18,4% xuống 11,9% đồng nghĩa với việc sản lượng và giá trị tuyệt đối của ngành nông nghiệp nước ta bị sụt giảm.", "is_correct": False, "explanation": "Tỉ trọng giảm trong cơ cấu tương đối, nhưng quy mô giá trị tuyệt đối của nông nghiệp vẫn liên tục tăng trưởng mạnh."},
+                    {"label": "c", "statement": "Xu hướng chuyển dịch tỉ trọng các khu vực kinh tế trên hoàn toàn phù hợp với định hướng công nghiệp hóa, hiện đại hóa và hội nhập quốc tế của Việt Nam.", "is_correct": True, "explanation": "Giảm tỉ trọng nông nghiệp, tăng tỉ trọng dịch vụ và duy trì công nghiệp là đặc trưng công nghiệp hóa."},
+                    {"label": "d", "statement": "Để nâng cao giá trị gia tăng của ngành công nghiệp nước ta trong giai đoạn tới, giải pháp đột phá là tập trung mở rộng tối đa các ngành khai thác tài nguyên thô và gia công thâm dụng lao động phổ thông.", "is_correct": False, "explanation": "Định hướng chiến lược là phát triển công nghiệp công nghệ cao, tự động hóa, chế biến chế tạo có hàm lượng giá trị gia tăng cao."}
+                ],
+                "explanation": "Chuyển dịch cơ cấu ngành kinh tế Việt Nam thời kỳ đổi mới và phát triển bền vững."
+            }
+        ],
+        "kinh tế": [
+            {
+                "question": "Anh M đặt mua một chiếc máy tính xách tay trị giá 18.000.000 VNĐ qua sàn thương mại điện tử X của công ty Y. Đơn hàng đã được hệ thống xác nhận thành công và trừ tiền qua tài khoản ngân hàng của anh M. Ba ngày sau, công ty Y gửi thông báo đơn phương hủy đơn hàng với lý do 'nhân viên niêm yết nhầm giá khuyến mãi' và yêu cầu anh M nộp thêm 4.000.000 VNĐ nếu muốn nhận hàng. Anh M không đồng ý và làm đơn khiếu nại.",
+                "sub_items": [
+                    {"label": "a", "statement": "Giao dịch mua bán giữa anh M và công ty Y trên sàn thương mại điện tử X cấu thành một hợp đồng dân sự mua bán tài sản hợp pháp có hiệu lực ràng buộc các bên.", "is_correct": True, "explanation": "Khi đơn hàng được xác nhận và thanh toán, hợp đồng điện tử đã được xác lập hợp pháp."},
+                    {"label": "b", "statement": "Công ty Y có toàn quyền đơn phương hủy bỏ hợp đồng mà không phải bồi thường thiệt hại với lý do nhân viên nội bộ nhầm lẫn giá bán.", "is_correct": False, "explanation": "Bên bán phải chịu trách nhiệm về thông tin niêm yết; lỗi nội bộ không phải căn cứ miễn trách nhiệm hợp đồng."},
+                    {"label": "c", "statement": "Theo Luật Bảo vệ quyền lợi người tiêu dùng, anh M có quyền yêu cầu công ty Y tiếp tục giao hàng đúng hợp đồng đã thỏa thuận hoặc hoàn tiền kèm bồi thường thiệt hại (nếu có).", "is_correct": True, "explanation": "Đúng quyền lợi hợp pháp của người tiêu dùng được pháp luật bảo hộ."},
+                    {"label": "d", "statement": "Việc bảo vệ quyền lợi người tiêu dùng trong giao dịch trực tuyến là trách nhiệm của các cơ quan quản lý nhà nước, Hội Bảo vệ quyền lợi người tiêu dùng và Tòa án khi có tranh chấp.", "is_correct": True, "explanation": "Đúng theo cơ chế thực thi pháp luật và giải quyết khiếu nại bảo vệ người tiêu dùng."}
+                ],
+                "explanation": "Quy định pháp luật về giao dịch thương mại điện tử, hợp đồng dân sự và quyền lợi người tiêu dùng."
+            }
+        ],
+        "pháp luật": [
+            {
+                "question": "Anh M đặt mua một chiếc máy tính xách tay trị giá 18.000.000 VNĐ qua sàn thương mại điện tử X của công ty Y. Đơn hàng đã được hệ thống xác nhận thành công và trừ tiền qua tài khoản ngân hàng của anh M. Ba ngày sau, công ty Y gửi thông báo đơn phương hủy đơn hàng với lý do 'nhân viên niêm yết nhầm giá khuyến mãi' và yêu cầu anh M nộp thêm 4.000.000 VNĐ nếu muốn nhận hàng. Anh M không đồng ý và làm đơn khiếu nại.",
+                "sub_items": [
+                    {"label": "a", "statement": "Giao dịch mua bán giữa anh M và công ty Y trên sàn thương mại điện tử X cấu thành một hợp đồng dân sự mua bán tài sản hợp pháp có hiệu lực ràng buộc các bên.", "is_correct": True, "explanation": "Khi đơn hàng được xác nhận và thanh toán, hợp đồng điện tử đã được xác lập hợp pháp."},
+                    {"label": "b", "statement": "Công ty Y có toàn quyền đơn phương hủy bỏ hợp đồng mà không phải bồi thường thiệt hại với lý do nhân viên nội bộ nhầm lẫn giá bán.", "is_correct": False, "explanation": "Bên bán phải chịu trách nhiệm về thông tin niêm yết; lỗi nội bộ không phải căn cứ miễn trách nhiệm hợp đồng."},
+                    {"label": "c", "statement": "Theo Luật Bảo vệ quyền lợi người tiêu dùng, anh M có quyền yêu cầu công ty Y tiếp tục giao hàng đúng hợp đồng đã thỏa thuận hoặc hoàn tiền kèm bồi thường thiệt hại (nếu có).", "is_correct": True, "explanation": "Đúng quyền lợi hợp pháp của người tiêu dùng được pháp luật bảo hộ."},
+                    {"label": "d", "statement": "Việc bảo vệ quyền lợi người tiêu dùng trong giao dịch trực tuyến là trách nhiệm của các cơ quan quản lý nhà nước, Hội Bảo vệ quyền lợi người tiêu dùng và Tòa án khi có tranh chấp.", "is_correct": True, "explanation": "Đúng theo cơ chế thực thi pháp luật và giải quyết khiếu nại bảo vệ người tiêu dùng."}
+                ],
+                "explanation": "Quy định pháp luật về giao dịch thương mại điện tử, hợp đồng dân sự và quyền lợi người tiêu dùng."
+            }
+        ],
+        "gdkt": [
+            {
+                "question": "Anh M đặt mua một chiếc máy tính xách tay trị giá 18.000.000 VNĐ qua sàn thương mại điện tử X của công ty Y. Đơn hàng đã được hệ thống xác nhận thành công và trừ tiền qua tài khoản ngân hàng của anh M. Ba ngày sau, công ty Y gửi thông báo đơn phương hủy đơn hàng với lý do 'nhân viên niêm yết nhầm giá khuyến mãi' và yêu cầu anh M nộp thêm 4.000.000 VNĐ nếu muốn nhận hàng. Anh M không đồng ý và làm đơn khiếu nại.",
+                "sub_items": [
+                    {"label": "a", "statement": "Giao dịch mua bán giữa anh M và công ty Y trên sàn thương mại điện tử X cấu thành một hợp đồng dân sự mua bán tài sản hợp pháp có hiệu lực ràng buộc các bên.", "is_correct": True, "explanation": "Khi đơn hàng được xác nhận và thanh toán, hợp đồng điện tử đã được xác lập hợp pháp."},
+                    {"label": "b", "statement": "Công ty Y có toàn quyền đơn phương hủy bỏ hợp đồng mà không phải bồi thường thiệt hại với lý do nhân viên nội bộ nhầm lẫn giá bán.", "is_correct": False, "explanation": "Bên bán phải chịu trách nhiệm về thông tin niêm yết; lỗi nội bộ không phải căn cứ miễn trách nhiệm hợp đồng."},
+                    {"label": "c", "statement": "Theo Luật Bảo vệ quyền lợi người tiêu dùng, anh M có quyền yêu cầu công ty Y tiếp tục giao hàng đúng hợp đồng đã thỏa thuận hoặc hoàn tiền kèm bồi thường thiệt hại (nếu có).", "is_correct": True, "explanation": "Đúng quyền lợi hợp pháp của người tiêu dùng được pháp luật bảo hộ."},
+                    {"label": "d", "statement": "Việc bảo vệ quyền lợi người tiêu dùng trong giao dịch trực tuyến là trách nhiệm của các cơ quan quản lý nhà nước, Hội Bảo vệ quyền lợi người tiêu dùng và Tòa án khi có tranh chấp.", "is_correct": True, "explanation": "Đúng theo cơ chế thực thi pháp luật và giải quyết khiếu nại bảo vệ người tiêu dùng."}
+                ],
+                "explanation": "Quy định pháp luật về giao dịch thương mại điện tử, hợp đồng dân sự và quyền lợi người tiêu dùng."
+            }
+        ],
+        "mỹ thuật": [
+            {
+                "question": "Nghệ thuật tranh sơn mài Việt Nam là một đóng góp độc đáo của hội họa hiện đại Việt Nam vào kho tàng mỹ thuật thế giới. Bắt nguồn từ kỹ nghệ sơn ta thủ công truyền thống dùng trang trí hoành phi, câu đối, đồ thờ tự, các họa sĩ Trường Mỹ thuật Đông Dương (tiêu biểu như Nguyễn Gia Trí, Trần Văn Cẩn) đã dày công nghiên cứu, đưa vào các chất liệu mới như vỏ trứng, vàng quỳ, bạc thếp, kết hợp kỹ thuật mài tỉ mỉ để tạo nên ngôn ngữ hội họa sơn mài đỉnh cao.",
+                "sub_items": [
+                    {"label": "a", "statement": "Vỏ trứng, vàng quỳ, bạc thếp và son là những chất liệu đặc trưng tạo nên hiệu ứng thị giác lung linh, huyền ảo trong tranh sơn mài truyền thống Việt Nam.", "is_correct": True, "explanation": "Đây là các chất liệu tạo hình truyền thống độc đáo của nghệ thuật sơn mài."},
+                    {"label": "b", "statement": "Kỹ thuật mài trong tranh sơn mài có thể được thực hiện hoàn toàn ngẫu nhiên bằng máy công nghiệp tốc độ cao mà không cần sự cảm nhận thị giác và bàn tay tinh tế của nghệ sĩ.", "is_correct": False, "explanation": "Mài sơn mài đòi hỏi kỹ thuật thủ công điêu luyện và cảm quan thẩm mỹ để làm lộ các lớp màu ẩn sâu bên dưới."},
+                    {"label": "c", "statement": "Họa sĩ Nguyễn Gia Trí được tôn vinh là bậc thầy của nghệ thuật sơn mài Việt Nam với các kiệt tác tiêu biểu như 'Vườn xuân Trung Nam Bắc'.", "is_correct": True, "explanation": "Nguyễn Gia Trí là danh họa tiên phong đưa sơn mài lên đỉnh cao nghệ thuật tạo hình hiện đại."},
+                    {"label": "d", "statement": "Trong thời đại công nghiệp số, việc bảo tồn di sản tranh sơn mài chỉ nên bó hẹp trong bảo tàng, không nên kết hợp đưa họa tiết sơn mài vào thiết kế đồ họa bao bì hay sản phẩm ứng dụng đương đại.", "is_correct": False, "explanation": "Ứng dụng mỹ thuật truyền thống vào thiết kế sáng tạo hiện đại là xu hướng bảo tồn và lan tỏa giá trị di sản bền vững."}
+                ],
+                "explanation": "Nghệ thuật tranh sơn mài truyền thống Việt Nam và bảo tồn di sản mỹ thuật."
+            }
+        ],
+        "nghệ thuật": [
+            {
+                "question": "Nghệ thuật tranh sơn mài Việt Nam là một đóng góp độc đáo của hội họa hiện đại Việt Nam vào kho tàng mỹ thuật thế giới. Bắt nguồn từ kỹ nghệ sơn ta thủ công truyền thống dùng trang trí hoành phi, câu đối, đồ thờ tự, các họa sĩ Trường Mỹ thuật Đông Dương (tiêu biểu như Nguyễn Gia Trí, Trần Văn Cẩn) đã dày công nghiên cứu, đưa vào các chất liệu mới như vỏ trứng, vàng quỳ, bạc thếp, kết hợp kỹ thuật mài tỉ mỉ để tạo nên ngôn ngữ hội họa sơn mài đỉnh cao.",
+                "sub_items": [
+                    {"label": "a", "statement": "Vỏ trứng, vàng quỳ, bạc thếp và son là những chất liệu đặc trưng tạo nên hiệu ứng thị giác lung linh, huyền ảo trong tranh sơn mài truyền thống Việt Nam.", "is_correct": True, "explanation": "Đây là các chất liệu tạo hình truyền thống độc đáo của nghệ thuật sơn mài."},
+                    {"label": "b", "statement": "Kỹ thuật mài trong tranh sơn mài có thể được thực hiện hoàn toàn ngẫu nhiên bằng máy công nghiệp tốc độ cao mà không cần sự cảm nhận thị giác và bàn tay tinh tế của nghệ sĩ.", "is_correct": False, "explanation": "Mài sơn mài đòi hỏi kỹ thuật thủ công điêu luyện và cảm quan thẩm mỹ để làm lộ các lớp màu ẩn sâu bên dưới."},
+                    {"label": "c", "statement": "Họa sĩ Nguyễn Gia Trí được tôn vinh là bậc thầy của nghệ thuật sơn mài Việt Nam với các kiệt tác tiêu biểu như 'Vườn xuân Trung Nam Bắc'.", "is_correct": True, "explanation": "Nguyễn Gia Trí là danh họa tiên phong đưa sơn mài lên đỉnh cao nghệ thuật tạo hình hiện đại."},
+                    {"label": "d", "statement": "Trong thời đại công nghiệp số, việc bảo tồn di sản tranh sơn mài chỉ nên bó hẹp trong bảo tàng, không nên kết hợp đưa họa tiết sơn mài vào thiết kế đồ họa bao bì hay sản phẩm ứng dụng đương đại.", "is_correct": False, "explanation": "Ứng dụng mỹ thuật truyền thống vào thiết kế sáng tạo hiện đại là xu hướng bảo tồn và lan tỏa giá trị di sản bền vững."}
+                ],
+                "explanation": "Nghệ thuật tranh sơn mài truyền thống Việt Nam và bảo tồn di sản mỹ thuật."
+            }
+        ],
+        "công nghệ": [
+            {
+                "question": "Một nhóm học sinh thiết kế mô hình hệ thống nhà thông minh Smart Home điều khiển hệ thống chiếu sáng và quạt thông gió tự động. Hệ thống sử dụng bo mạch vi điều khiển kết hợp cảm biến quang trở (LDR) đo cường độ ánh sáng môi trường, cảm biến nhiệt độ - độ ẩm và mô-đun rơ-le (Relay) đóng cắt nguồn điện xoay chiều 220V cho bóng đèn. Dữ liệu trạng thái được gửi lên ứng dụng di động qua kết nối mạng không dây.",
+                "sub_items": [
+                    {"label": "a", "statement": "Cảm biến quang trở LDR có giá trị điện trở thay đổi phụ thuộc vào cường độ ánh sáng chiếu vào bề mặt cảm biến.", "is_correct": True, "explanation": "Ánh sáng chiếu vào càng mạnh thì điện trở của LDR càng giảm."},
+                    {"label": "b", "statement": "Mô-đun rơ-le (Relay) có chức năng cách ly an toàn giữa mạch điều khiển điện áp thấp (5V DC) của vi điều khiển và mạch công suất điện áp cao (220V AC) của phụ tải.", "is_correct": True, "explanation": "Rơ-le sử dụng cuộn hút điện từ hoặc quang để cách ly an toàn mạch điều khiển và mạch động lực."},
+                    {"label": "c", "statement": "Để vi điều khiển điều khiển trực tiếp tải 220V công suất 1000W, ta có thể nối trực tiếp chân GPIO của vi điều khiển vào ổ cắm điện mà không cần qua mạch đệm hay rơ-le.", "is_correct": False, "explanation": "Chân GPIO chỉ chịu được điện áp 3.3V-5V và dòng nhỏ vài chục mA; đấu trực tiếp 220V sẽ phá hủy vi điều khiển và gây nguy cơ điện giật nguy hiểm."},
+                    {"label": "d", "statement": "Giải pháp tự động tắt các thiết bị khi không có người sử dụng và điều chỉnh ánh sáng theo môi trường giúp tiết kiệm năng lượng điện tiêu thụ và kéo dài tuổi thọ của thiết bị.", "is_correct": True, "explanation": "Đây là mục tiêu cốt lõi của công nghệ nhà thông minh và tiết kiệm năng lượng."}
+                ],
+                "explanation": "Thiết kế mạch điều khiển thông minh Smart Home, cảm biến và an toàn kỹ thuật điện."
+            }
+        ],
+        "tiếng anh": [
+            {
+                "question": "Read the following passage about Artificial Intelligence in Education:\n'Artificial Intelligence (AI) is transforming modern education by providing personalized learning experiences tailored to individual student needs. Intelligent tutoring systems analyze learners\\' performance in real-time, pinpointing knowledge gaps and adjusting instructional pacing accordingly. However, critics argue that over-reliance on AI algorithms may diminish critical human interaction and empathetic guidance. Therefore, educators emphasize that AI should complement teachers as an assistive tool rather than replace them entirely.'",
+                "sub_items": [
+                    {"label": "a", "statement": "The main purpose of the passage is to explain how AI is utilized to personalize education and discuss its potential implications.", "is_correct": True, "explanation": "The passage discusses both benefits of AI personalization and cautions about over-reliance."},
+                    {"label": "b", "statement": "According to the passage, intelligent tutoring systems cannot detect students' knowledge weaknesses in real time.", "is_correct": False, "explanation": "The text states they 'analyze learners\\' performance in real-time, pinpointing knowledge gaps'."},
+                    {"label": "c", "statement": "It can be inferred from the text that human educators continue to play an indispensable empathetic role in students' holistic development.", "is_correct": True, "explanation": "The author concludes AI should complement teachers as an assistive tool rather than replace them."},
+                    {"label": "d", "statement": "The word 'diminish' in the passage is closest in meaning to 'expand' or 'enhance'.", "is_correct": False, "explanation": "'Diminish' means to decrease or reduce, which is the opposite of expand/enhance."}
+                ],
+                "explanation": "Reading comprehension on the impact of Artificial Intelligence in modern education."
+            }
+        ],
+        "anh": [
+            {
+                "question": "Read the following passage about Renewable Energy and Climate Action:\n'Renewable energy sources such as solar and wind power are playing a pivotal role in global efforts to mitigate climate change. Transitioning away from fossil fuels significantly reduces carbon emissions and improves public health by reducing air pollution. Nonetheless, the widespread adoption of clean energy requires massive investments in smart grid infrastructure and battery storage technologies to ensure a reliable electricity supply even when weather conditions fluctuate.'",
+                "sub_items": [
+                    {"label": "a", "statement": "The passage primarily highlights the crucial role of renewable energy in mitigating climate change and the challenges of its widespread adoption.", "is_correct": True, "explanation": "The text presents both the climate benefits of renewables and infrastructure requirements."},
+                    {"label": "b", "statement": "Transitioning to clean energy leads to increased air pollution in metropolitan areas according to the author.", "is_correct": False, "explanation": "The text states it 'improves public health by reducing air pollution'."},
+                    {"label": "c", "statement": "Advanced battery storage technologies are necessary because renewable energy generation depends heavily on weather fluctuations.", "is_correct": True, "explanation": "Wind and solar power depend on weather conditions, requiring battery storage for grid stability."},
+                    {"label": "d", "statement": "The word 'pivotal' in the first sentence can be best replaced by 'unimportant' or 'negligible'.", "is_correct": False, "explanation": "'Pivotal' means crucial or vitally important, not unimportant."}
+                ],
+                "explanation": "Reading comprehension on renewable energy transitions and infrastructure development."
+            }
+        ],
+        "văn": [
+            {
+                "question": "Đọc đoạn trích sau:\n'Sống có trách nhiệm không phải là gánh nặng mà là chìa khóa mở ra giá trị đích thực của mỗi con người. Khi ta biết sẻ chia khó khăn với cộng đồng, biết cúi mình trước nỗi đau của người khác và biết dấn thân vì những điều tốt đẹp, cuộc sống sẽ không còn là chuỗi ngày vô vị. Sự tử tế và tinh thần cống hiến âm thầm chính là dòng nhựa sống nuôi dưỡng tâm hồn, giúp xã hội gắn kết bền chặt hơn trước mọi phong ba bão táp của cuộc đời.'",
+                "sub_items": [
+                    {"label": "a", "statement": "Phương thức biểu đạt chính của đoạn trích trên là phương thức nghị luận.", "is_correct": True, "explanation": "Đoạn văn trình bày luận điểm, lý lẽ thuyết phục người đọc về giá trị của lối sống trách nhiệm."},
+                    {"label": "b", "statement": "Tác giả cho rằng việc sống có trách nhiệm với cộng đồng là một gánh nặng áp lực đè nén lên số phận mỗi cá nhân.", "is_correct": False, "explanation": "Tác giả khẳng định 'không phải là gánh nặng mà là chìa khóa mở ra giá trị đích thực'."},
+                    {"label": "c", "statement": "Hình ảnh ẩn dụ 'dòng nhựa sống nuôi dưỡng tâm hồn' nhấn mạnh vai trò thiết yếu của sự tử tế và tinh thần cống hiến đối với sự phát triển nhân cách con người.", "is_correct": True, "explanation": "Ẩn dụ ví sự tử tế như dòng nhựa sống nuôi cây, nuôi dưỡng tâm hồn cao đẹp."},
+                    {"label": "d", "statement": "Thông điệp cốt lõi của đoạn trích kêu gọi mỗi cá nhân hướng tới lối sống ích kỷ, thu hẹp bản thân để tránh khỏi những va chạm của xã hội bên ngoài.", "is_correct": False, "explanation": "Thông điệp kêu gọi sống cống hiến, sẻ chia, dấn thân vì cộng đồng."}
+                ],
+                "explanation": "Đọc hiểu văn bản nghị luận xã hội về lối sống trách nhiệm và cống hiến."
+            }
+        ],
+        "sinh": [
+            {
+                "question": "Tại một trung tâm tư vấn di truyền y học, một cặp vợ chồng đến khám tiền hôn nhân. Người chồng bình thường có người em trai mắc bệnh máu khó đông (do alen lặn a nằm trên vùng không tương đồng của NST giới tính X quy định, alen trội A quy định tính trạng bình thường). Người vợ bình thường có bố đẻ mắc bệnh máu khó đông. Cả hai bên gia đình không phát sinh đột biến mới.",
+                "sub_items": [
+                    {"label": "a", "statement": "Kiểu gen của người vợ trong trường hợp trên chắc chắn là dị hợp tử $X^A X^a$.", "is_correct": True, "explanation": "Bố vợ mắc bệnh ($X^a Y$) chắc chắn truyền giao tử $X^a$ cho con gái; người vợ bình thường nên có kiểu gen $X^A X^a$."},
+                    {"label": "b", "statement": "Kiểu gen của người chồng chắc chắn là $X^A Y$ vì người chồng biểu hiện kiểu hình bình thường.", "is_correct": True, "explanation": "Nam giới bình thường chỉ có một alen trội trên NST X: $X^A Y$."},
+                    {"label": "c", "statement": "Xác suất để cặp vợ chồng này sinh ra đứa con đầu lòng là con trai bị bệnh máu khó đông là 50%.", "is_correct": False, "explanation": "Xác suất sinh con trai bệnh = xác suất mẹ truyền $X^a$ (1/2) $\\times$ xác suất bố truyền Y (1/2) = 1/4 = 25%."},
+                    {"label": "d", "statement": "Để phòng ngừa và hỗ trợ sinh con an toàn đối với các cặp vợ chồng mang gen bệnh di truyền liên kết giới tính, phương pháp thụ tinh trong ống nghiệm kết hợp chẩn đoán di truyền tiền làm tổ (PGD/PGT) là giải pháp y sinh học hiện đại và hiệu quả.", "is_correct": True, "explanation": "Sàng lọc tiền làm tổ giúp chọn lọc phôi khỏe mạnh không mang alen đột biến gây bệnh trước khi chuyển phôi."}
+                ],
+                "explanation": "Bài toán tư vấn di truyền y học, quy luật di truyền liên kết giới tính và ứng dụng công nghệ sinh học."
             }
         ],
         "tin": [
@@ -1514,7 +1658,11 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
 
     # 1. Check question stem
     stem_bad, _ = is_question_stem_defective(q.question or "")
-    if stem_bad or not q.question or len(q.question.strip()) < 5 or re.search(r"đang cập nhật", q.question, re.IGNORECASE):
+    q_text = (q.question or "").strip()
+    is_dry_or_simple = len(q_text.split()) < 25 or any(pat in q_text.lower() for pat in [
+        "xét các phát biểu", "xét tính đúng sai", "cho các khẳng định", "khẳng định nào sau đây", "về khái niệm và đặc trưng"
+    ])
+    if stem_bad or not q.question or len(q_text) < 5 or re.search(r"đang cập nhật", q_text, re.IGNORECASE) or is_dry_or_simple:
         q.question = chosen_template["question"]
     if not q.explanation or len(q.explanation.strip()) < 5:
         q.explanation = chosen_template.get("explanation", "")
