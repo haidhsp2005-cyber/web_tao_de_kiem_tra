@@ -576,6 +576,171 @@ class TestAllUserDefectsVerification(unittest.TestCase):
 
         print("[PASS] Defect 19: Multi-grade curriculum enforcement verified for Grades 5, 6, 10, 11, and 12.")
 
+    def test_defect_20_mcq_system_distractors_and_deduplication(self):
+        # Kiểm tra Phần I - Câu 1 và Câu 6 như phản ánh của người dùng:
+        # Câu 1: Tìm nghiệm của hệ phương trình {x + y = 5, 2x - y = 1}
+        # Đề gốc bị phương án nhiễu Giải tích 12 ("cực trị", "tiệm cận", "nghịch biến").
+        # Hệ thống phải tự động chuẩn hóa các phương án nhiễu thành các cặp số (x; y) chuẩn lớp 9.
+        # Câu 6: Trùng lặp nội dung với Câu 1, hệ thống phải tự động phát hiện và thay thế bằng câu hỏi khác.
+        import asyncio
+        from app.services.exam_auditor import audit_and_verify_exam
+
+        q1 = Part1Question(
+            id=1,
+            question=r"Tìm nghiệm của hệ phương trình $\begin{cases} x + y = 5 \\ 2x - y = 1 \end{cases}$",
+            options=[
+                Option(label="A", text="Có đúng một điểm cực trị"),
+                Option(label="B", text="Nghịch biến trên khoảng xác định"),
+                Option(label="C", text="(2; 3)"),
+                Option(label="D", text="Đồ thị có tiệm cận đứng")
+            ],
+            answer="C",
+            explanation="Giải hệ phương trình ta được x = 2, y = 3. Nghiệm là (2; 3)."
+        )
+
+        q6 = Part1Question(
+            id=6,
+            question=r"Nghiệm của hệ phương trình $\begin{cases} x + y = 5 \\ 2x - y = 1 \end{cases}$ là:",
+            options=[
+                Option(label="A", text="(1; 4)"),
+                Option(label="B", text="(3; 2)"),
+                Option(label="C", text="(4; 1)"),
+                Option(label="D", text="(2; 3)")
+            ],
+            answer="D",
+            explanation="Hệ có nghiệm (2; 3)."
+        )
+
+        exam = ExamStructure(
+            title="ĐỀ KIỂM TRA TOÁN 9",
+            subject="Toán học",
+            grade="9",
+            part1_mcq=[q1, q6],
+            part2_tf=[],
+            part3_short=[]
+        )
+
+        healed = asyncio.run(audit_and_verify_exam(exam))
+
+        # Kiểm tra Câu 1: Không còn phương án cực trị, tiệm cận, nghịch biến
+        h1 = healed.part1_mcq[0]
+        for opt in h1.options:
+            self.assertNotIn("cực trị", opt.text.lower())
+            self.assertNotIn("tiệm cận", opt.text.lower())
+            self.assertNotIn("nghịch biến", opt.text.lower())
+            # Phương án phải là cặp số
+            self.assertIn("(", opt.text)
+            self.assertIn(")", opt.text)
+
+        # Kiểm tra Câu 6: Không còn trùng lặp hệ phương trình với Câu 1
+        h6 = healed.part1_mcq[1]
+        self.assertNotIn("x+y=5", h6.question.replace(" ", "").replace("$", "").lower())
+        print("[PASS] Defect 20: MCQ system of equations distractors cleaned of calculus terms, duplicate Question 6 replaced.")
+
+    def test_defect_21_tf_context_mismatch_healing(self):
+        # Kiểm tra Phần II - Câu 1, 2, 3 bị lỗi 'râu ông nọ cắm cằm bà kia'
+        import asyncio
+        from app.services.exam_auditor import audit_and_verify_exam, is_tf_context_mismatched
+
+        # Câu 1: Đề hải đăng nhưng mệnh đề là hệ phương trình vô danh
+        q1_tf = Part2Question(
+            id=1,
+            question="Một người quan sát đứng trên đài quan sát của một ngọn hải đăng cao 40 m so với mực nước biển, nhìn thấy một con tàu chở hàng đang neo đậu ngoài khơi với góc hạ là 30 độ...",
+            sub_items=[
+                SubItem(label="a", statement="Nếu nhân phương trình thứ nhất với 2 rồi cộng với phương trình thứ hai, ta thu được 5x = 10.", is_correct=True),
+                SubItem(label="b", statement="Hệ phương trình đã cho vô nghiệm.", is_correct=False),
+                SubItem(label="c", statement="Nghiệm của hệ phương trình là (x; y) = (2; 1).", is_correct=True),
+                SubItem(label="d", statement="Hệ phương trình đã cho có nghiệm duy nhất.", is_correct=True)
+            ]
+        )
+        is_bad1, r1 = is_tf_context_mismatched(q1_tf.question, q1_tf.sub_items)
+        self.assertTrue(is_bad1)
+
+        # Câu 2: Đề bồn chứa hình trụ nhưng mệnh đề là tam giác vuông lượng giác
+        q2_tf = Part2Question(
+            id=2,
+            question="Một xí nghiệp sản xuất các bồn chứa nước bằng inox hình trụ có nắp đậy kín phục vụ các hộ gia đình. Mỗi bồn chứa có chiều cao h = 2 m và bán kính đáy R = 0,6 m...",
+            sub_items=[
+                SubItem(label="a", statement="cosB = sinC.", is_correct=True),
+                SubItem(label="b", statement="sinB = 12/13.", is_correct=True),
+                SubItem(label="c", statement="cotC = 5/12.", is_correct=False),
+                SubItem(label="d", statement="Độ dài cạnh huyền BC = 13 cm.", is_correct=True)
+            ]
+        )
+        is_bad2, r2 = is_tf_context_mismatched(q2_tf.question, q2_tf.sub_items)
+        self.assertTrue(is_bad2)
+
+        # Câu 3: Đề tính tiền điện nhưng mệnh đề là hằng đẳng thức lượng giác với công thức tan = cos/sin sai
+        q3_tf = Part2Question(
+            id=3,
+            question="Một hộ gia đình sử dụng điện sinh hoạt trong tháng với định mức tính tiền gồm hai bậc: Bậc 1 có đơn giá là x đồng/kWh, Bậc 2 có đơn giá là y đồng/kWh...",
+            sub_items=[
+                SubItem(label="a", statement=r"$\sin^2\alpha + \cos^2\alpha = 1$", is_correct=True),
+                SubItem(label="b", statement=r"$\tan\alpha = \frac{\cos\alpha}{\sin\alpha}$", is_correct=False),
+                SubItem(label="c", statement=r"Nếu $\alpha = 45^\circ$ thì $\sin\alpha = \cos\alpha = \frac{\sqrt{2}}{2}$", is_correct=True),
+                SubItem(label="d", statement=r"$\tan\alpha \cdot \cot\alpha = 1$", is_correct=True)
+            ]
+        )
+        is_bad3, r3 = is_tf_context_mismatched(q3_tf.question, q3_tf.sub_items)
+        self.assertTrue(is_bad3)
+
+        # Chạy kiểm duyệt & phục hồi tự động
+        exam = ExamStructure(
+            title="ĐỀ KIỂM TRA TOÁN 9",
+            subject="Toán học",
+            grade="9",
+            part1_mcq=[],
+            part2_tf=[q1_tf, q2_tf, q3_tf],
+            part3_short=[]
+        )
+        healed = asyncio.run(audit_and_verify_exam(exam))
+
+        # Kiểm tra Câu 1 sau phục hồi: 100% về hải đăng/tàu/ca nô
+        h1 = healed.part2_tf[0]
+        self.assertIn("hải đăng", h1.question.lower())
+        for s in h1.sub_items:
+            self.assertNotIn("phương trình thứ nhất", s.statement.lower())
+            self.assertNotIn("vô nghiệm", s.statement.lower())
+        self.assertTrue(any("hải đăng" in s.statement.lower() or "ca nô" in s.statement.lower() or "khoảng cách" in s.statement.lower() for s in h1.sub_items))
+
+        # Kiểm tra Câu 2 sau phục hồi: 100% về hình trụ/bồn nước/thể tích
+        h2 = healed.part2_tf[1]
+        for s in h2.sub_items:
+            self.assertNotIn("cạnh huyền bc", s.statement.lower())
+        self.assertTrue(any("hình trụ" in s.statement.lower() or "bồn" in s.statement.lower() or "thể tích" in s.statement.lower() or "bán kính" in s.statement.lower() for s in h2.sub_items))
+
+        # Kiểm tra Câu 3 sau phục hồi: 100% về tiền điện/kWh/đơn giá
+        h3 = healed.part2_tf[2]
+        for s in h3.sub_items:
+            self.assertNotIn("cos\\alpha", s.statement.lower())
+            self.assertNotIn("tan\\alpha", s.statement.lower())
+        self.assertTrue(any("kwh" in s.statement.lower() or "tiền" in s.statement.lower() or "đồng" in s.statement.lower() for s in h3.sub_items))
+
+        print("[PASS] Defect 21: TF context mismatches successfully detected and healed into cohesive questions and statements.")
+
+    def test_defect_22_type_safety_int_not_iterable(self):
+        # Kiểm tra an toàn kiểu dữ liệu: Nếu dữ liệu AI trả về số nguyên (int) thay vì mảng (list),
+        # hàm normalize_exam_data không bao giờ bị văng lỗi 'int' object is not iterable.
+        from app.services.ai_generator import normalize_exam_data
+
+        corrupted_data = {
+            "title": "ĐỀ KIỂM TRA",
+            "subject": "Toán học",
+            "grade": "9",
+            "part1_mcq": 12,  # int thay vì list!
+            "part2_tf": 4,    # int thay vì list!
+            "part3_short": 6, # int thay vì list!
+            "part4_essay": 0  # int thay vì list!
+        }
+
+        # Không được văng ngoại lệ TypeError: 'int' object is not iterable
+        res = normalize_exam_data(corrupted_data, default_subject="Toán học", default_grade="9")
+        self.assertIsInstance(res["part1_mcq"], list)
+        self.assertIsInstance(res["part2_tf"], list)
+        self.assertIsInstance(res["part3_short"], list)
+        self.assertIsInstance(res["part4_essay"], list)
+        print("[PASS] Defect 22: Type safety against non-iterable integers verified.")
+
 if __name__ == "__main__":
     unittest.main()
 

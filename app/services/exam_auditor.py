@@ -153,6 +153,57 @@ def is_dry_or_simple_tf_stem(text: str) -> bool:
             return True
     return False
 
+def is_tf_context_mismatched(stem: str, sub_items: List[Any]) -> Tuple[bool, str]:
+    """
+    Phát hiện lỗi 'râu ông nọ cắm cằm bà kia' trong Phần II (Đúng/Sai):
+    Đoạn văn cảnh (đề bài dẫn) một đằng nhưng các mệnh đề a, b, c, d một nẻo.
+    """
+    if not stem or not sub_items:
+        return False, ""
+    
+    stem_lower = stem.lower()
+    stmts_text = " ".join([
+        (s.statement if hasattr(s, "statement") else str(s.get("statement", "") if isinstance(s, dict) else s)).lower() 
+        for s in sub_items
+    ])
+
+    # 1. Đoạn dẫn là bài toán thực tế hình học / ngọn hải đăng / tàu thuyền / ca nô
+    is_geom_context = any(k in stem_lower for k in ["hải đăng", "ngọn hải đăng", "tàu chở hàng", "ca nô", "góc hạ", "góc nâng", "đài quan sát", "mực nước biển"])
+    if is_geom_context:
+        has_eq_terms = any(k in stmts_text for k in ["hệ phương trình", "phương trình thứ nhất", "phương trình thứ hai", "vô nghiệm", "nhân phương trình"])
+        has_geom_terms = any(k in stmts_text for k in ["hải đăng", "ca nô", "con tàu", "khoảng cách", "mét", "giây", "m/s", "neo đậu"])
+        if has_eq_terms and not has_geom_terms:
+            return True, "Đề bài nói về ngọn hải đăng/tàu thuyền nhưng các mệnh đề a, b, c, d lại xét nghiệm hệ phương trình"
+
+    # 2. Đoạn dẫn là hình học không gian (bồn chứa nước hình trụ, hình nón, bể nước)
+    is_cylinder_context = any(k in stem_lower for k in ["hình trụ", "bồn chứa", "inox", "bán kính đáy", "chiều cao h", "thể tích"])
+    if is_cylinder_context:
+        has_trig_terms = any(k in stmts_text for k in ["sinb", "sinc", "cosb", "cotc", "cạnh huyền bc", "tam giác abc", "cạnh huyền"])
+        has_cyl_terms = any(k in stmts_text for k in ["hình trụ", "bồn", "thể tích", "diện tích xung quanh", "diện tích toàn phần", "bán kính", "chiều cao"])
+        if has_trig_terms and not has_cyl_terms:
+            return True, "Đề bài nói về bồn nước hình trụ nhưng các mệnh đề a, b, c, d lại kiểm tra tỉ số lượng giác tam giác vuông"
+
+    # 3. Đoạn dẫn là bài toán thực tế đời sống (tiền điện, tiền nước, cước taxi, xí nghiệp)
+    is_bill_context = any(k in stem_lower for k in ["tiền điện", "định mức", "kwh", "bậc 1", "bậc 2", "tiền nước", "cước taxi"])
+    if is_bill_context:
+        has_trig_id = any(k in stmts_text for k in ["sin^2", "cos^2", "tan\\alpha", "cot\\alpha", "sin2", "cos2", "tana", "cota"])
+        has_bill_terms = any(k in stmts_text for k in ["tiền", "đồng", "kwh", "đơn giá", "bậc", "hệ phương trình"])
+        if has_trig_id and not has_bill_terms:
+            return True, "Đề bài nói về tính tiền điện nhưng các mệnh đề a, b, c, d lại kiểm tra hằng đẳng thức lượng giác"
+
+    # 4. Kiểm tra công thức lượng giác sai cơ bản: tan = cos/sin
+    if re.search(r"\\tan\s*[a-z\\]*\s*=\s*\\frac\{\s*\\cos|\btan\s*=\s*cos\s*/\s*sin", stmts_text):
+        return True, "Mệnh đề chứa công thức lượng giác sai cơ bản (tan = cos/sin thay vì sin/cos)"
+
+    # 5. Nếu đề bài là bài toán giải toán bằng lập hệ phương trình / số học mà mệnh đề lại là giải tích 12
+    is_word_problem = any(k in stem_lower for k in ["hai số", "tổng của chúng", "hiệu của chúng", "năng suất", "chuyển động", "xuôi dòng", "ngược dòng"])
+    if is_word_problem:
+        has_calculus = any(k in stmts_text for k in ["cực trị", "tiệm cận", "đạo hàm", "bảng biến thiên", "đồng biến", "nghịch biến"])
+        if has_calculus:
+            return True, "Đề bài toán thực tế nhưng các mệnh đề lại chứa kiến thức giải tích lớp 12"
+
+    return False, ""
+
 def is_math_out_of_scope_for_grade(text: str, grade: str = "12") -> Tuple[bool, str]:
     """
     Kiểm tra xem nội dung câu hỏi/phương án có chứa kiến thức vượt cấp
@@ -317,6 +368,14 @@ def is_mcq_defective(q: Part1Question, grade: str = "12") -> Tuple[bool, str]:
     concluded = extract_concluded_letter(q.explanation or "")
     if concluded and concluded in valid_labels and concluded != ans:
         return True, f"Mâu thuẫn: Đáp án là {ans} nhưng lời giải lại kết luận chọn {concluded}"
+
+    # Phát hiện phương án nhiễu lệch dạng nghiêm trọng (ví dụ câu hỏi giải hệ pt nhưng phương án là cực trị, tiệm cận)
+    clean_q = q.question.lower()
+    is_eq_or_arithmetic = any(k in clean_q for k in ["hệ phương trình", "phương trình", "nghiệm của", "tính giá trị", "biểu thức", "cặp số", "tọa độ giao điểm"])
+    for o in (q.options or []):
+        o_clean = o.text.lower()
+        if is_eq_or_arithmetic and any(k in o_clean for k in ["cực trị", "đồng biến", "nghịch biến", "tiệm cận"]):
+            return True, "Câu hỏi phương trình/hệ phương trình chứa phương án nhiễu Giải tích lớp 12 (cực trị, tiệm cận, tính đơn điệu)"
         
     return False, ""
 
@@ -332,6 +391,11 @@ def is_tf_defective(q: Part2Question, grade: str = "12") -> Tuple[bool, str]:
 
     if not q.sub_items or len(q.sub_items) != 4:
         return True, f"Số lượng ý con không đúng 4 (hiện có {len(q.sub_items) if q.sub_items else 0})"
+
+    # Kiểm tra tính khớp ngữ cảnh giữa đề bài dẫn và 4 mệnh đề con (tránh râu ông nọ cắm cằm bà kia)
+    ctx_bad, ctx_reason = is_tf_context_mismatched(q.question, q.sub_items)
+    if ctx_bad:
+        return True, f"Lệch pha ngữ cảnh Phần II: {ctx_reason}"
 
     for s in q.sub_items:
         s.statement = normalize_latex_delimiters(s.statement)
@@ -1438,7 +1502,8 @@ def auto_heal_math_questions(exam: ExamStructure) -> Tuple[ExamStructure, List[s
                 
     exam_grade = str(getattr(exam, "grade", "12")).strip()
     if "toán" in str(getattr(exam, "subject", "")).lower():
-        # 1. Rà soát Phần I (Trắc nghiệm): Loại bỏ các câu hỏi vượt cấp
+        # 1. Rà soát Phần I (Trắc nghiệm): Loại bỏ các câu hỏi vượt cấp, phương án lỗi và khử trùng lặp
+        seen_mcq_keys = set()
         for idx, q in enumerate(exam.part1_mcq):
             out_scope, reason = is_math_out_of_scope_for_grade(q.question, exam_grade)
             if not out_scope:
@@ -1446,11 +1511,33 @@ def auto_heal_math_questions(exam: ExamStructure) -> Tuple[ExamStructure, List[s
                     out_scope, reason = is_math_out_of_scope_for_grade(o.text, exam_grade)
                     if out_scope:
                         break
-            if out_scope:
-                exam.part1_mcq[idx] = heal_mcq_offline(q, exam.subject, idx, grade=exam_grade)
-                notes.append(f"Câu {q.id} (Phần I): Đã phát hiện và loại bỏ kiến thức vượt cấp ({reason}), chuẩn hóa sang câu hỏi đúng chuẩn lớp {exam_grade}.")
+            if not out_scope:
+                defective, d_reason = is_mcq_defective(q, grade=exam_grade)
+                if defective:
+                    out_scope, reason = True, d_reason
 
-        # 2. Rà soát Phần II (Đúng/Sai): Loại bỏ mệnh đề vượt cấp
+            # Khử trùng lặp nội dung câu hỏi trong Phần I (ví dụ Câu 6 trùng hệ phương trình với Câu 1)
+            clean_stem = re.sub(r"\s+", "", (q.question or "").lower())
+            eq_match = re.search(r"\\begin\{cases\}(.*?)\\end\{cases\}", clean_stem)
+            eq_key = eq_match.group(1) if eq_match else clean_stem[:45]
+            is_dup = eq_key in seen_mcq_keys and len(eq_key) > 8
+
+            if is_dup:
+                exam.part1_mcq[idx] = heal_mcq_offline(q, exam.subject, idx + 2, grade=exam_grade, force_replace=True)
+                notes.append(f"Câu {q.id} (Phần I): Phát hiện câu hỏi trùng lặp nội dung với câu trước, đã tự động thay thế bằng câu hỏi mới chuẩn kiến thức lớp {exam_grade}.")
+            elif out_scope:
+                exam.part1_mcq[idx] = heal_mcq_offline(q, exam.subject, idx, grade=exam_grade)
+                notes.append(f"Câu {q.id} (Phần I): Đã phát hiện và loại bỏ kiến thức vượt cấp/lệch dạng ({reason}), chuẩn hóa sang câu hỏi đúng chuẩn lớp {exam_grade}.")
+
+            # Cập nhật danh sách câu hỏi đã xuất hiện để khử trùng lặp triệt để
+            curr_q = exam.part1_mcq[idx]
+            new_clean = re.sub(r"\s+", "", (curr_q.question or "").lower())
+            new_eq = re.search(r"\\begin\{cases\}(.*?)\\end\{cases\}", new_clean)
+            new_key = new_eq.group(1) if new_eq else new_clean[:45]
+            if len(new_key) > 8:
+                seen_mcq_keys.add(new_key)
+
+        # 2. Rà soát Phần II (Đúng/Sai): Loại bỏ mệnh đề vượt cấp và lệch pha ngữ cảnh
         for idx, q in enumerate(exam.part2_tf):
             out_scope, reason = is_math_out_of_scope_for_grade(q.question, exam_grade)
             if not out_scope:
@@ -1458,9 +1545,14 @@ def auto_heal_math_questions(exam: ExamStructure) -> Tuple[ExamStructure, List[s
                     out_scope, reason = is_math_out_of_scope_for_grade(s.statement, exam_grade)
                     if out_scope:
                         break
+            if not out_scope:
+                defective, d_reason = is_tf_defective(q, grade=exam_grade)
+                if defective:
+                    out_scope, reason = True, d_reason
+
             if out_scope:
                 exam.part2_tf[idx] = heal_tf_offline(q, exam.subject, idx, grade=exam_grade)
-                notes.append(f"Câu {q.id} (Phần II): Đã chuẩn hóa bài toán tình huống thực tế đúng chuẩn chương trình lớp {exam_grade}.")
+                notes.append(f"Câu {q.id} (Phần II): Đã chuẩn hóa bài toán tình huống thực tế và 4 mệnh đề Đúng/Sai đồng bộ chuẩn chương trình lớp {exam_grade}.")
 
         # 3. Rà soát Phần III (Trả lời ngắn): Loại bỏ câu hỏi vượt cấp
         for idx, q in enumerate(exam.part3_short):
@@ -1471,7 +1563,7 @@ def auto_heal_math_questions(exam: ExamStructure) -> Tuple[ExamStructure, List[s
 
     return exam, notes
 
-def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str = "12") -> Part1Question:
+def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str = "12", force_replace: bool = False) -> Part1Question:
     g_clean = str(grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
     sub_lower = subject.lower()
     
@@ -1629,7 +1721,7 @@ def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str 
 
         if grade_math_bank:
             out_scope, _ = is_math_out_of_scope_for_grade(q.question, grade)
-            if out_scope or not q.options or len(q.options) != 4:
+            if force_replace or out_scope or not q.options or len(q.options) != 4:
                 tmpl = grade_math_bank[index % len(grade_math_bank)]
                 q.question = tmpl["question"]
                 q.options = [Option(label=lbl, text=tmpl["options"][i]) for i, lbl in enumerate(["A", "B", "C", "D"])]
@@ -1673,6 +1765,46 @@ def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str 
                 q.answer = ["A", "B", "C", "D"][idx]
                 break
         q.explanation = f"Sự kiện lịch sử được ghi nhận vào năm {base_year}. Do đó chọn đáp án {q.answer}."
+    pair_match = re.search(r"\(\s*(-?\d+)\s*;\s*(-?\d+)\s*\)", q.explanation or "")
+    if not pair_match and q.options:
+        for o in q.options:
+            pm = re.search(r"\(\s*(-?\d+)\s*;\s*(-?\d+)\s*\)", o.text)
+            if pm:
+                pair_match = pm
+                break
+    if not pair_match:
+        pair_match = re.search(r"\(\s*(-?\d+)\s*;\s*(-?\d+)\s*\)", q.question)
+
+    if ("hệ phương trình" in q_text or "cặp số" in q_text or "nghiệm" in q_text or "giao điểm" in q_text) and pair_match:
+        x0 = int(pair_match.group(1))
+        y0 = int(pair_match.group(2))
+        correct_pair = f"({x0}; {y0})"
+        cand_pairs = [
+            f"({x0}; {y0})",
+            f"({y0}; {x0})",
+            f"({x0 + 1}; {y0 - 1})",
+            f"({x0 - 1}; {y0 + 1})",
+            f"({x0}; {-y0 if y0 != 0 else y0 + 2})",
+            f"({-x0 if x0 != 0 else x0 + 2}; {y0})"
+        ]
+        dist_pairs = list(dict.fromkeys(cand_pairs))
+        while len(dist_pairs) < 4:
+            dist_pairs.append(f"({x0 + len(dist_pairs)}; {y0})")
+
+        desired_ans = ans if ans in valid_labels else "C"
+        ans_idx = ord(desired_ans) - ord("A")
+        other_pairs = [p for p in dist_pairs if p != correct_pair]
+        final_opts = []
+        other_i = 0
+        for i in range(4):
+            if i == ans_idx:
+                final_opts.append(Option(label=chr(ord("A") + i), text=correct_pair))
+            else:
+                final_opts.append(Option(label=chr(ord("A") + i), text=other_pairs[other_i]))
+                other_i += 1
+        q.options = final_opts
+        q.answer = desired_ans
+        q.explanation = f"Giải hệ phương trình ta được nghiệm duy nhất là $(x; y) = ({x0}; {y0})$. Do đó chọn đáp án {q.answer}."
         return q
 
     num_match = re.search(r" \d+(?:\.\d+)? ", q.explanation or "")
@@ -2136,22 +2268,63 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
     if not chosen_list:
         chosen_list = default_bank
 
-    chosen_template = chosen_list[index % len(chosen_list)]
+    matched_template = None
+    q_stem_lower = (q.question or "").lower()
+    for tmpl in chosen_list:
+        t_q = tmpl.get("question", "").lower()
+        if "hải đăng" in q_stem_lower and "hải đăng" in t_q:
+            matched_template = tmpl
+            break
+        if ("hình trụ" in q_stem_lower or "bồn" in q_stem_lower) and ("hình trụ" in t_q or "bồn" in t_q):
+            matched_template = tmpl
+            break
+        if ("điện" in q_stem_lower or "kwh" in q_stem_lower) and ("điện" in t_q or "kwh" in t_q):
+            matched_template = tmpl
+            break
+        if ("ca nô" in q_stem_lower or "ngược dòng" in q_stem_lower or "xuôi dòng" in q_stem_lower) and ("ca nô" in t_q or "dòng nước" in t_q):
+            matched_template = tmpl
+            break
+        if ("vườn" in q_stem_lower or "chữ nhật" in q_stem_lower) and ("vườn" in t_q or "chữ nhật" in t_q):
+            matched_template = tmpl
+            break
 
-    # 1. Check question stem
+    chosen_template = matched_template if matched_template else chosen_list[index % len(chosen_list)]
+
+    # 1. Check question stem and contextual coherence
+    context_mismatched, mismatch_reason = is_tf_context_mismatched(q.question or "", q.sub_items or [])
     stem_bad, _ = is_question_stem_defective(q.question or "")
     out_scope_stem, _ = is_math_out_of_scope_for_grade(q.question or "", grade)
     q_text = (q.question or "").strip()
     is_dry_or_simple = len(q_text.split()) < 25 or any(pat in q_text.lower() for pat in [
         "xét các phát biểu", "xét tính đúng sai", "cho các khẳng định", "khẳng định nào sau đây", "về khái niệm và đặc trưng"
     ])
-    if stem_bad or out_scope_stem or not q.question or len(q_text) < 5 or re.search(r"đang cập nhật", q_text, re.IGNORECASE) or is_dry_or_simple:
+    
+    sub_labels = ["a", "b", "c", "d"]
+    should_replace_entire = (
+        stem_bad or out_scope_stem or not q.question or len(q_text) < 5 or
+        re.search(r"đang cập nhật", q_text, re.IGNORECASE) or is_dry_or_simple or context_mismatched
+    )
+
+    # Nếu đề bài bị lỗi/vượt cấp/khô khan HOẶC ý con bị lệch pha với đề bài:
+    # BẮT BUỘC thay thế đồng bộ cả đề bài và 4 ý con từ ngân hàng câu hỏi chuẩn!
+    if should_replace_entire:
         q.question = chosen_template["question"]
+        q.explanation = chosen_template.get("explanation", "")
+        q.sub_items = [
+            SubItem(
+                label=sub_labels[i],
+                statement=t_sub["statement"],
+                is_correct=t_sub["is_correct"],
+                explanation=t_sub.get("explanation", "")
+            )
+            for i, t_sub in enumerate(chosen_template["sub_items"])
+        ]
+        return q
+
     if not q.explanation or len(q.explanation.strip()) < 5:
         q.explanation = chosen_template.get("explanation", "")
 
     # 2. Check sub items
-    sub_labels = ["a", "b", "c", "d"]
     existing_valid_subs = []
     if q.sub_items:
         for s in q.sub_items:
@@ -2700,15 +2873,28 @@ QUY TẮC THẨM ĐỊNH, GIẢI ĐỘC LẬP VÀ SỬA CHỮA:
         cleaned = clean_json_string(raw_res)
         data = json.loads(cleaned)
         healed_list = data.get("healed_items") or []
+        if isinstance(healed_list, dict):
+            healed_list = list(healed_list.values())
+        elif not isinstance(healed_list, list):
+            healed_list = []
         
         for item in healed_list:
+            if not isinstance(item, dict):
+                continue
             part = item.get("part")
             idx = item.get("index")
             custom_reason = item.get("reason")
+            if not isinstance(idx, int):
+                continue
             
             if part == 1 and 0 <= idx < len(exam.part1_mcq):
                 target_q = exam.part1_mcq[idx]
-                new_opts = [Option(label=o.get("label", "A"), text=normalize_latex_delimiters(o.get("text", ""))) for o in item.get("options", [])]
+                raw_opts = item.get("options") or []
+                if isinstance(raw_opts, dict):
+                    raw_opts = list(raw_opts.values())
+                elif not isinstance(raw_opts, list):
+                    raw_opts = []
+                new_opts = [Option(label=o.get("label", "A"), text=normalize_latex_delimiters(o.get("text", ""))) for o in raw_opts if isinstance(o, dict)]
                 if len(new_opts) == 4 and not any(is_option_garbage(o.text) for o in new_opts):
                     target_q.options = new_opts
                 if item.get("question") and len(str(item.get("question")).strip()) >= 5:
@@ -2723,6 +2909,10 @@ QUY TẮC THẨM ĐỊNH, GIẢI ĐỘC LẬP VÀ SỬA CHỮA:
             elif part == 2 and 0 <= idx < len(exam.part2_tf):
                 target_q = exam.part2_tf[idx]
                 sub_data = item.get("sub_items") or []
+                if isinstance(sub_data, dict):
+                    sub_data = list(sub_data.values())
+                elif not isinstance(sub_data, list):
+                    sub_data = []
                 if len(sub_data) == 4:
                     new_subs = []
                     sub_lbls = ["a", "b", "c", "d"]
@@ -2884,9 +3074,11 @@ async def audit_and_verify_exam(
             notes.append(f"Câu {q.id} (Phần II): Đã tự động nâng cấp từ câu hỏi đơn giản/lý thuyết suông thành bài toán tình huống thực tế hấp dẫn môn {exam.subject}.")
             q = exam.part2_tf[idx_p2]
             
-        # Guarantee 4 valid sub_items
-        if len(q.sub_items) != 4 or any(len(s.statement.strip()) < 5 or "đang cập nhật" in s.statement.lower() for s in q.sub_items):
+        # Guarantee 4 valid sub_items and contextual alignment
+        ctx_mismatched, ctx_err = is_tf_context_mismatched(q.question, q.sub_items)
+        if ctx_mismatched or len(q.sub_items) != 4 or any(len(s.statement.strip()) < 5 or "đang cập nhật" in s.statement.lower() for s in q.sub_items):
             exam.part2_tf[idx_p2] = heal_tf_offline(q, exam.subject, idx_p2, exam.grade)
+            notes.append(f"Câu {q.id} (Phần II): Đã tự động sửa lỗi lệch pha giữa đề bài và các ý con, đồng bộ bối cảnh môn {exam.subject}.")
             q = exam.part2_tf[idx_p2]
             
         # Guarantee 1 to 3 True items (never all True or all False)

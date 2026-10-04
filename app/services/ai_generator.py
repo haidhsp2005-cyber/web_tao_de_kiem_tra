@@ -1795,12 +1795,14 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
                 else:
                     raw_p3.append(item)
 
-    if isinstance(raw_p1, dict):
-        raw_p1 = list(raw_p1.values())
-    if isinstance(raw_p2, dict):
-        raw_p2 = list(raw_p2.values())
-    if isinstance(raw_p3, dict):
-        raw_p3 = list(raw_p3.values())
+    if not isinstance(raw_p1, list):
+        raw_p1 = list(raw_p1.values()) if isinstance(raw_p1, dict) else []
+    if not isinstance(raw_p2, list):
+        raw_p2 = list(raw_p2.values()) if isinstance(raw_p2, dict) else []
+    if not isinstance(raw_p3, list):
+        raw_p3 = list(raw_p3.values()) if isinstance(raw_p3, dict) else []
+    if not isinstance(raw_p4, list):
+        raw_p4 = list(raw_p4.values()) if isinstance(raw_p4, dict) else []
 
     p1_list = []
     labels_4 = ["A", "B", "C", "D"]
@@ -1835,6 +1837,8 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
             or item.get("lua_chon")
             or item.get("cac_phuong_an")
         )
+        if not isinstance(raw_opts, (list, dict)):
+            raw_opts = []
         opts_list = []
         if not raw_opts:
             # Check for top-level keys A, B, C, D directly inside question item
@@ -1930,7 +1934,7 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
                 answer=ans_clean if ans_clean in ["A", "B", "C", "D"] else "A",
                 explanation=explanation
             )
-            temp_q = heal_mcq_offline(temp_q, subject)
+            temp_q = heal_mcq_offline(temp_q, subject, index=idx - 1, grade=default_grade)
             opts_list = [{"label": o.label, "text": o.text} for o in temp_q.options]
             final_answer = temp_q.answer
             explanation = temp_q.explanation
@@ -1988,6 +1992,8 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
             or item.get("propositions")
             or []
         )
+        if not isinstance(raw_subs, (list, dict)):
+            raw_subs = []
         if not raw_subs:
             top_subs = []
             for lbl in ["a", "b", "c", "d"]:
