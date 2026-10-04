@@ -90,14 +90,16 @@ QUY TẮC BẮT BUỘC ĐỂ KHÔNG BỊ TRÀN TOKEN HOẶC THIẾU CÂU HỎI:
    - Trong Phần I: Chữ cái ở trường 'answer' (A, B, C hoặc D) và kết luận trong trường 'explanation' BẮT BUỘC PHẢI HOÀN TOÀN TRÙNG KHỚP NHAU.
    - Trong Phần II: Giá trị 'is_correct' (true/false) của mỗi ý con a, b, c, d phải đồng nhất 100% với lời giải của ý con đó.
    - Trong Phần III: Giá trị đáp số 'answer' và kết quả tính được trong 'explanation' phải hoàn toàn trùng khớp.
-6. HÌNH ẢNH MINH HỌA, BẢNG BIẾN THIÊN & ĐỒ THỊ (TOÁN 12, VẬT LÝ, HÓA HỌC, SINH HỌC):
+6. HÌNH ẢNH MINH HỌA, BẢNG BIẾN THIÊN & ĐỒ THỊ (ĐÚNG THEO ĐẶC THÙ MÔN & KHỐI LỚP):
    - QUY TẮC BẮT BUỘC ĐỐI VỚI BẢNG BIẾN THIÊN & ĐỒ THỊ:
      + TUYỆT ĐỐI KHÔNG xuất bảng biến thiên bằng ký tự ASCII hoặc bảng Markdown (như x | -\\infty | 0 | ... hay ---|---|---) bên trong đề bài câu hỏi ('question').
      + TUYỆT ĐỐI KHÔNG mô tả đồ thị bằng văn bản trong dấu ngoặc đơn bên trong câu hỏi (ví dụ: '(Đồ thị hàm bậc ba có dạng đi lên từ góc phần tư thứ ba sang góc phần tư thứ nhất, cắt trục tung tại gốc tọa độ, qua điểm (1; 1))'). Chỉ ghi đề bài chuẩn mực: 'Đường cong trong hình vẽ bên là đồ thị của hàm số nào dưới đây?' hoặc 'Cho hàm số $y = f(x)$ có đạo hàm liên tục trên $\\mathbb{R}$ và đồ thị của hàm số $y = f\'(x)$ như hình vẽ bên. ...'.
      + Nếu muốn chỉ định giá trị cụ thể của bảng biến thiên, hãy khai báo trường 'diagram': {"type": "variation_table", "x_vals": ["-\\infty", "0", "2", "+\\infty"], "y_prime": ["-", "0", "+", "0", "-"], "y_vals": ["+\\infty", "-3", "5", "-\\infty"]}. Hệ thống sẽ tự động vẽ bảng biến thiên đồ họa chuẩn đẹp chèn vào câu hỏi.
      + Đối với câu hỏi về đồ thị đạo hàm $y = f'(x)$, khai báo trường 'diagram': {"type": "derivative_graph"}.
      + Đối với câu hỏi về đồ thị trên đoạn [-2; 2], khai báo trường 'diagram': {"type": "bounded_graph"}.
-   - Môn Toán 12 (khảo sát hàm số, cực trị, tiệm cận): Khuyến khích tạo câu hỏi có Bảng biến thiên ("diagram": {"type": "variation_table"}), Đồ thị hàm số bậc ba ("diagram": {"type": "cubic_graph"}), Đồ thị hàm phân thức ("diagram": {"type": "rational_graph"}), Đồ thị trùng phương ("diagram": {"type": "quartic_graph"}), Đồ thị trên đoạn [-2; 2] ("diagram": {"type": "bounded_graph"}), Đồ thị hàm số đạo hàm y = f'(x) ("diagram": {"type": "derivative_graph"}).
+   - QUY ĐỊNH CHẶT CHẼ THEO KHỐI LỚP VỀ ĐỒ THỊ & BẢNG BIẾN THIÊN TOÁN:
+     + CHỈ KHI BIÊN SOẠN TOÁN LỚP 12: Khuyến khích tạo câu hỏi có Bảng biến thiên ("diagram": {"type": "variation_table"}), Đồ thị hàm số bậc ba ("diagram": {"type": "cubic_graph"}), Đồ thị hàm phân thức ("diagram": {"type": "rational_graph"}), Đồ thị trùng phương ("diagram": {"type": "quartic_graph"}), Đồ thị trên đoạn [-2; 2] ("diagram": {"type": "bounded_graph"}), Đồ thị hàm số đạo hàm y = f'(x) ("diagram": {"type": "derivative_graph"}).
+     + ĐỐI VỚI CÁC KHỐI LỚP KHÁC (Tiểu học: 3, 4, 5; THCS: 6, 7, 8, 9; THPT: 10, 11): TUYỆT ĐỐI CẤM TẠO bảng biến thiên hoặc đồ thị hàm bậc ba/phân thức/đạo hàm vì đây là kiến thức giải tích vượt cấp của lớp 12!
    - Môn Vật lý: Đồ thị dao động điều hòa ("diagram": {"type": "physics_oscillation"}), Chu trình nhiệt động lực học p-V ("diagram": {"type": "thermodynamic"}).
    - Môn Hóa học: Đường cong chuẩn độ pH ("diagram": {"type": "titration"}), Đồ thị kết tủa CaCO3/CO2 ("diagram": {"type": "precipitation"}).
    - Môn Sinh học: Sơ đồ phả hệ di truyền ("diagram": {"type": "pedigree"}), Đồ thị tăng trưởng quần thể chữ J / chữ S ("diagram": {"type": "population_growth"}).
@@ -124,11 +126,11 @@ QUY TẮC BẮT BUỘC ĐỂ KHÔNG BỊ TRÀN TOKEN HOẶC THIẾU CÂU HỎI:
 
 CẤU TRÚC JSON ĐẦU RA BẮT BUỘC (Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ, không kèm văn bản nào khác ngoài JSON):
 {
-  "title": "ĐỀ KIỂM TRA ĐỊNH KỲ MÔN TOÁN 12",
-  "subject": "Toán học",
-  "grade": "12",
+  "title": "ĐỀ KIỂM TRA ĐỊNH KỲ MÔN {subject_name} LỚP {grade_name}",
+  "subject": "{subject_name}",
+  "grade": "{grade_name}",
   "duration_minutes": 50,
-  "school_name": "SỞ GD&ĐT ... - TRƯỜNG THPT ...",
+  "school_name": "SỞ GD&ĐT ... - TRƯỜNG ...",
   "academic_year": "NĂM HỌC 2026 - 2027",
   "code": "101",
   "part1_mcq": [
@@ -2275,6 +2277,261 @@ def adjust_exam_structure_counts(exam: ExamStructure, request: GenerateRequest) 
 
     return exam
 
+def build_grade_curriculum_instructions(subject: str, grade: str) -> str:
+    """
+    Tạo bộ quy chuẩn và giới hạn chương trình giáo dục (GDPT 2018)
+    nghiêm ngặt theo đúng khối lớp mà người dùng đã chọn.
+    Ngăn chặn 100% việc rò rỉ kiến thức vượt cấp hoặc lẫn lộn giữa các khối lớp.
+    """
+    sub = (subject or "").lower().strip()
+    g = str(grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
+    
+    sections = []
+
+    # 1. TOÁN HỌC
+    if "toán" in sub:
+        if g in ("1", "2", "3", "4", "5", "tiểu học", "tieu hoc"):
+            tier_name = f"TIỂU HỌC (LỚP {g})"
+            if g == "3":
+                scope_text = (
+                    "   - Số tự nhiên trong phạm vi 10 000, 100 000; 4 phép tính cộng, trừ, nhân, chia (nhân/chia số có nhiều chữ số với số có một chữ số).\n"
+                    "   - Bảng nhân, chia 6, 7, 8, 9; làm quen chữ số La Mã.\n"
+                    "   - Hình học & Đo lường: Góc vuông, góc không vuông; chu vi & diện tích hình chữ nhật, hình vuông. Đơn vị đo: mm, gam, ml, nhiệt độ độ C.\n"
+                    "   - Giải bài toán có đến hai bước tính; bài toán liên quan đến rút về đơn vị."
+                )
+            elif g == "4":
+                scope_text = (
+                    "   - Số có nhiều chữ số (đến lớp triệu, lớp tỉ). Dãy số tự nhiên, tính chất phép cộng, phép nhân.\n"
+                    "   - 4 phép tính với số tự nhiên: nhân với số có hai, ba chữ số; chia cho số có hai chữ số.\n"
+                    "   - Phân số: Khái niệm phân số, phân số bằng nhau, rút gọn, quy đồng mẫu số; cộng, trừ, nhân, chia 2 phân số; tìm phân số của một số.\n"
+                    "   - Hình học: Hai đường thẳng vuông góc, song song; hình bình hành, hình thoi (đặc điểm, chu vi, diện tích). Đơn vị đo: dm2, m2, mm2, yến, tạ, tấn.\n"
+                    "   - Dạng toán điển hình: Tìm hai số khi biết tổng và hiệu; Tìm số trung bình cộng; Tìm hai số khi biết tổng (hoặc hiệu) và tỉ số của hai số đó."
+                )
+            else: # 5 hoặc mặc định tiểu học
+                scope_text = (
+                    "   - Phân số và hỗn số; số thập phân và 4 phép tính cộng, trừ, nhân, chia với số thập phân.\n"
+                    "   - Tỉ số phần trăm và các bài toán về tỉ số phần trăm (tìm tỉ số %, tìm giá trị % của một số, tìm một số khi biết giá trị %).\n"
+                    "   - Hình học: Chu vi & diện tích hình tam giác, hình thang, hình tròn; diện tích xung quanh, diện tích toàn phần và thể tích hình hộp chữ nhật, hình lập phương.\n"
+                    "   - Chuyển động đều: Công thức s = v x t; bài toán chuyển động cùng chiều, ngược chiều, chuyển động của dòng nước (xuôi dòng, ngược dòng)."
+                )
+            
+            sections.append(
+                f"********************************************************************************\n"
+                f"QUY CHUẨN ĐẶC BIỆT BẮT BUỘC: GIỚI HẠN CHUẨN KIẾN THỨC MÔN TOÁN {tier_name} (GDPT 2018):\n"
+                f"1. PHẠM VI NỘI DUNG ĐƯỢC PHÉP RA ĐỀ (Áp dụng cho Phần I, II, III, IV):\n{scope_text}\n"
+                f"2. CẤM TUYỆT ĐỐI 100% CÁC KIẾN THỨC VƯỢT CẤP CỦA THCS VÀ THPT:\n"
+                f"   - CẤM TUYỆT ĐỐI số âm, căn bậc hai (\\sqrt), biến số đại số x, y dạng hệ phương trình, biệt thức delta, parabol.\n"
+                f"   - CẤM TUYỆT ĐỐI đạo hàm, tiệm cận, cực trị, tích phân, hàm số, lượng giác, vectơ, tọa độ, tổ hợp xác suất THPT.\n"
+                f"   - Đề bài phải dùng ngôn ngữ trong sáng, gần gũi với lứa tuổi học sinh tiểu học (đồ vật, hoa quả, bạn bè trong lớp, hoạt động trồng cây, thư viện trường học).\n"
+                f"3. BẮT BUỘC 100% CÁC CÂU PHẦN II (ĐÚNG/SAI) LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ TIỂU HỌC:\n"
+                f"   Tình huống sinh hoạt thực tế gần gũi (mua sắm đồ dùng học tập, kế hoạch tiết kiệm, chuyến tham quan dã ngoại của lớp, bài toán chia kẹo/hoa quả). 4 ý a, b, c, d kiểm tra từ nhận biết số liệu -> giải thích phép tính -> tính toán kết quả -> nhận xét đúng đắn.\n"
+                f"********************************************************************************"
+            )
+
+        elif g in ("6", "7", "8", "9", "thcs"):
+            tier_name = f"THCS (LỚP {g})"
+            if g == "6":
+                scope_text = (
+                    "   - Số tự nhiên, ước và bội, số nguyên tố, hợp số, ƯCLN, BCNN, dấu hiệu chia hết.\n"
+                    "   - Tập hợp số nguyên (nguyên âm, nguyên dương), các phép tính trên Z, quy tắc dấu ngoặc.\n"
+                    "   - Phân số (tử và mẫu là số nguyên), các phép tính phân số, hỗn số, giá trị phân số của một số.\n"
+                    "   - Số thập phân, các phép tính với số thập phân, tỉ số và tỉ số phần trăm.\n"
+                    "   - Hình học trực quan: Tam giác đều, hình vuông, lục giác đều, hình chữ nhật, hình thoi, hình bình hành, hình thang cân (chu vi, diện tích); tính đối xứng (trục đối xứng, tâm đối xứng).\n"
+                    "   - Hình học phẳng: Điểm, đường thẳng, tia, đoạn thẳng, trung điểm, góc.\n"
+                    "   - Thống kê & xác suất thực nghiệm: Bảng dữ liệu, biểu đồ tranh, biểu đồ cột, xác suất thực nghiệm."
+                )
+                negative_text = "CẤM TUYỆT ĐỐI: Căn bậc hai, phương trình bậc hai, hệ phương trình, định lý Ta-lét, tam giác đồng dạng, tỉ số lượng giác sin/cos/tan, toàn bộ giải tích và không gian THPT."
+            elif g == "7":
+                scope_text = (
+                    "   - Số hữu tỉ, số thực, căn bậc hai số học cơ bản (\\sqrt{a} với a >= 0), giá trị tuyệt đối, làm tròn số.\n"
+                    "   - Tỉ lệ thức và dãy tỉ số bằng nhau; đại lượng tỉ lệ thuận, đại lượng tỉ lệ nghịch.\n"
+                    "   - Biểu thức đại số: Đơn thức, đa thức một biến, cộng trừ nhân chia đa thức một biến, nghiệm của đa thức một biến.\n"
+                    "   - Hình học: Góc ở vị trí đặc biệt (kề bù, so le trong, đồng vị), định lý hai đường thẳng song song; Tam giác bằng nhau (c-c-c, c-g-c, g-c-g, các trường hợp tam giác vuông); Tam giác cân, đường trung trực; Quan hệ giữa các yếu tố trong tam giác (cạnh - góc đối diện, BĐT tam giác); Các đường đồng quy trong tam giác (trung tuyến, phân giác, trung trực, đường cao).\n"
+                    "   - Thống kê & xác suất: Biểu đồ đoạn thẳng, biểu đồ hình quạt tròn; biến cố ngẫu nhiên và xác suất của biến cố."
+                )
+                negative_text = "CẤM TUYỆT ĐỐI: 7 hằng đẳng thức đáng nhớ, phân thức đại số, định lý Ta-lét, tam giác đồng dạng, phương trình bậc hai, hệ phương trình, toàn bộ kiến thức THPT."
+            elif g == "8":
+                scope_text = (
+                    "   - Đa thức nhiều biến (cộng, trừ, nhân, chia đa thức cho đơn thức).\n"
+                    "   - 7 hằng đẳng thức đáng nhớ và các phương pháp phân tích đa thức thành nhân tử.\n"
+                    "   - Phân thức đại số: Các phép tính cộng, trừ, nhân, chia và rút gọn phân thức đại số.\n"
+                    "   - Phương trình bậc nhất một ẩn (ax + b = 0) và giải bài toán bằng cách lập phương trình bậc nhất.\n"
+                    "   - Hình học phẳng: Tứ giác, hình thang, hình thang cân, hình bình hành, hình chữ nhật, hình thoi, hình vuông; Định lý Ta-lét trong tam giác (thuận, đảo, hệ quả), đường trung bình, tính chất đường phân giác; Tam giác đồng dạng (3 trường hợp đồng dạng c-c-c, c-g-c, g-g và tam giác vuông đồng dạng).\n"
+                    "   - Hình học không gian trực quan: Hình chóp tam giác đều, hình chóp tứ giác đều (diện tích xung quanh, thể tích).\n"
+                    "   - Thống kê & xác suất: Bảng thống kê, biểu đồ cột kép, biểu đồ hình quạt tròn, xác suất thực nghiệm."
+                )
+                negative_text = "CẤM TUYỆT ĐỐI: Căn bậc hai chứa ẩn phức tạp, hệ hai phương trình bậc nhất 2 ẩn (lớp 9), phương trình bậc hai một ẩn / hệ thức Vi-ét (lớp 9), đường tròn tiếp tuyến (lớp 9), toàn bộ kiến thức giải tích và không gian THPT."
+            else: # 9
+                scope_text = (
+                    "   - Căn bậc hai, căn bậc ba và rút gọn biểu thức đại số chứa căn.\n"
+                    "   - Phương trình và hệ hai phương trình bậc nhất hai ẩn (phương pháp thế, cộng đại số, bài toán thực tế lập hệ phương trình).\n"
+                    "   - Phương trình bậc hai một ẩn và Hệ thức Vi-ét (x1 + x2 = -b/a, x1 * x2 = c/a).\n"
+                    "   - Hàm số y = ax^2 (a != 0) và đồ thị Parabol.\n"
+                    "   - Hệ thức lượng trong tam giác vuông và Tỉ số lượng giác góc nhọn (sin, cos, tan, cot, góc nâng, góc hạ đo đạc thực tế).\n"
+                    "   - Đường tròn: Tiếp tuyến, góc ở tâm, góc nội tiếp, tứ giác nội tiếp, độ dài đường tròn, diện tích hình quạt tròn.\n"
+                    "   - Hình học không gian thực tế lớp 9: DUY NHẤT Hình trụ, Hình nón, Hình cầu (diện tích xung quanh, thể tích vật dụng đời sống như bồn nước, cốc nước, phễu nón, quả bóng).\n"
+                    "   - Thống kê & Xác suất lớp 9: Bảng tần số, biểu đồ tần số và Xác suất cổ điển đơn giản (gieo xúc xắc, bốc viên bi/thẻ trong hộp)."
+                )
+                negative_text = (
+                    "CẤM TUYỆT ĐỐI 100% CÁC KIẾN THỨC VƯỢT CẤP THPT:\n"
+                    "   - CẤM TUYỆT ĐỐI xác suất bắn bia độc lập Bernoulli (xạ thủ bắn 3 phát trúng...), xác suất có điều kiện, biến ngẫu nhiên, chỉnh hợp A_n^k, tổ hợp C_n^k.\n"
+                    "   - CẤM TUYỆT ĐỐI hình học không gian THPT: tính khoảng cách giữa hai đường thẳng chéo nhau (như AB và C'D' trong hình hộp chữ nhật), khoảng cách từ điểm đến mp, góc giữa 2 mp, tọa độ không gian Oxyz.\n"
+                    "   - CẤM TUYỆT ĐỐI giải tích THPT: đạo hàm, tính đơn điệu, cực trị, tiệm cận, bảng biến thiên, tích phân, nguyên hàm, logarit."
+                )
+
+            sections.append(
+                f"********************************************************************************\n"
+                f"QUY CHUẨN ĐẶC BIỆT BẮT BUỘC: GIỚI HẠN CHUẨN KIẾN THỨC MÔN TOÁN {tier_name} (GDPT 2018):\n"
+                f"1. PHẠM VI NỘI DUNG ĐƯỢC PHÉP RA ĐỀ (Áp dụng cho Phần I, II, III, IV):\n{scope_text}\n"
+                f"2. CẤM TUYỆT ĐỐI CÁC KIẾN THỨC VƯỢT CẤP:\n   {negative_text}\n"
+                f"3. BẮT BUỘC 100% CÁC CÂU PHẦN II (ĐÚNG/SAI) LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ LỚP {g}:\n"
+                f"   Xây dựng bối cảnh đo đạc, mua bán, chuyển động, chi phí sinh hoạt, tối ưu hóa phù hợp với học sinh lớp {g}. TUYỆT ĐỐI KHÔNG ra đề cộc lốc lý thuyết suông.\n"
+                f"********************************************************************************"
+            )
+
+        elif g in ("10", "11", "12"):
+            tier_name = f"THPT (LỚP {g})"
+            if g == "10":
+                scope_text = (
+                    "   - Mệnh đề toán học và Tập hợp (giao, hợp, hiệu, các tập hợp con của số thực).\n"
+                    "   - Bất phương trình và hệ bất phương trình bậc nhất hai ẩn, bài toán tối ưu miền nghiệm đa giác thực tế.\n"
+                    "   - Hàm số, tập xác định, hàm số bậc hai y = ax^2 + bx + c và đồ thị parabol đỉnh I(-b/2a; -Delta/4a). Dấu của tam thức bậc hai, giải BPT bậc hai một ẩn.\n"
+                    "   - Hệ thức lượng trong tam giác (định lý cos, định lý sin, công thức diện tích tam giác S = 1/2 ab sin C = abc/4R = pr = sqrt(p(p-a)(p-b)(p-c))).\n"
+                    "   - Vectơ: Tổng, hiệu hai vectơ, tích vectơ với một số, tích vô hướng của hai vectơ và ứng dụng tính góc, khoảng cách.\n"
+                    "   - Phương pháp tọa độ trong mặt phẳng Oxy: Tọa độ điểm, vectơ, phương trình đường thẳng (tổng quát, tham số), phương trình đường tròn, ba đường conic (elip, hypebol, parabol).\n"
+                    "   - Thống kê & Xác suất: Số trung bình, trung vị, tứ phân vị, mốt, khoảng biến thiên, khoảng tứ phân vị, phương sai, độ lệch chuẩn. Xác suất cổ điển, biến cố hợp, biến cố giao, biến cố độc lập."
+                )
+                negative_text = (
+                    "CẤM TUYỆT ĐỐI CÁC KIẾN THỨC LỚP 11 VÀ 12:\n"
+                    "   - CẤM đạo hàm, tiệm cận đồ thị hàm số, bảng biến thiên dùng đạo hàm, cực trị bằng đạo hàm.\n"
+                    "   - CẤM nguyên hàm, tích phân, logarit, số phức.\n"
+                    "   - CẤM hình học không gian (đường thẳng vuông góc mp, khoảng cách chéo nhau - lớp 11) và tọa độ không gian Oxyz (lớp 12).\n"
+                    "   - CẤM dãy số, cấp số cộng, cấp số nhân (lớp 11)."
+                )
+            elif g == "11":
+                scope_text = (
+                    "   - Hàm số lượng giác và Phương trình lượng giác cơ bản (sin x = m, cos x = m, tan x = m, cot x = m).\n"
+                    "   - Dãy số, Cấp số cộng (u_n = u_1 + (n-1)d), Cấp số nhân (u_n = u_1 * q^(n-1)).\n"
+                    "   - Giới hạn của dãy số và giới hạn của hàm số, hàm số liên tục.\n"
+                    "   - Đạo hàm: Định nghĩa đạo hàm, bảng đạo hàm cơ bản (hàm đa thức, căn, lượng giác, tích, thương), ý nghĩa hình học (tiếp tuyến y = y'(x_0)(x - x_0) + y_0), đạo hàm cấp hai.\n"
+                    "   - Hình học không gian lớp 11: Đường thẳng và mặt phẳng trong không gian, quan hệ song song; Quan hệ vuông góc (đường vuông góc mặt, hai mặt vuông góc, định lý 3 đường vuông góc), khoảng cách (điểm đến mp, hai đường thẳng chéo nhau), góc giữa đường và mặt, góc giữa 2 mặt phẳng.\n"
+                    "   - Đại số tổ hợp & Xác suất: Quy tắc đếm, hoán vị, chỉnh hợp, tổ hợp, nhị thức Newton. Xác suất: Biến cố độc lập, quy tắc cộng xác suất, quy tắc nhân xác suất.\n"
+                    "   - Thống kê: Mẫu số liệu ghép nhóm (khoảng, tần số, số trung bình, trung vị, tứ phân vị, mốt)."
+                )
+                negative_text = (
+                    "CẤM TUYỆT ĐỐI CÁC KIẾN THỨC LỚP 12:\n"
+                    "   - CẤM đường tiệm cận của đồ thị hàm số (tiệm cận đứng, ngang, xiên) và bảng biến thiên khảo sát hàm bậc ba/phân thức (lớp 12).\n"
+                    "   - CẤM nguyên hàm và tích phân (lớp 12).\n"
+                    "   - CẤM hàm số mũ và logarit nâng cao (lớp 12).\n"
+                    "   - CẤM phương pháp tọa độ trong không gian Oxyz (lớp 12).\n"
+                    "   - CẤM xác suất có điều kiện, công thức xác suất toàn phần và công thức Bayes (lớp 12)."
+                )
+            else: # 12
+                scope_text = (
+                    "   - Khảo sát hàm số: Tính đơn điệu, cực trị, GTLN-GTNN, đường tiệm cận (đứng, ngang, xiên), bảng biến thiên và đồ thị hàm số (bậc ba, phân thức bậc nhất/bậc nhất, phân thức bậc hai/bậc nhất).\n"
+                    "   - Hàm số mũ, hàm số logarit, phương trình và bất phương trình mũ, logarit.\n"
+                    "   - Nguyên hàm và tích phân: Định nghĩa, tính chất, phương pháp đổi biến số, từng phần, ứng dụng tích phân tính diện tích hình phẳng và thể tích vật thể tròn xoay.\n"
+                    "   - Phương pháp tọa độ trong không gian Oxyz: Tọa độ điểm, vectơ, tích có hướng, phương trình mặt phẳng, phương trình đường thẳng, phương trình mặt cầu, góc và khoảng cách trong không gian Oxyz.\n"
+                    "   - Xác suất có điều kiện, công thức xác suất toàn phần, công thức Bayes.\n"
+                    "   - Thống kê: Các đặc trưng đo mức độ phân tán của mẫu số liệu ghép nhóm (phương sai, độ lệch chuẩn)."
+                )
+                negative_text = "Toàn diện chương trình THPT lớp 12 phục vụ ôn thi tốt nghiệp THPT và xét tuyển đại học."
+
+            sections.append(
+                f"********************************************************************************\n"
+                f"QUY CHUẨN ĐẶC BIỆT BẮT BUỘC: GIỚI HẠN CHUẨN KIẾN THỨC MÔN TOÁN {tier_name} (GDPT 2018):\n"
+                f"1. PHẠM VI NỘI DUNG ĐƯỢC PHÉP RA ĐỀ (Áp dụng cho Phần I, II, III, IV):\n{scope_text}\n"
+                f"2. CẤM TUYỆT ĐỐI CÁC KIẾN THỨC VƯỢT CẤP / LỆCH KHỐI:\n   {negative_text}\n"
+                f"3. BẮT BUỘC 100% CÁC CÂU PHẦN II (ĐÚNG/SAI) LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ LỚP {g}:\n"
+                f"   Xây dựng bài toán mô hình hóa thực tế (kinh tế, kỹ thuật, đo đạc, chuyển động, tối ưu hóa) đúng chuẩn chương trình Toán {g}.\n"
+                f"********************************************************************************"
+            )
+
+    # 2. TIN HỌC
+    elif "tin" in sub:
+        if g in ("3", "4", "5", "tiểu học", "tieu hoc"):
+            sections.append(
+                f"\nLƯU Ý ĐẶC THÙ MÔN TIN HỌC TIỂU HỌC (LỚP {g}):\n"
+                f"- Bám sát chương trình Tin học tiểu học: Làm quen phần cứng máy tính, bàn phím, chuột, phần mềm đồ họa Paint, soạn thảo văn bản đơn giản Unikey/Word, an toàn trên Internet, lập trình trực quan kéo thả Scratch cơ bản.\n"
+                f"- TUYỆT ĐỐI CẤM: Code Python phức tạp, cú pháp dòng lệnh nâng cao, kiến trúc mạng máy tính sâu, AI, cơ sở dữ liệu."
+            )
+        elif g in ("6", "7", "8", "9", "thcs"):
+            sections.append(
+                f"\nLƯU Ý ĐẶC THÙ MÔN TIN HỌC THCS (LỚP {g}):\n"
+                f"- Bám sát chương trình Tin học THCS lớp {g}: Lớp 6 (thông tin dữ liệu, mạng máy tính, soạn thảo, sơ đồ tư duy); Lớp 7 (bảng tính Excel, bảo vệ dữ liệu); Lớp 8 (thuật toán, cấu trúc rẽ nhánh if-else, vòng lặp for/while trong Scratch/Python); Lớp 9 (dịch vụ Internet, đa phương tiện, an toàn thông tin số).\n"
+                f"- CẤM: Cơ sở dữ liệu quan hệ SQL nâng cao (lớp 11), AI và IoT (lớp 12)."
+            )
+        elif g in ("10", "11", "12"):
+            if g == "10":
+                sections.append(
+                    f"\nLƯU Ý ĐẶC THÙ MÔN TIN HỌC LỚP 10 (GDPT 2018):\n"
+                    f"- Trọng tâm: Biểu diễn thông tin, mạng máy tính và Internet, an toàn số; Lập trình Python căn bản (kiểu dữ liệu int, float, str, bool, toán tử, rẽ nhánh if-else, vòng lặp for/while, danh sách list, xâu ký tự, hàm def, xử lý tệp văn bản đơn giản).\n"
+                    f"- CẤM: Cơ sở dữ liệu SQL/RDBMS (lớp 11), Trí tuệ nhân tạo AI/IoT (lớp 12)."
+                )
+            elif g == "11":
+                sections.append(
+                    f"\nLƯU Ý ĐẶC THÙ MÔN TIN HỌC LỚP 11 (GDPT 2018):\n"
+                    f"- Trọng tâm: Hệ điều hành & phần mềm ứng dụng; Cơ sở dữ liệu quan hệ (RDBMS), mô hình quan hệ, khóa chính, khóa ngoại, các câu lệnh truy vấn SQL (SELECT, INSERT, UPDATE, DELETE, WHERE, JOIN), thiết kế và chuẩn hóa bảng dữ liệu; hoặc chuyên đề Khoa học máy tính / Tin học ứng dụng."
+                )
+            else: # 12
+                sections.append(
+                    f"\nLƯU Ý ĐẶC THÙ MÔN TIN HỌC LỚP 12 (GDPT 2018):\n"
+                    f"- Trọng tâm: Trí tuệ nhân tạo (AI - khái niệm, ứng dụng nhận diện hình ảnh, xử lý ngôn ngữ tự nhiên, học máy Machine Learning, đạo đức AI), Mạng máy tính kết nối vạn vật (IoT), An toàn dữ liệu & An ninh mạng, Giao tiếp trong không gian số, lập trình Web/giao diện người dùng cơ bản (HTML/CSS/Python GUI)."
+                )
+
+    # 3. KHTN / VẬT LÝ
+    elif any(x in sub for x in ["vật lý", "vật lí"]):
+        if g in ("6", "7", "8", "9", "thcs"):
+            sections.append(
+                f"\nLƯU Ý ĐẶC THÙ PHÂN MÔN VẬT LÝ TRONG KHOA HỌC TỰ NHIÊN (KHTN LỚP {g}):\n"
+                f"- Bám sát chuẩn KHTN THCS lớp {g}: Đo lường cơ bản, lực và chuyển động, ma sát, quán tính; Âm thanh (nguồn âm, độ cao, độ to, phản xạ âm); Ánh sáng (sự truyền thẳng, phản xạ, khúc xạ, thấu kính cơ bản); Điện và từ cơ bản (mạch điện nối tiếp/song song, định luật Ohm sơ cấp, nam châm, từ trường Trái Đất); Năng lượng và nhiệt cơ bản.\n"
+                f"- CẤM TUYỆT ĐỐI: Dao động điều hòa (phương trình x = A cos(omega t + phi)), sóng cơ học nâng cao, chu trình nhiệt động lực học p-V, thuyết tương đối, vật lý hạt nhân."
+            )
+        elif g == "10":
+            sections.append(
+                f"\nLƯU Ý ĐẶC THÙ MÔN VẬT LÍ LỚP 10 (GDPT 2018):\n"
+                f"- Trọng tâm: Động học (chuyển động thẳng đều, thẳng biến đổi đều, rơi tự do, ném ngang); Động lực học (ba định luật Newton, các lực cơ học: trọng lực, lực đàn hồi, lực ma sát, lực cản); Cân bằng lực và ngẫu lực; Năng lượng, công cơ học, công suất, động năng, thế năng, bảo toàn cơ năng; Động lượng và va chạm; Chuyển động tròn đều.\n"
+                f"- CẤM: Dao động điều hòa, con lắc lò xo/đơn (lớp 11); Vật lý nhiệt p-V, từ trường, hạt nhân (lớp 12)."
+            )
+        elif g == "11":
+            sections.append(
+                f"\nLƯU Ý ĐẶC THÙ MÔN VẬT LÍ LỚP 11 (GDPT 2018):\n"
+                f"- Trọng tâm: Dao động cơ (dao động điều hòa, con lắc lò xo, con lắc đơn, năng lượng dao động, dao động tắt dần, cộng hưởng); Sóng cơ và sóng âm (sự truyền sóng, giao thoa sóng, sóng dừng); Điện trường (lực tương tác tĩnh điện Coulomb, cường độ điện trường, điện thế, tụ điện); Dòng điện không đổi (cường độ dòng điện, điện trở, định luật Ohm cho đoạn mạch, nguồn điện).\n"
+                f"- CẤM: Vật lý nhiệt (nhiệt động học p-V, khí lý tưởng - lớp 12); Từ trường và cảm ứng điện từ (lớp 12); Vật lý hạt nhân và phóng xạ (lớp 12)."
+            )
+        elif g == "12":
+            sections.append(
+                f"\nLƯU Ý ĐẶC THÙ MÔN VẬT LÍ LỚP 12 (GDPT 2018 - MỚI NHẤT):\n"
+                f"- Trọng tâm: Vật lý nhiệt (mô hình động học phân tử chất khí, nhiệt độ, nhiệt dung riêng, nhiệt nóng chảy riêng, nhiệt hóa hơi riêng, các định luật chất khí, phương trình trạng thái Clapeyron - Mendeleev, đồ thị chu trình nhiệt p-V); Khí lý tưởng; Từ trường (từ trường dòng điện, lực từ tác dụng lên đoạn dây dẫn, cảm ứng từ, hiện tượng cảm ứng điện từ, từ thông); Vật lý hạt nhân (cấu tạo hạt nhân, năng lượng liên kết, phản ứng hạt nhân, phóng xạ, an toàn bức xạ)."
+            )
+
+    # 4. HÓA HỌC
+    elif "hóa" in sub:
+        if g in ("8", "9"):
+            sections.append(
+                f"\nLƯU Ý ĐẶC THÙ PHÂN MÔN HÓA HỌC TRONG KHTN (LỚP {g}):\n"
+                f"- Lớp 8: Nguyên tử, phân tử, đơn chất, hợp chất, mol, tỉ khối chất khí, định luật bảo toàn khối lượng, phương trình hóa học, dung dịch (nồng độ C%, C_M), oxide, acid, base, muối cơ bản.\n"
+                f"- Lớp 9: Kim loại (dãy hoạt động hóa học), phi kim; Mối quan hệ giữa các hợp chất vô cơ; Sơ lược hóa học hữu cơ (methane CH4, ethylene C2H4, acetylene C2H2, rượu ethylic C2H5OH, acid acetic CH3COOH, chất béo, glucose, tinh bột).\n"
+                f"- CẤM TUYỆT ĐỐI KIẾN THỨC THPT: Cấu hình electron theo orbital (s, p, d), liên kết hydrogen/van der Waals, enthalpy Delta_r H, cân bằng hóa học K_c, pH, pin điện hóa, phức chất."
+            )
+        elif g == "10":
+            sections.append(
+                f"\nLƯU Ý ĐẶC THÙ MÔN HÓA HỌC LỚP 10 (GDPT 2018):\n"
+                f"- Trọng tâm: Cấu tạo nguyên tử (hạt nhân, electron, orbital s, p, d, f); Bảng tuần hoàn các nguyên tố hóa học và quy luật biến đổi tuần hoàn; Liên kết hóa học (liên kết ion, liên kết cộng hóa trị, liên kết hydrogen, tương tác van der Waals); Phản ứng oxi hóa - khử; Năng lượng hóa học (biến thiên enthalpy chuẩn của phản ứng Delta_r H^0_298); Tốc độ phản ứng hóa học (các yếu tố ảnh hưởng, hằng số tốc độ); Nhóm nguyên tố Halogen (fluorine, chlorine, bromine, iodine)."
+            )
+        elif g == "11":
+            sections.append(
+                f"\nLƯU Ý ĐẶC THÙ MÔN HÓA HỌC LỚP 11 (GDPT 2018):\n"
+                f"- Trọng tâm: Cân bằng hóa học (hằng số K_c, nguyên lý Le Chatelier); Cân bằng trong dung dịch nước (thuyết Brønsted - Lowry, pH, chất chỉ thị, chuẩn độ acid-base); Nitrogen và sulfur (ammonia, muối ammonium, nitric acid, sulfur dioxide, sulfuric acid); Đại cương hóa hữu cơ; Hydrocarbon (alkane, alkene, alkyne, arene); Dẫn xuất halogen, alcohol, phenol; Hợp chất carbonyl (aldehyde, ketone) và carboxylic acid."
+            )
+        elif g == "12":
+            sections.append(
+                f"\nLƯU Ý ĐẶC THÙ MÔN HÓA HỌC LỚP 12 (GDPT 2018):\n"
+                f"- Trọng tâm: Ester - Lipid, xà phòng và chất giặt rửa tổng hợp; Carbohydrate (glucose, fructose, saccharose, maltose, tinh bột, cellulose); Hợp chất chứa nitrogen (amine, amino acid, peptide, protein, enzyme); Polymer và vật liệu polymer; Hóa học kim loại (đại cương kim loại, thế điện cực chuẩn, pin điện hóa, sự điện phân, ăn mòn kim loại, kim loại kiềm, kiềm thổ, nhôm, kim loại chuyển tiếp dãy thứ nhất, phức chất)."
+            )
+
+    return "\n".join(sections)
+
 async def generate_exam(request: GenerateRequest) -> ExamStructure:
     keys = extract_api_keys(request)
     
@@ -2309,13 +2566,12 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
         f"- PHẦN III (Trả lời ngắn): BẮT BUỘC TẠO ĐỦ {request.num_part3} CÂU trong mảng 'part3_short'.\n"
         f"- PHẦN IV (Tự luận): BẮT BUỘC TẠO ĐỦ {request.num_essay} CÂU trong mảng 'part4_essay'.\n"
     )
-    if str(request.grade) in ("3", "4", "5"):
-        user_prompt += (
-            f"\nLƯU Ý ĐẶC THÙ TIỂU HỌC (LỚP {request.grade}):\n"
-            f"- Kiến thức và ngôn ngữ biên soạn phải hoàn toàn phù hợp với tâm lý lứa tuổi học sinh Tiểu học lớp {request.grade} theo chương trình GDPT mới (2018).\n"
-            f"- Đề bài trong sáng, dễ hiểu, gắn liền với tình huống đời sống sinh hoạt, đồ vật, con vật gần gũi.\n"
-            f"- Các phép tính, con số số học và dạng bài bám sát chuẩn kiến thức lớp {request.grade} (không cho số quá phức tạp hay vượt cấp)."
-        )
+
+    # 1. Bổ sung bộ quy chuẩn kiến thức chuẩn theo khối lớp người dùng đã chọn
+    curriculum_instructions = build_grade_curriculum_instructions(request.subject, request.grade)
+    if curriculum_instructions:
+        user_prompt += f"\n\n{curriculum_instructions}"
+
     if request.subject == "Tiếng Anh":
         user_prompt += (
             f"\n\nLƯU Ý ĐẶC THÙ MÔN TIẾNG ANH (LỚP {request.grade}) THEO CHƯƠNG TRÌNH GDPT 2018:\n"
@@ -2335,37 +2591,9 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"- Phần III (Trả lời ngắn): Yêu cầu tính toán kết quả số cụ thể của đoạn mã (ví dụ: giá trị của biến đếm, tổng tích lũy, số lần lặp) hoặc chuyển đổi đơn vị dung lượng bộ nhớ (Byte, KB, MB, GB, bit)."
         )
     if "toán" in request.subject.lower():
-        grade_str = str(request.grade)
-        grade_note = ""
-        if grade_str in ("9", "lớp 9", "lop 9"):
-            grade_note = (
-                f"\n********************************************************************************\n"
-                f"QUY CHUẨN ĐẶC BIỆT BẮT BUỘC: GIỚI HẠN CHUẨN KIẾN THỨC MÔN TOÁN LỚP 9 (CHƯƠNG TRÌNH GDPT 2018 - TUYỂN SINH VÀO 10):\n"
-                f"1. PHẠM VI NỘI DUNG ĐƯỢC PHÉP RA ĐỀ (ÁP DỤNG ĐỒNG BỘ CHO CẢ PHẦN I, PHẦN II, PHẦN III VÀ PHẦN IV):\n"
-                f"   - Căn bậc hai, căn bậc ba và rút gọn biểu thức đại số chứa căn.\n"
-                f"   - Phương trình và hệ hai phương trình bậc nhất hai ẩn (phương pháp thế, cộng đại số, bài toán tham số m).\n"
-                f"   - Giải bài toán bằng cách lập hệ phương trình / lập phương trình bậc hai (chuyển động, năng suất chung-riêng, quan hệ số học, hình chữ nhật chu vi - diện tích).\n"
-                f"   - Phương trình bậc hai một ẩn và Hệ thức Vi-ét ($x_1+x_2 = -b/a, x_1 x_2 = c/a$).\n"
-                f"   - Hệ thức lượng trong tam giác vuông và Tỉ số lượng giác góc nhọn ($\\sin, \\cos, \\tan, \\cot$, góc nâng, góc hạ đo đạc thực tế).\n"
-                f"   - Đường tròn: tiếp tuyến, góc ở tâm, góc nội tiếp, tứ giác nội tiếp, độ dài đường tròn, diện tích hình quạt tròn.\n"
-                f"   - Hình học không gian thực tế lớp 9: CHỈ HỎI DUY NHẤT VỀ Hình trụ, Hình nón, Hình cầu (diện tích xung quanh, thể tích vật dụng đời sống như bồn nước, cốc nước, phễu nón, quả bóng).\n"
-                f"   - Thống kê & Xác suất lớp 9: Bảng tần số, biểu đồ và Xác suất cổ điển đơn giản (phép thử gieo 1-2 con xúc xắc, rút thẻ/viên bi đồng khả năng trong hộp).\n"
-                f"2. CẤM TUYỆT ĐỐI 100% CÁC KIẾN THỨC VƯỢT CẤP CỦA THPT (LỚP 10, 11, 12) - KHÔNG ĐƯỢC XUẤT HIỆN Ở BẤT KỲ CÂU HỎI NÀO:\n"
-                f"   - CẤM TUYỆT ĐỐI bài toán xác suất bắn bia độc lập Bernoulli (xạ thủ bắn 3 phát, xác suất trúng...), xác suất có điều kiện, biến ngẫu nhiên, chỉnh hợp $A_n^k$, tổ hợp $C_n^k$.\n"
-                f"   - CẤM TUYỆT ĐỐI bài toán hình học không gian THPT: tính khoảng cách giữa hai đường thẳng chéo nhau (như $AB$ và $C'D'$ trong hình hộp chữ nhật), khoảng cách từ điểm đến mặt phẳng, góc giữa hai mặt phẳng, tọa độ không gian $Oxyz$.\n"
-                f"   - CẤM TUYỆT ĐỐI giải tích THPT: đạo hàm, tính đơn điệu, cực trị, tiệm cận, bảng biến thiên, tích phân, nguyên hàm, logarit.\n"
-                f"3. BẮT BUỘC 100% CÁC CÂU PHẦN II (ĐÚNG/SAI) LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ LỚP 9:\n"
-                f"   + Tình huống 1: Tỉ số lượng giác / hệ thức lượng (ngọn hải đăng, đài quan sát đo góc hạ nhìn tàu thuyền, ca nô ngoài khơi).\n"
-                f"   + Tình huống 2: Giải bài toán bằng cách lập hệ phương trình bậc nhất hai ẩn (hóa đơn tiền điện bậc thang, cước taxi, chuyển động ca nô trên sông xuôi/ngược dòng).\n"
-                f"   + Tình huống 3: Hình học không gian thực tế (diện tích xung quanh, thể tích bồn nước inox hình trụ, bể nước gia đình, phễu nón).\n"
-                f"   + Tình huống 4: Ứng dụng hàm số bậc nhất / bậc hai vào kinh doanh, chi phí và lợi nhuận bán hàng hoặc diện tích tối ưu.\n"
-                f"   - CẤM TUYỆT ĐỐI ra đề cộc lốc lý thuyết suông như 'Cho tam giác ABC vuông tại A...', 'Cho góc nhọn alpha bất kỳ...', 'Cho hệ phương trình bậc nhất hai ẩn: {{ 2x - y = 3 / x + 2y = 4 }}.\n"
-                f"********************************************************************************\n"
-            )
         user_prompt += (
             f"\n\nLƯU Ý ĐẶC THÙ MÔN TOÁN HỌC (LỚP {request.grade}):\n"
-            f"{grade_note}"
-            f"- Đối với Phần II (Đúng/Sai): BẮT BUỘC 100% CÁC CÂU LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ / MÔ HÌNH HÓA ĐỜI SỐNG.\n"
+            f"- Đối với Phần II (Đúng/Sai): BẮT BUỘC 100% CÁC CÂU LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ / MÔ HÌNH HÓA ĐỜI SỐNG PHÙ HỢP VỚI LỚP {request.grade}.\n"
             f"- 4 ý con a, b, c, d phân hóa từ Nhận biết thông số đề bài -> Hiểu bản chất mô hình -> Vận dụng tính toán đại lượng cụ thể -> Vận dụng cao đánh giá tối ưu hóa/kết luận thực tiễn.\n"
             f"- MỌI CÔNG THỨC TOÁN, BIẾN SỐ, ĐƠN VỊ KÈM CÔNG THỨC BẮT BUỘC ĐƯỢC BỌC TRONG $...$ (ví dụ: $3\\sqrt{3}$ cm, $\\alpha$, $m \\neq 1$, $\\sin B$, $\\begin{{cases}} 2x - y = 3 \\\\ x + 2y = 4 \\end{{cases}}$). CẤM viết tiếng Việt ('căn 2', 'm khác 1') hoặc LaTeX trần không có $."
         )
@@ -2504,6 +2732,8 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
         .replace("{num_part2}", str(request.num_part2))
         .replace("{num_part3}", str(request.num_part3))
         .replace("{num_essay}", str(request.num_essay))
+        .replace("{subject_name}", request.subject)
+        .replace("{grade_name}", str(request.grade))
     ) + "\n\nYÊU CẦU CỤ THỂ:\n" + user_prompt
 
     # Multi-Key Rotation Pool: Round-robin starting point with failover

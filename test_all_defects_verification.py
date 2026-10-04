@@ -515,6 +515,67 @@ class TestAllUserDefectsVerification(unittest.TestCase):
 
         print("[PASS] Defect 18: Grade 9 Math curriculum boundaries verified, 100% Grade 11-12 out-of-scope questions eliminated.")
 
+    def test_defect_19_multigrade_curriculum_enforcement(self):
+        import asyncio
+        from app.services.exam_auditor import audit_and_verify_exam, is_math_out_of_scope_for_grade
+
+        # 1. Direct out-of-scope detector checks across grades
+        # Grade 5 (Primary): Square root & negative numbers forbidden
+        bad_g5, r5 = is_math_out_of_scope_for_grade(r"Tính giá trị của căn bậc hai $\sqrt{16}$ và số âm $-5$.", "5")
+        self.assertTrue(bad_g5)
+        good_g5, _ = is_math_out_of_scope_for_grade("Một hình chữ nhật có chiều dài 15 cm và chiều rộng 8 cm. Tính chu vi.", "5")
+        self.assertFalse(good_g5)
+
+        # Grade 6 (THCS): Calculus & Oxyz forbidden
+        bad_g6, r6 = is_math_out_of_scope_for_grade(r"Tìm đạo hàm của hàm số $y = x^3 - 3x$ và tiệm cận đứng.", "6")
+        self.assertTrue(bad_g6)
+        good_g6, _ = is_math_out_of_scope_for_grade("Tìm ước chung lớn nhất của 24 và 36.", "6")
+        self.assertFalse(good_g6)
+
+        # Grade 10: Calculus & Oxyz forbidden
+        bad_g10, r10 = is_math_out_of_scope_for_grade(r"Tính đạo hàm $y' = 3x^2$ và nguyên hàm $\int x dx$.", "10")
+        self.assertTrue(bad_g10)
+        good_g10, _ = is_math_out_of_scope_for_grade(r"Trong mặt phẳng $Oxy$, cho hai điểm $A(1; 2)$ và $B(3; 4)$. Tìm tọa độ vectơ $\vec{AB}$.", "10")
+        self.assertFalse(good_g10)
+
+        # Grade 11: Integrals & Oxyz forbidden
+        bad_g11, r11 = is_math_out_of_scope_for_grade(r"Tính tích phân $\int_0^1 (2x + 1)dx$ trong không gian $Oxyz$.", "11")
+        self.assertTrue(bad_g11)
+        good_g11, _ = is_math_out_of_scope_for_grade(r"Cho cấp số cộng $(u_n)$ có $u_1 = 3$ và công sai $d = 2$. Tính $u_5$.", "11")
+        self.assertFalse(good_g11)
+
+        # Grade 12: Calculus & Integrals are ALLOWED
+        bad_g12, _ = is_math_out_of_scope_for_grade(r"Tính tích phân $\int_0^1 (2x + 1)dx$ và tìm tiệm cận ngang.", "12")
+        self.assertFalse(bad_g12)
+
+        # 2. End-to-end healing on Grade 10 Exam containing Grade 12 calculus questions
+        q_g10_bad = Part1Question(
+            id=1,
+            question=r"Đường tiệm cận ngang của đồ thị hàm số $y = \frac{2x - 1}{x + 1}$ là đường thẳng nào?",
+            options=[
+                Option(label="A", text=r"$y = 2$"),
+                Option(label="B", text=r"$y = -1$"),
+                Option(label="C", text=r"$x = 2$"),
+                Option(label="D", text=r"$x = -1$")
+            ],
+            answer="A",
+            explanation="Tiệm cận ngang y = 2."
+        )
+        exam_g10 = ExamStructure(
+            title="ĐỀ KIỂM TRA TOÁN 10",
+            subject="Toán học",
+            grade="10",
+            part1_mcq=[q_g10_bad],
+            part2_tf=[],
+            part3_short=[]
+        )
+        healed_g10 = asyncio.run(audit_and_verify_exam(exam_g10))
+        # The Grade 12 calculus question should be replaced by a Grade 10 appropriate question
+        self.assertNotIn("tiệm cận", healed_g10.part1_mcq[0].question.lower())
+        self.assertIn("tập xác định", healed_g10.part1_mcq[0].question.lower()) # Grade 10 domain bank
+
+        print("[PASS] Defect 19: Multi-grade curriculum enforcement verified for Grades 5, 6, 10, 11, and 12.")
+
 if __name__ == "__main__":
     unittest.main()
 

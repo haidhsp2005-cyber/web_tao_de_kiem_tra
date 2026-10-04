@@ -153,30 +153,69 @@ def is_dry_or_simple_tf_stem(text: str) -> bool:
             return True
     return False
 
-def is_grade9_math_out_of_scope(text: str) -> Tuple[bool, str]:
+def is_math_out_of_scope_for_grade(text: str, grade: str = "12") -> Tuple[bool, str]:
     """
-    Kiểm tra xem câu hỏi có chứa kiến thức vượt cấp của THPT (Lớp 10, 11, 12)
-    bị lẫn lộn vào đề kiểm tra môn Toán lớp 9 hay không.
+    Kiểm tra xem nội dung câu hỏi/phương án có chứa kiến thức vượt cấp
+    hoặc không phù hợp với khối lớp người dùng đã chọn hay không.
     """
     if not text:
         return False, ""
     clean = text.lower()
-    
-    # 1. Xác suất nâng cao THPT (Lớp 11-12): Bernoulli, bắn bia độc lập, xác suất có điều kiện, biến ngẫu nhiên, chỉnh hợp/tổ hợp
-    if re.search(r"xạ thủ|bắn vào bia|bắn trúng|phát độc lập|nhị thức|bernoulli|biến ngẫu nhiên|xác suất có điều kiện|chỉnh hợp|c_\d+\^", clean):
-        return True, "Kiến thức xác suất nâng cao THPT (công thức Bernoulli/bắn súng độc lập/xác suất có điều kiện)"
-        
-    # 2. Hình học không gian THPT (Lớp 11-12): Khoảng cách chéo nhau, khoảng cách điểm đến mp, góc giữa 2 mp, hình lăng trụ/hộp chữ nhật nâng cao
-    if re.search(r"khoảng cách giữa hai đường thẳng|hai đường thẳng chéo nhau|góc giữa hai mặt phẳng|góc giữa đường thẳng và mặt phẳng|mặt phẳng song song|vectơ trong không gian|oxyz", clean):
-        return True, "Kiến thức hình học không gian THPT (khoảng cách/góc trong không gian hoặc tọa độ Oxyz)"
-    if re.search(r"hình hộp chữ nhật.*khoảng cách|hình chóp.*khoảng cách|hình lăng trụ.*khoảng cách", clean):
-        return True, "Kiến thức tính khoảng cách hình không gian đa diện THPT"
+    g = str(grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
 
-    # 3. Giải tích / Đạo hàm / Tích phân / Tiệm cận THPT (Lớp 11-12)
-    if re.search(r"tiệm cận|đạo hàm|tích phân|nguyên hàm|cực trị|cực đại|cực tiểu|f[\'’]\s*\(|f[\'’]{2}|đồng biến|nghịch biến|bảng biến thiên|logarit|\blog\b|\bln\b", clean):
-        return True, "Kiến thức giải tích THPT (đạo hàm, cực trị, tiệm cận, tích phân, logarit)"
+    # 1. TIỂU HỌC (Lớp 1-5):
+    if g in ("1", "2", "3", "4", "5", "tiểu học", "tieu hoc"):
+        # Cấm số âm, căn thức, biến số hệ phương trình, giải tích, lượng giác, tọa độ
+        if re.search(r"\\sqrt|\b-\s*\d+|đạo hàm|tiệm cận|tích phân|nguyên hàm|cực trị|\bsin\b|\bcos\b|\btan\b|parabol|hệ phương trình|\\begin\{cases\}|oxyz", clean):
+            return True, "Kiến thức vượt cấp Tiểu học (chứa căn thức, số âm, lượng giác, giải tích hoặc hệ phương trình)"
+        return False, ""
+
+    # 2. TOÀN THCS (Lớp 6, 7, 8, 9):
+    if g in ("6", "7", "8", "9", "thcs"):
+        # Cấm toàn bộ giải tích THPT
+        if re.search(r"tiệm cận|đạo hàm|tích phân|nguyên hàm|cực trị|cực đại|cực tiểu|f[\'’]\s*\(|f[\'’]{2}|đồng biến|nghịch biến|bảng biến thiên|logarit|\blog\b|\bln\b", clean):
+            return True, "Kiến thức giải tích THPT (đạo hàm, cực trị, tiệm cận, tích phân, logarit)"
+        # Cấm không gian THPT / Oxyz
+        if re.search(r"khoảng cách giữa hai đường thẳng|hai đường thẳng chéo nhau|góc giữa hai mặt phẳng|góc giữa đường thẳng và mặt phẳng|mặt phẳng song song|vectơ trong không gian|oxyz", clean):
+            return True, "Kiến thức hình học không gian THPT (khoảng cách/góc trong không gian hoặc tọa độ Oxyz)"
+        if re.search(r"hình hộp chữ nhật.*khoảng cách|hình chóp.*khoảng cách|hình lăng trụ.*khoảng cách", clean):
+            return True, "Kiến thức tính khoảng cách hình không gian đa diện THPT"
+        # Cấm xác suất Bernoulli / THPT
+        if re.search(r"xạ thủ|bắn vào bia|bắn trúng|phát độc lập|nhị thức|bernoulli|biến ngẫu nhiên|xác suất có điều kiện|chỉnh hợp|c_\d+\^", clean):
+            return True, "Kiến thức xác suất nâng cao THPT (công thức Bernoulli/bắn súng độc lập/xác suất có điều kiện)"
+
+        # Giới hạn riêng cho lớp 6, 7, 8:
+        if g in ("6", "7"):
+            if re.search(r"\\begin\{cases\}|hệ phương trình|phương trình bậc hai|vi-ét|viet|\bsin\b|\bcos\b|\btan\b", clean):
+                return True, f"Kiến thức vượt cấp lớp {g} (hệ phương trình, phương trình bậc hai hoặc lượng giác)"
+        elif g == "8":
+            if re.search(r"\\begin\{cases\}|hệ.*phương trình bậc nhất hai ẩn|\bsin\b|\bcos\b|\btan\b|tiếp tuyến đường tròn", clean):
+                return True, "Kiến thức vượt cấp lớp 8 (hệ phương trình bậc nhất 2 ẩn hoặc lượng giác lớp 9)"
+        return False, ""
+
+    # 3. THPT LỚP 10:
+    if g in ("10", "lớp 10", "lop 10"):
+        # Lớp 10 chưa học đạo hàm, tích phân, tiệm cận, logarit, không gian Oxyz, cấp số cộng/nhân
+        if re.search(r"tiệm cận|đạo hàm|tích phân|nguyên hàm|f[\'’]\s*\(|f[\'’]{2}|bảng biến thiên.*đạo hàm|logarit|\blog\b|\bln\b", clean):
+            return True, "Kiến thức vượt cấp lớp 10 (đạo hàm, tiệm cận, tích phân, logarit)"
+        if re.search(r"oxyz|khoảng cách giữa hai đường thẳng.*chéo nhau|cấp số cộng|cấp số nhân", clean):
+            return True, "Kiến thức vượt cấp lớp 10 (tọa độ không gian Oxyz hoặc cấp số cộng/nhân)"
+        return False, ""
+
+    # 4. THPT LỚP 11:
+    if g in ("11", "lớp 11", "lop 11"):
+        # Lớp 11 chưa học tích phân, nguyên hàm, tiệm cận đồ thị hàm số, tọa độ Oxyz, công thức Bayes
+        if re.search(r"tích phân|nguyên hàm|tiệm cận đứng|tiệm cận ngang|tiệm cận xiên|oxyz|công thức bayes|xác suất toàn phần", clean):
+            return True, "Kiến thức vượt cấp lớp 11 (tích phân, nguyên hàm, đường tiệm cận, tọa độ Oxyz hoặc xác suất toàn phần)"
+        return False, ""
 
     return False, ""
+
+def is_grade9_math_out_of_scope(text: str) -> Tuple[bool, str]:
+    """
+    Giữ hàm cũ để tương thích ngược, chuyển tiếp sang is_math_out_of_scope_for_grade.
+    """
+    return is_math_out_of_scope_for_grade(text, "9")
 
 def normalize_latex_delimiters(text: str) -> str:
     if not text:
@@ -250,15 +289,13 @@ def is_mcq_defective(q: Part1Question, grade: str = "12") -> Tuple[bool, str]:
     if stem_bad:
         return True, f"Lỗi đề bài câu hỏi Phần I: {reason}"
 
-    is_grade_9 = str(grade).strip().lower() in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
-    if is_grade_9:
-        out_scope, scope_reason = is_grade9_math_out_of_scope(q.question)
-        if out_scope:
-            return True, f"Câu hỏi Phần I vượt cấp lớp 9 (lọt kiến thức lớp 11-12): {scope_reason}"
-        for o in (q.options or []):
-            out_scope_opt, opt_reason = is_grade9_math_out_of_scope(o.text)
-            if out_scope_opt:
-                return True, f"Phương án lựa chọn vượt cấp lớp 9: {opt_reason}"
+    out_scope, scope_reason = is_math_out_of_scope_for_grade(q.question, grade)
+    if out_scope:
+        return True, f"Câu hỏi Phần I vượt cấp/lệch khối lớp {grade}: {scope_reason}"
+    for o in (q.options or []):
+        out_scope_opt, opt_reason = is_math_out_of_scope_for_grade(o.text, grade)
+        if out_scope_opt:
+            return True, f"Phương án lựa chọn vượt cấp/lệch khối lớp {grade}: {opt_reason}"
 
     if not q.options or len(q.options) != 4:
         return True, f"Số lượng phương án không đúng 4 (hiện có {len(q.options) if q.options else 0})"
@@ -283,11 +320,15 @@ def is_mcq_defective(q: Part1Question, grade: str = "12") -> Tuple[bool, str]:
         
     return False, ""
 
-def is_tf_defective(q: Part2Question) -> Tuple[bool, str]:
+def is_tf_defective(q: Part2Question, grade: str = "12") -> Tuple[bool, str]:
     q.question = normalize_latex_delimiters(q.question)
     stem_bad, reason = is_question_stem_defective(q.question)
     if stem_bad:
         return True, f"Lỗi đề bài câu hỏi Phần II: {reason}"
+
+    out_scope, scope_reason = is_math_out_of_scope_for_grade(q.question, grade)
+    if out_scope:
+        return True, f"Đề bài Phần II vượt cấp/lệch khối lớp {grade}: {scope_reason}"
 
     if not q.sub_items or len(q.sub_items) != 4:
         return True, f"Số lượng ý con không đúng 4 (hiện có {len(q.sub_items) if q.sub_items else 0})"
@@ -301,6 +342,9 @@ def is_tf_defective(q: Part2Question) -> Tuple[bool, str]:
             return True, "Mệnh đề ý con chứa dấu công thức toán $ chưa đóng"
         if re.search(r"đang cập nhật", clean_stmt, re.IGNORECASE) or re.match(r"^(?:mệnh đề|khẳng định)\s*[abcd]?\s*[\.:]?$", clean_stmt, re.IGNORECASE):
             return True, f"Mệnh đề chứa nội dung placeholder/chưa hoàn thiện ('{clean_stmt[:30]}...')"
+        out_scope_s, s_reason = is_math_out_of_scope_for_grade(clean_stmt, grade)
+        if out_scope_s:
+            return True, f"Mệnh đề Phần II vượt cấp/lệch khối lớp {grade}: {s_reason}"
         if not isinstance(s.is_correct, bool):
             return True, "Giá trị Đúng/Sai của ý con không hợp lệ"
 
@@ -319,11 +363,9 @@ def is_short_defective(q: Part3Question, grade: str = "12") -> Tuple[bool, str]:
     if stem_bad:
         return True, f"Lỗi đề bài câu hỏi ngắn Phần III: {reason}"
 
-    is_grade_9 = str(grade).strip().lower() in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
-    if is_grade_9:
-        out_scope, scope_reason = is_grade9_math_out_of_scope(q.question)
-        if out_scope:
-            return True, f"Câu hỏi Phần III vượt cấp lớp 9 (lọt kiến thức lớp 11-12): {scope_reason}"
+    out_scope, scope_reason = is_math_out_of_scope_for_grade(q.question, grade)
+    if out_scope:
+        return True, f"Câu hỏi Phần III vượt cấp/lệch khối lớp {grade}: {scope_reason}"
 
     ans = (q.answer or "").strip()
     if not ans or len(ans) == 0:
@@ -1394,46 +1436,46 @@ def auto_heal_math_questions(exam: ExamStructure) -> Tuple[ExamStructure, List[s
         if mod_ps:
             notes.append(f"Câu {q.id} (Phần III): {msg_ps}.")
                 
-    is_grade_9 = str(getattr(exam, "grade", "12")).strip().lower() in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
-    if is_grade_9 and "toán" in str(getattr(exam, "subject", "")).lower():
-        # 1. Rà soát Phần I (Trắc nghiệm): Loại bỏ các câu hỏi vượt cấp lớp 10-12
+    exam_grade = str(getattr(exam, "grade", "12")).strip()
+    if "toán" in str(getattr(exam, "subject", "")).lower():
+        # 1. Rà soát Phần I (Trắc nghiệm): Loại bỏ các câu hỏi vượt cấp
         for idx, q in enumerate(exam.part1_mcq):
-            out_scope, reason = is_grade9_math_out_of_scope(q.question)
+            out_scope, reason = is_math_out_of_scope_for_grade(q.question, exam_grade)
             if not out_scope:
                 for o in (q.options or []):
-                    out_scope, reason = is_grade9_math_out_of_scope(o.text)
+                    out_scope, reason = is_math_out_of_scope_for_grade(o.text, exam_grade)
                     if out_scope:
                         break
             if out_scope:
-                exam.part1_mcq[idx] = heal_mcq_offline(q, exam.subject, idx, grade=exam.grade)
-                notes.append(f"Câu {q.id} (Phần I): Đã phát hiện và loại bỏ kiến thức THPT vượt cấp ({reason}), chuẩn hóa sang câu hỏi đúng chuẩn Toán 9.")
+                exam.part1_mcq[idx] = heal_mcq_offline(q, exam.subject, idx, grade=exam_grade)
+                notes.append(f"Câu {q.id} (Phần I): Đã phát hiện và loại bỏ kiến thức vượt cấp ({reason}), chuẩn hóa sang câu hỏi đúng chuẩn lớp {exam_grade}.")
 
-        # 2. Rà soát Phần II (Đúng/Sai): Loại bỏ mệnh đề vượt cấp lớp 10-12
+        # 2. Rà soát Phần II (Đúng/Sai): Loại bỏ mệnh đề vượt cấp
         for idx, q in enumerate(exam.part2_tf):
-            out_scope, reason = is_grade9_math_out_of_scope(q.question)
+            out_scope, reason = is_math_out_of_scope_for_grade(q.question, exam_grade)
             if not out_scope:
                 for s in (q.sub_items or []):
-                    out_scope, reason = is_grade9_math_out_of_scope(s.statement)
+                    out_scope, reason = is_math_out_of_scope_for_grade(s.statement, exam_grade)
                     if out_scope:
                         break
             if out_scope:
-                exam.part2_tf[idx] = heal_tf_offline(q, exam.subject, idx, grade=exam.grade)
-                notes.append(f"Câu {q.id} (Phần II): Đã chuẩn hóa bài toán tình huống thực tế đúng chuẩn chương trình Toán 9.")
+                exam.part2_tf[idx] = heal_tf_offline(q, exam.subject, idx, grade=exam_grade)
+                notes.append(f"Câu {q.id} (Phần II): Đã chuẩn hóa bài toán tình huống thực tế đúng chuẩn chương trình lớp {exam_grade}.")
 
-        # 3. Rà soát Phần III (Trả lời ngắn): Loại bỏ câu hỏi vượt cấp lớp 10-12 (như xác suất Bernoulli, khoảng cách hình hộp chữ nhật)
+        # 3. Rà soát Phần III (Trả lời ngắn): Loại bỏ câu hỏi vượt cấp
         for idx, q in enumerate(exam.part3_short):
-            out_scope, reason = is_grade9_math_out_of_scope(q.question)
+            out_scope, reason = is_math_out_of_scope_for_grade(q.question, exam_grade)
             if out_scope:
-                exam.part3_short[idx] = heal_short_offline(q, exam.subject, idx, grade=exam.grade)
-                notes.append(f"Câu {q.id} (Phần III): Đã phát hiện và loại bỏ kiến thức THPT vượt cấp ({reason}), chuẩn hóa sang câu hỏi đúng chuẩn Toán 9.")
+                exam.part3_short[idx] = heal_short_offline(q, exam.subject, idx, grade=exam_grade)
+                notes.append(f"Câu {q.id} (Phần III): Đã phát hiện và loại bỏ kiến thức vượt cấp ({reason}), chuẩn hóa sang câu hỏi đúng chuẩn lớp {exam_grade}.")
 
     return exam, notes
 
 def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str = "12") -> Part1Question:
-    is_grade_9 = str(grade).strip().lower() in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
+    g_clean = str(grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
     sub_lower = subject.lower()
     
-    if is_grade_9 and "toán" in sub_lower:
+    if "toán" in sub_lower:
         grade9_mcq_bank = [
             {
                 "question": r"Điều kiện xác định của biểu thức $\sqrt{x - 3}$ là:",
@@ -1472,14 +1514,128 @@ def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str 
                 "explanation": r"Độ dài đường tròn: $C = 2\pi R = 2\pi \times 6 = 12\pi\text{ cm}$. Chọn đáp án A."
             }
         ]
-        out_scope, _ = is_grade9_math_out_of_scope(q.question)
-        if out_scope or not q.options or len(q.options) != 4:
-            tmpl = grade9_mcq_bank[index % len(grade9_mcq_bank)]
-            q.question = tmpl["question"]
-            q.options = [Option(label=lbl, text=tmpl["options"][i]) for i, lbl in enumerate(["A", "B", "C", "D"])]
-            q.answer = tmpl["answer"]
-            q.explanation = tmpl["explanation"]
-            return q
+
+        grade_math_bank = None
+        if g_clean in ("1", "2", "3", "4", "5", "tiểu học", "tieu hoc"):
+            grade_math_bank = [
+                {
+                    "question": r"Một hình chữ nhật có chiều dài 25 m, chiều rộng 15 m. Chu vi của hình chữ nhật đó là:",
+                    "options": ["80 m", "40 m", "375 m", "50 m"],
+                    "answer": "A",
+                    "explanation": r"Chu vi hình chữ nhật là: $(25 + 15) \times 2 = 80\text{ m}$. Chọn đáp án A."
+                },
+                {
+                    "question": r"Một cửa hàng có 120 kg gạo, đã bán được $\frac{2}{3}$ số gạo đó. Số gạo cửa hàng đã bán là:",
+                    "options": ["80 kg", "40 kg", "60 kg", "90 kg"],
+                    "answer": "A",
+                    "explanation": r"Số gạo đã bán là: $120 \times \frac{2}{3} = 80\text{ kg}$. Chọn đáp án A."
+                },
+                {
+                    "question": r"Giá trị của biểu thức $250 + 150 \times 2$ là:",
+                    "options": ["550", "800", "400", "500"],
+                    "answer": "A",
+                    "explanation": r"Thực hiện nhân trước: $150 \times 2 = 300$. Sau đó cộng: $250 + 300 = 550$. Chọn đáp án A."
+                },
+                {
+                    "question": r"Một người đi xe máy với vận tốc 40 km/h trong thời gian 2 giờ 30 phút. Quãng đường người đó đi được là:",
+                    "options": ["100 km", "80 km", "90 km", "120 km"],
+                    "answer": "A",
+                    "explanation": r"Đổi 2 giờ 30 phút = 2,5 giờ. Quãng đường: $s = 40 \times 2{,}5 = 100\text{ km}$. Chọn đáp án A."
+                }
+            ]
+        elif g_clean in ("6", "7", "8"):
+            grade_math_bank = [
+                {
+                    "question": r"Tập hợp các ước tự nhiên của số 12 là:",
+                    "options": [r"$\{1; 2; 3; 4; 6; 12\}$", r"$\{1; 2; 3; 4; 6\}$", r"$\{2; 3; 4; 6; 12\}$", r"$\{1; 2; 4; 6; 12\}$"],
+                    "answer": "A",
+                    "explanation": r"Các ước tự nhiên của 12 là 1, 2, 3, 4, 6, 12. Chọn đáp án A."
+                },
+                {
+                    "question": r"Giá trị của biểu thức $M = (-5) \cdot (-4) - 12$ là:",
+                    "options": ["8", "-8", "32", "-32"],
+                    "answer": "A",
+                    "explanation": r"Ta có $(-5) \cdot (-4) = 20$. Do đó $M = 20 - 12 = 8$. Chọn đáp án A."
+                },
+                {
+                    "question": r"Khai triển của hằng đẳng thức $(x - 2)^2$ là:",
+                    "options": ["$x^2 - 4x + 4$", "$x^2 - 4$", "$x^2 - 2x + 4$", "$x^2 + 4x + 4$"],
+                    "answer": "A",
+                    "explanation": r"Áp dụng hằng đẳng thức: $(A - B)^2 = A^2 - 2AB + B^2 \Rightarrow (x - 2)^2 = x^2 - 4x + 4$. Chọn đáp án A."
+                },
+                {
+                    "question": r"Rút gọn phân thức đại số $\frac{2x + 4}{x + 2}$ (với $x \neq -2$) ta được kết quả là:",
+                    "options": ["2", "$2x$", "4", "1"],
+                    "answer": "A",
+                    "explanation": r"Ta có $\frac{2(x + 2)}{x + 2} = 2$. Chọn đáp án A."
+                }
+            ]
+        elif g_clean in ("9", "thcs"):
+            grade_math_bank = grade9_mcq_bank
+        elif g_clean == "10":
+            grade_math_bank = [
+                {
+                    "question": r"Tập xác định của hàm số $y = \sqrt{x - 2}$ là:",
+                    "options": ["$[2; +\\infty)$", "$(2; +\\infty)$", "$(-\\infty; 2]$", "$\\mathbb{R} \\setminus \\{2\\}$"],
+                    "answer": "A",
+                    "explanation": r"Hàm số xác định khi $x - 2 \ge 0 \Leftrightarrow x \ge 2 \Rightarrow D = [2; +\infty)$. Chọn đáp án A."
+                },
+                {
+                    "question": r"Tọa độ đỉnh $I$ của parabol $y = x^2 - 4x + 3$ là:",
+                    "options": ["$I(2; -1)$", "$I(-2; 15)$", "$I(4; 3)$", "$I(1; 0)$"],
+                    "answer": "A",
+                    "explanation": r"Hoành độ đỉnh $x_I = -\frac{b}{2a} = 2$, tung độ $y_I = 2^2 - 4(2) + 3 = -1$. Đỉnh $I(2; -1)$. Chọn đáp án A."
+                },
+                {
+                    "question": r"Cho tam giác $ABC$ có $b = 5, c = 8, \widehat{A} = 60^\circ$. Độ dài cạnh $a$ bằng:",
+                    "options": ["7", "6", "8", "9"],
+                    "answer": "A",
+                    "explanation": r"Áp dụng định lý cosin: $a^2 = b^2 + c^2 - 2bc \cos A = 25 + 64 - 2(5)(8)(0{,}5) = 49 \Rightarrow a = 7$. Chọn đáp án A."
+                },
+                {
+                    "question": r"Trong mặt phẳng $Oxy$, phương trình đường tròn tâm $I(1; -2)$ và bán kính $R = 3$ là:",
+                    "options": ["$(x - 1)^2 + (y + 2)^2 = 9$", "$(x + 1)^2 + (y - 2)^2 = 9$", "$(x - 1)^2 + (y + 2)^2 = 3$", "$(x + 1)^2 + (y - 2)^2 = 3$"],
+                    "answer": "A",
+                    "explanation": r"Phương trình đường tròn: $(x - a)^2 + (y - b)^2 = R^2 \Rightarrow (x - 1)^2 + (y + 2)^2 = 9$. Chọn đáp án A."
+                }
+            ]
+        elif g_clean == "11":
+            grade_math_bank = [
+                {
+                    "question": r"Nghiệm của phương trình lượng giác $\sin x = 0$ là:",
+                    "options": [r"$x = k\pi \; (k \in \mathbb{Z})$", r"$x = \frac{\pi}{2} + k\pi \; (k \in \mathbb{Z})$", r"$x = k2\pi \; (k \in \mathbb{Z})$", r"$x = \frac{\pi}{2} + k2\pi \; (k \in \mathbb{Z})$"],
+                    "answer": "A",
+                    "explanation": r"Nghiệm cơ bản của $\sin x = 0$ là $x = k\pi \; (k \in \mathbb{Z})$. Chọn đáp án A."
+                },
+                {
+                    "question": r"Cho cấp số cộng $(u_n)$ có số hạng đầu $u_1 = 3$ và công sai $d = 2$. Giá trị của $u_5$ bằng:",
+                    "options": ["11", "13", "9", "10"],
+                    "answer": "A",
+                    "explanation": r"Ta có $u_5 = u_1 + 4d = 3 + 4(2) = 11$. Chọn đáp án A."
+                },
+                {
+                    "question": r"Đạo hàm của hàm số $y = x^3 - 3x + 1$ là:",
+                    "options": ["$y' = 3x^2 - 3$", "$y' = 3x^2 + 3$", "$y' = x^2 - 3$", "$y' = 3x^2$"],
+                    "answer": "A",
+                    "explanation": r"Ta có $y' = (x^3)' - 3(x)' + (1)' = 3x^2 - 3$. Chọn đáp án A."
+                },
+                {
+                    "question": r"Một tổ có 10 học sinh. Số cách chọn ra một nhóm gồm 3 học sinh đi làm trực nhật là:",
+                    "options": ["$C_{10}^3 = 120$", "$A_{10}^3 = 720$", "$10^3 = 1000$", "30"],
+                    "answer": "A",
+                    "explanation": r"Số cách chọn không phân biệt thứ tự là tổ hợp chập 3 của 10: $C_{10}^3 = 120$. Chọn đáp án A."
+                }
+            ]
+
+        if grade_math_bank:
+            out_scope, _ = is_math_out_of_scope_for_grade(q.question, grade)
+            if out_scope or not q.options or len(q.options) != 4:
+                tmpl = grade_math_bank[index % len(grade_math_bank)]
+                q.question = tmpl["question"]
+                q.options = [Option(label=lbl, text=tmpl["options"][i]) for i, lbl in enumerate(["A", "B", "C", "D"])]
+                q.answer = tmpl["answer"]
+                q.explanation = tmpl["explanation"]
+                return q
 
     valid_labels = {"A", "B", "C", "D"}
     ans = (q.answer or "").strip().upper()
@@ -1494,9 +1650,9 @@ def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str 
 
     q_text = q.question.lower()
     
-    year_match = re.search(r"(1[89]\d\d|20\d\d)", q.explanation or "")
+    year_match = re.search(r" (1[89]\d\d|20\d\d) ", q.explanation or "")
     if not year_match:
-        year_match = re.search(r"(1[89]\d\d|20\d\d)", q.question)
+        year_match = re.search(r" (1[89]\d\d|20\d\d) ", q.question)
     
     if "năm nào" in q_text or "thành lập" in q_text or "thời gian nào" in q_text or year_match:
         base_year = int(year_match.group(1)) if year_match else 1925
@@ -1519,7 +1675,7 @@ def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str 
         q.explanation = f"Sự kiện lịch sử được ghi nhận vào năm {base_year}. Do đó chọn đáp án {q.answer}."
         return q
 
-    num_match = re.search(r"\d+(?:\.\d+)?", q.explanation or "")
+    num_match = re.search(r" \d+(?:\.\d+)? ", q.explanation or "")
     if num_match:
         try:
             val = float(num_match.group(0))
@@ -1544,7 +1700,6 @@ def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str 
             pass
 
     existing_valid_opts = [o.text for o in q.options if not is_option_garbage(o.text)]
-    sub_lower = subject.lower()
     
     default_distractors = {
         "mỹ thuật": ["Tượng tròn và phù điêu", "Tranh khắc gỗ và sơn mài", "Kiến trúc đình làng", "Đồ gốm mỹ nghệ"],
@@ -1552,7 +1707,13 @@ def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str 
         "tin học": ["Cấu trúc rẽ nhánh `if-else`", "Vòng lặp `for` và `while`", "Kiểu dữ liệu danh sách `list`", "Hàm `def` trong Python"],
         "vật lý": ["Tỉ lệ thuận với bình phương biên độ", "Dao động điều hòa cùng chu kỳ", "Biến thiên tuần hoàn theo thời gian", "Không đổi theo thời gian"],
         "hóa học": ["Phản ứng xà phòng hóa", "Tạo dung dịch màu xanh lam", "Xuất hiện kết tủa trắng", "Không đổi màu quỳ tím"],
-        "toán học": ["$x \\ge 0$", "$x > 0$", "$x \\le 0$", "$x < 0$"] if is_grade_9 else ["Đồng biến trên khoảng xác định", "Nghịch biến trên khoảng xác định", "Có đúng một điểm cực trị", "Đồ thị có tiệm cận đứng"]
+        "toán học": (
+            ["10", "20", "30", "40"] if g_clean in ("1", "2", "3", "4", "5", "tiểu học", "tieu hoc")
+            else ["$x = 1$", "$x = 2$", "$x = 3$", "$x = 4$"] if g_clean in ("6", "7", "8", "9", "thcs")
+            else ["Hàm số đồng biến trên $\\mathbb{R}$", "Hàm số nghịch biến trên $\\mathbb{R}$", "Đỉnh parabol $I(1; 2)$", "Trục đối xứng $x = 1$"] if g_clean in ("10",)
+            else ["$u_1 = 1, d = 2$", "Hàm số liên tục tại $x = 0$", "Tiếp tuyến có hệ số góc $k = 1$", "Hai đường thẳng song song"] if g_clean in ("11",)
+            else ["Đồng biến trên khoảng xác định", "Nghịch biến trên khoảng xác định", "Có đúng một điểm cực trị", "Đồ thị có tiệm cận đứng"]
+        )
     }
     
     chosen_pool = None
@@ -1652,7 +1813,55 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
                 "explanation": "Ứng dụng hình học không gian hình trụ trong bài toán thiết kế kỹ thuật thực tế."
             }
         ],
-        "toán": [
+        "toán_tieuhoc": [
+            {
+                "question": "Nhân dịp đầu năm học mới, một trường tiểu học tổ chức phong trào quyên góp sách vở ủng hộ các bạn học sinh vùng cao. Khối lớp 4 quyên góp được 240 quyển vở, khối lớp 5 quyên góp được số vở gấp 1,5 lần khối lớp 4. Toàn bộ số vở quyên góp được của hai khối đem đóng vào các thùng, mỗi thùng chứa 50 quyển vở.",
+                "sub_items": [
+                    {"label": "a", "statement": "Số quyển vở khối lớp 5 quyên góp được là 360 quyển vở.", "is_correct": True, "explanation": "Số vở khối 5 là: 240 * 1,5 = 360 quyển vở."},
+                    {"label": "b", "statement": "Tổng số quyển vở cả hai khối lớp 4 và khối lớp 5 quyên góp được là 600 quyển vở.", "is_correct": True, "explanation": "Tổng số vở: 240 + 360 = 600 quyển vở."},
+                    {"label": "c", "statement": "Để đóng hết 600 quyển vở vào các thùng (mỗi thùng 50 quyển), nhà trường cần chuẩn bị đúng 15 thùng.", "is_correct": False, "explanation": "Số thùng cần là: 600 / 50 = 12 thùng (chứ không phải 15 thùng)."},
+                    {"label": "d", "statement": "Nếu mỗi quyển vở có giá bìa là 8.000 đồng thì tổng giá trị số vở quyên góp được của cả hai khối là 4.800.000 đồng.", "is_correct": True, "explanation": "Tổng giá trị: 600 * 8.000 = 4.800.000 đồng."}
+                ],
+                "explanation": "Bài toán thực tế bốn phép tính và tỉ số trong đời sống tiểu học."
+            }
+        ],
+        "toán_thcs": [
+            {
+                "question": "Để khuyến khích người dân tiết kiệm nước sinh hoạt, công ty cấp nước áp dụng mức giá bán nước sạch lũy tiến: Mức 1 (từ 1 đến 10 m3 đầu tiên) có giá 6.000 đồng/m3; Mức 2 (từ trên 10 m3 đến 20 m3) có giá 8.000 đồng/m3; Mức 3 (trên 20 m3) có giá 12.000 đồng/m3 (chưa bao gồm thuế VAT). Trong tháng 5, gia đình bạn An sử dụng hết 18 m3 nước sạch.",
+                "sub_items": [
+                    {"label": "a", "statement": "Số tiền nước gia đình bạn An phải trả cho 10 m3 đầu tiên ở Mức 1 là 60.000 đồng.", "is_correct": True, "explanation": "10 m3 Mức 1: 10 * 6.000 = 60.000 đồng."},
+                    {"label": "b", "statement": "Lượng nước gia đình bạn An dùng ở Mức 2 là 8 m3.", "is_correct": True, "explanation": "18 - 10 = 8 m3 thuộc Mức 2."},
+                    {"label": "c", "statement": "Tổng số tiền nước sạch gia đình bạn An phải thanh toán trong tháng 5 (chưa tính thuế) là 150.000 đồng.", "is_correct": False, "explanation": "Tổng tiền là: 10 * 6.000 + 8 * 8.000 = 60.000 + 64.000 = 124.000 đồng (chứ không phải 150.000 đồng)."},
+                    {"label": "d", "statement": "Nếu tháng 6 gia đình bạn An tăng cường tiết kiệm và chỉ dùng 10 m3 thì số tiền nước giảm được hơn 50% so với tháng 5.", "is_correct": True, "explanation": "Tháng 6 trả 60.000 đ; giảm 124.000 - 60.000 = 64.000 đ, chiếm 64/124 ≈ 51,6% > 50%."}
+                ],
+                "explanation": "Ứng dụng tỉ số và số học vào bài toán tính tiền nước lũy tiến thực tế."
+            }
+        ],
+        "toán_10": [
+            {
+                "question": "Trong một trận thi đấu bóng đá, một cầu thủ sút phạt trực tiếp đưa quả bóng bay lên không trung theo quỹ đạo parabol có phương trình $h(t) = -t^2 + 4t$, trong đó $t$ là thời gian tính bằng giây kể từ khi sút ($t \\ge 0$) và $h(t)$ là độ cao của bóng so với mặt đất tính bằng mét.",
+                "sub_items": [
+                    {"label": "a", "statement": "Tại thời điểm ban đầu khi vừa chạm bóng ($t = 0$), độ cao của quả bóng bằng $0\\text{ m}$.", "is_correct": True, "explanation": "Thay $t = 0$ ta có $h(0) = 0\\text{ m}$."},
+                    {"label": "b", "statement": "Độ cao cực đại mà quả bóng đạt được là $4\\text{ m}$ tại thời điểm $t = 2\\text{ giây}$.", "is_correct": True, "explanation": "Tọa độ đỉnh parabol $t = -b/(2a) = -4/(-2) = 2\\text{ s}$, độ cao cực đại $h(2) = -4 + 8 = 4\\text{ m}$."},
+                    {"label": "c", "statement": "Sau đúng 3 giây kể từ khi sút, quả bóng đã rơi xuống chạm đất.", "is_correct": False, "explanation": "Bóng chạm đất khi $h(t) = 0 \\Leftrightarrow -t^2 + 4t = 0 \\Leftrightarrow t = 4\\text{ giây}$ (chứ không phải 3 giây)."},
+                    {"label": "d", "statement": "Trong khoảng thời gian từ $t = 1\\text{ s}$ đến $t = 3\\text{ s}$, độ cao của quả bóng luôn lớn hơn hoặc bằng $3\\text{ m}$.", "is_correct": True, "explanation": "$-t^2 + 4t \\ge 3 \\Leftrightarrow t^2 - 4t + 3 \\le 0 \\Leftrightarrow 1 \\le t \\le 3$."}
+                ],
+                "explanation": "Ứng dụng tam thức bậc hai và hàm số bậc hai vào quỹ đạo chuyển động thực tế."
+            }
+        ],
+        "toán_11": [
+            {
+                "question": "Bác Bình gửi tiết kiệm vào ngân hàng số tiền 100 triệu đồng với hình thức lãi kép, lãi suất $6\\%/\\text{năm}$, tiền lãi sau mỗi năm được cộng gộp vào vốn ban đầu để tính lãi cho năm tiếp theo. Số tiền cả gốc lẫn lãi sau $n$ năm được tính theo công thức cấp số nhân: $S_n = 100 \\cdot (1 + 0{,}06)^n$ (triệu đồng).",
+                "sub_items": [
+                    {"label": "a", "statement": "Dãy số $(S_n)$ là một cấp số nhân với công bội $q = 1{,}06$.", "is_correct": True, "explanation": "Đúng định nghĩa cấp số nhân với $S_n = S_0 \\cdot q^n$ có $q = 1{,}06$."},
+                    {"label": "b", "statement": "Số tiền cả gốc lẫn lãi bác Bình nhận được sau 1 năm đầu tiên là 106 triệu đồng.", "is_correct": True, "explanation": "$S_1 = 100 \\times 1{,}06 = 106$ triệu đồng."},
+                    {"label": "c", "statement": "Sau đúng 2 năm, tổng số tiền bác Bình nhận được vượt quá 115 triệu đồng.", "is_correct": False, "explanation": "$S_2 = 100 \\times 1{,}06^2 = 112{,}36$ triệu đồng (nhỏ hơn 115 triệu đồng)."},
+                    {"label": "d", "statement": "Sau 10 năm gửi tiết kiệm, số tiền bác Bình thu về lớn hơn 170 triệu đồng (biết $1{,}06^{10} \\approx 1{,}7908$).", "is_correct": True, "explanation": "$S_{10} = 100 \\times 1{,}7908 = 179{,}08$ triệu đồng $> 170$ triệu đồng."}
+                ],
+                "explanation": "Ứng dụng cấp số nhân vào bài toán tài chính và lãi kép ngân hàng."
+            }
+        ],
+        "toán_12": [
             {
                 "question": "Một công ty công nghệ sản xuất thiết bị định vị GPS nhận thấy rằng khi sản xuất và bán ra $x$ nghìn thiết bị ($0 < x \\le 50$), hàm tổng chi phí sản xuất (đơn vị: triệu đồng) là $C(x) = x^3 - 30x^2 + 400x + 500$, và mỗi thiết bị bán ra với đơn giá cố định 400 nghìn đồng (hàm doanh thu $R(x) = 400x$). Lợi nhuận của công ty được xác định bởi hàm số $P(x) = R(x) - C(x)$.",
                 "sub_items": [
@@ -1672,6 +1881,18 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
                     {"label": "d", "statement": "Phương trình mặt cầu ranh giới phủ sóng của radar là $(x-2)^2 + (y-3)^2 + (z-1)^2 = 5$.", "is_correct": False, "explanation": "Vế phải phải là $R^2 = 5^2 = 25$, không phải 5."}
                 ],
                 "explanation": "Ứng dụng hình học không gian tọa độ Oxyz vào bài toán giám sát không phận thực tế."
+            }
+        ],
+        "toán": [
+            {
+                "question": "Một công ty công nghệ sản xuất thiết bị định vị GPS nhận thấy rằng khi sản xuất và bán ra $x$ nghìn thiết bị ($0 < x \\le 50$), hàm tổng chi phí sản xuất (đơn vị: triệu đồng) là $C(x) = x^3 - 30x^2 + 400x + 500$, và mỗi thiết bị bán ra với đơn giá cố định 400 nghìn đồng (hàm doanh thu $R(x) = 400x$). Lợi nhuận của công ty được xác định bởi hàm số $P(x) = R(x) - C(x)$.",
+                "sub_items": [
+                    {"label": "a", "statement": "Hàm lợi nhuận của công ty theo số lượng sản phẩm $x$ là $P(x) = -x^3 + 30x^2 - 500$ (triệu đồng).", "is_correct": True, "explanation": "$P(x) = 400x - (x^3 - 30x^2 + 400x + 500) = -x^3 + 30x^2 - 500$."},
+                    {"label": "b", "statement": "Đạo hàm của hàm lợi nhuận là $P'(x) = -3x^2 + 60x$.", "is_correct": True, "explanation": "Đạo hàm chuẩn xác: $P'(x) = -3x^2 + 60x$."},
+                    {"label": "c", "statement": "Công ty đạt lợi nhuận tối đa khi sản xuất và bán ra đúng 20 nghìn thiết bị.", "is_correct": True, "explanation": "$P'(x) = 0 \\Leftrightarrow -3x(x - 20) = 0 \\Leftrightarrow x = 20$. Qua $x = 20$, $P'(x)$ đổi dấu từ dương sang âm nên đạt cực đại tại $x = 20$."},
+                    {"label": "d", "statement": "Mức lợi nhuận tối đa mà công ty có thể đạt được là 4.000 triệu đồng (tức 4 tỷ đồng).", "is_correct": False, "explanation": "Lợi nhuận tối đa: $P(20) = -(20)^3 + 30(20)^2 - 500 = -8000 + 12000 - 500 = 3.500$ triệu đồng (chứ không phải 4.000 triệu đồng)."}
+                ],
+                "explanation": "Mô hình hóa toán học bài toán tối ưu hóa lợi nhuận trong kinh doanh ứng dụng đạo hàm."
             }
         ],
         "vật": [
@@ -1890,9 +2111,23 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
         }
     ]
 
+    g_clean = str(grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
     chosen_list = None
-    if is_grade_9 and "toán" in sub_lower:
-        chosen_list = subject_banks.get("toán_9")
+    if "toán" in sub_lower:
+        if g_clean in ("1", "2", "3", "4", "5", "tiểu học", "tieu hoc"):
+            chosen_list = subject_banks.get("toán_tieuhoc")
+        elif g_clean in ("6", "7", "8"):
+            chosen_list = subject_banks.get("toán_thcs")
+        elif g_clean in ("9", "thcs"):
+            chosen_list = subject_banks.get("toán_9")
+        elif g_clean == "10":
+            chosen_list = subject_banks.get("toán_10")
+        elif g_clean == "11":
+            chosen_list = subject_banks.get("toán_11")
+        elif g_clean == "12":
+            chosen_list = subject_banks.get("toán_12")
+        if not chosen_list:
+            chosen_list = subject_banks.get("toán_9") if g_clean in ("9", "thcs") else subject_banks.get("toán_12", subject_banks.get("toán"))
     if not chosen_list:
         for k, bank_items in subject_banks.items():
             if k in sub_lower:
@@ -1905,11 +2140,12 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
 
     # 1. Check question stem
     stem_bad, _ = is_question_stem_defective(q.question or "")
+    out_scope_stem, _ = is_math_out_of_scope_for_grade(q.question or "", grade)
     q_text = (q.question or "").strip()
     is_dry_or_simple = len(q_text.split()) < 25 or any(pat in q_text.lower() for pat in [
         "xét các phát biểu", "xét tính đúng sai", "cho các khẳng định", "khẳng định nào sau đây", "về khái niệm và đặc trưng"
     ])
-    if stem_bad or not q.question or len(q_text) < 5 or re.search(r"đang cập nhật", q_text, re.IGNORECASE) or is_dry_or_simple:
+    if stem_bad or out_scope_stem or not q.question or len(q_text) < 5 or re.search(r"đang cập nhật", q_text, re.IGNORECASE) or is_dry_or_simple:
         q.question = chosen_template["question"]
     if not q.explanation or len(q.explanation.strip()) < 5:
         q.explanation = chosen_template.get("explanation", "")
@@ -1921,8 +2157,9 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
         for s in q.sub_items:
             s.statement = normalize_latex_delimiters(s.statement or "")
             stmt = s.statement.strip()
-            # Đối với lớp 9: Lọc bỏ ngay các mệnh đề rò rỉ đạo hàm, giải tích lớp 12
-            if is_grade_9 and re.search(r"f[\'’]\s*\(|f[\'’]{2}|hàm\s*số\s*đạt\s*cực|tiệm\s*cận|tích\s*phân|oxyz", stmt, re.IGNORECASE):
+            # Lọc bỏ ngay các mệnh đề vượt cấp cho khối lớp tương ứng
+            out_scope_s, _ = is_math_out_of_scope_for_grade(stmt, grade)
+            if out_scope_s:
                 continue
             if len(stmt) >= 5 and stmt.count('$') % 2 == 0 and not re.search(r"đang cập nhật", stmt, re.IGNORECASE) and not re.match(r"^(?:mệnh đề|khẳng định)\s*[abcd]?\s*[\.:]?$", stmt, re.IGNORECASE):
                 existing_valid_subs.append(s)
@@ -2032,6 +2269,54 @@ def heal_short_offline(q: Part3Question, subject: str, index: int = 0, grade: st
                 "explanation": r"Nửa chu vi là 14 cm. Chiều rộng là 5 cm, chiều dài là 9 cm. Diện tích bằng $5 \times 9 = 45\text{ cm}^2$. Đáp số: 45."
             }
         ],
+        "toán_tieuhoc": [
+            {
+                "question": r"Một mảnh đất hình chữ nhật có chu vi bằng 80 m, chiều dài là 25 m. Tính chiều rộng của mảnh đất đó (theo đơn vị mét).",
+                "answer": "15",
+                "explanation": r"Nửa chu vi là: $80 : 2 = 40\text{ m}$. Chiều rộng là: $40 - 25 = 15\text{ m}$. Đáp số: 15."
+            },
+            {
+                "question": r"Một lớp học có 35 học sinh, trong đó số học sinh nữ chiếm $\frac{3}{5}$ tổng số học sinh của lớp. Tính số học sinh nữ của lớp học đó.",
+                "answer": "21",
+                "explanation": r"Số học sinh nữ là: $35 \times \frac{3}{5} = 21$ học sinh. Đáp số: 21."
+            }
+        ],
+        "toán_thcs": [
+            {
+                "question": r"Tìm số tự nhiên $x$ thỏa mãn $3x - 12 = 15$.",
+                "answer": "9",
+                "explanation": r"Ta có $3x = 15 + 12 = 27 \Rightarrow x = 9$. Đáp số: 9."
+            },
+            {
+                "question": r"Tìm giá trị của $x$ biết tỉ lệ thức $\frac{x}{4} = \frac{9}{3}$.",
+                "answer": "12",
+                "explanation": r"Ta có $\frac{9}{3} = 3 \Rightarrow x = 4 \times 3 = 12$. Đáp số: 12."
+            }
+        ],
+        "toán_10": [
+            {
+                "question": r"Cho hàm số bậc hai $y = x^2 - 4x + 7$. Tính hoành độ đỉnh $I$ của parabol.",
+                "answer": "2",
+                "explanation": r"Hoành độ đỉnh parabol là $x_I = -\frac{b}{2a} = -\frac{-4}{2 \times 1} = 2$. Đáp số: 2."
+            },
+            {
+                "question": r"Cho tam giác $ABC$ vuông tại $A$ có $AB = 6, AC = 8$. Tính diện tích tam giác $ABC$.",
+                "answer": "24",
+                "explanation": r"Diện tích tam giác vuông là $S = \frac{1}{2} AB \cdot AC = \frac{1}{2} \cdot 6 \cdot 8 = 24$. Đáp số: 24."
+            }
+        ],
+        "toán_11": [
+            {
+                "question": r"Cho cấp số cộng $(u_n)$ có số hạng đầu $u_1 = 4$ và công sai $d = 3$. Tính giá trị của $u_6$.",
+                "answer": "19",
+                "explanation": r"Ta có $u_6 = u_1 + 5d = 4 + 5(3) = 19$. Đáp số: 19."
+            },
+            {
+                "question": r"Cho hàm số $y = 2x^3 - 3x^2 + 5$. Tính giá trị của đạo hàm $y'(2)$.",
+                "answer": "12",
+                "explanation": r"Đạo hàm: $y' = 6x^2 - 6x$. Khi $x = 2$: $y'(2) = 6(4) - 6(2) = 24 - 12 = 12$. Đáp số: 12."
+            }
+        ],
         "toán": [
             {
                 "question": r"Cho hệ phương trình $\begin{cases} 3x + my = 2 \\ x + 2y = 1 \end{cases}$. Tìm giá trị của tham số $m$ để hệ phương trình vô nghiệm.",
@@ -2133,9 +2418,21 @@ def heal_short_offline(q: Part3Question, subject: str, index: int = 0, grade: st
         }
     ]
 
+    g_clean = str(grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
     chosen_list = default_short_bank
-    if is_grade_9 and "toán" in sub_lower:
-        chosen_list = subject_banks.get("toán_9", subject_banks.get("toán", default_short_bank))
+    if "toán" in sub_lower:
+        if g_clean in ("1", "2", "3", "4", "5", "tiểu học", "tieu hoc"):
+            chosen_list = subject_banks.get("toán_tieuhoc", default_short_bank)
+        elif g_clean in ("6", "7", "8"):
+            chosen_list = subject_banks.get("toán_thcs", default_short_bank)
+        elif g_clean in ("9", "thcs"):
+            chosen_list = subject_banks.get("toán_9", default_short_bank)
+        elif g_clean == "10":
+            chosen_list = subject_banks.get("toán_10", default_short_bank)
+        elif g_clean == "11":
+            chosen_list = subject_banks.get("toán_11", default_short_bank)
+        else:
+            chosen_list = subject_banks.get("toán", default_short_bank)
     else:
         for k, bank_items in subject_banks.items():
             if k in sub_lower:
@@ -2144,11 +2441,11 @@ def heal_short_offline(q: Part3Question, subject: str, index: int = 0, grade: st
 
     chosen_template = chosen_list[index % len(chosen_list)]
     
-    # If question stem is defective or out of scope for Grade 9, use template question
+    # If question stem is defective or out of scope for the grade, use template question
     stem_bad, _ = is_question_stem_defective(q.question or "")
     out_scope = False
-    if is_grade_9 and "toán" in sub_lower:
-        out_scope, _ = is_grade9_math_out_of_scope(q.question or "")
+    if "toán" in sub_lower:
+        out_scope, _ = is_math_out_of_scope_for_grade(q.question or "", grade)
 
     if stem_bad or out_scope:
         q.question = chosen_template["question"]
