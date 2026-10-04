@@ -636,6 +636,24 @@ createApp({
       if (file) uploadMatrixFile(file);
     };
 
+    // Supplementary lesson plans & curriculum documents for matrix mode
+    const matrixDocFileInput = ref(null);
+
+    const triggerAddMatrixDocs = () => {
+      if (matrixDocFileInput.value) matrixDocFileInput.value.click();
+    };
+
+    const handleMatrixDocSelect = (e) => {
+      const files = Array.from(e.target.files || []);
+      if (files.length > 0) uploadFiles(files);
+      if (matrixDocFileInput.value) matrixDocFileInput.value.value = "";
+    };
+
+    const handleMatrixDocDrop = (e) => {
+      const files = Array.from(e.dataTransfer.files || []);
+      if (files.length > 0) uploadFiles(files);
+    };
+
     const resetMatrixQuestionCounts = () => {
       if (matrixSpec.value) {
         if (matrixSpec.value.num_part1 !== undefined) form.num_part1 = matrixSpec.value.num_part1;
@@ -956,6 +974,10 @@ createApp({
       showRawMatrixModal,
       handleMatrixFileSelect,
       handleMatrixFileDrop,
+      matrixDocFileInput,
+      triggerAddMatrixDocs,
+      handleMatrixDocSelect,
+      handleMatrixDocDrop,
       resetMatrixQuestionCounts,
       startGenerateFromMatrix,
       isExtracting,

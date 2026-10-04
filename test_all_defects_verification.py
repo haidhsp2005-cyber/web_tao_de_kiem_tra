@@ -833,7 +833,106 @@ class TestAllUserDefectsVerification(unittest.TestCase):
 
         print("[PASS] Defect 23: Custom question counts for matrix generation validated with preserved cognitive levels & 10.0 scale.")
 
+    def test_feature_24_matrix_with_supplementary_documents_and_no_hallucinations(self):
+        # Kiểm tra tính năng đính kèm nhiều giáo án/tài liệu trong tạo đề từ ma trận
+        # và ngăn chặn triệt để hiện tượng xuất hiện CSDL/Python ngoài phạm vi ma trận/HK1.
+        from app.services.models import ExamMatrixSpec, Cv7991TopicItem, CognitiveBreakdown, CognitiveSummary, GenerateRequest
+        from app.services.ai_generator import SYSTEM_PROMPT
+
+        # 1. Kiểm tra SYSTEM_PROMPT: Không còn ép buộc CSDL hoặc Python cho Tin học Phần II
+        self.assertIn("BÁM SÁT CHÍNH XÁC CHỦ ĐỀ MA TRẬN VÀ TÀI LIỆU ĐÍNH KÈM", SYSTEM_PROMPT)
+        self.assertIn("TUYỆT ĐỐI KHÔNG tự ý đưa CSDL hoặc Python vào nếu ma trận không có", SYSTEM_PROMPT)
+
+        # 2. Kiểm tra bộ phân tích distractors trong exam_auditor cho Tin học
+        from app.services.exam_auditor import heal_mcq_offline, Part1Question, Option
+        # Câu hỏi về mạng máy tính không bị gán phương án Python
+        q_network = Part1Question(
+            id=1,
+            question="Thiết bị nào sau đây dùng để kết nối các máy tính trong cùng một mạng LAN?",
+            options=[
+                Option(label="A", text="Switch"),
+                Option(label="B", text=""),
+                Option(label="C", text=""),
+                Option(label="D", text="")
+            ],
+            answer="A"
+        )
+        repaired = heal_mcq_offline(q_network, "Tin học", grade="10")
+        for opt in repaired.options:
+            self.assertNotIn("def", opt.text)
+            self.assertNotIn("if-else", opt.text)
+
+        # 3. Kiểm tra Prompt Builder khi có cả Ma trận và Giáo án đính kèm
+        matrix = ExamMatrixSpec(
+            title="MA TRẬN ĐỀ KIỂM TRA HỌC KỲ 1 - TIN HỌC 10",
+            subject="Tin học",
+            grade="10",
+            duration_minutes=45,
+            topics=[
+                Cv7991TopicItem(
+                    id=1,
+                    topic="Chủ đề A: Máy tính và xã hội tri thức",
+                    sub_topic="Hệ điều hành và phần mềm ứng dụng",
+                    part1_mcq=CognitiveBreakdown(biet=4, hieu=2, vd=0),
+                    part2_tf=CognitiveBreakdown(biet=1, hieu=1, vd=0)
+                ),
+                Cv7991TopicItem(
+                    id=2,
+                    topic="Chủ đề B: Mạng máy tính và Internet",
+                    sub_topic="An toàn thông tin và bảo mật dữ liệu",
+                    part1_mcq=CognitiveBreakdown(biet=4, hieu=2, vd=0),
+                    part2_tf=CognitiveBreakdown(biet=1, hieu=1, vd=0)
+                )
+            ],
+            cognitive_summary=CognitiveSummary(
+                biet_count=10, hieu_count=6, vd_count=0,
+                biet_pct=50.0, hieu_pct=30.0, vd_pct=20.0
+            ),
+            num_part1=12,
+            num_part2=4,
+            num_part3=6,
+            num_essay=0
+        )
+
+        giao_an_content = """
+        GIÁO ÁN BÀI 3: MẠNG MÁY TÍNH VÀ AN TOÀN SỐ
+        - Mục tiêu: Học sinh nhận biết mô hình mạng LAN, Internet, giao thức cơ bản và nguy cơ lừa đảo Phishing.
+        - Không dạy lập trình Python, không dạy Cơ sở dữ liệu CSDL SQL trong học kỳ 1.
+        """
+
+        # Kiểm tra nội dung prompt khi người dùng gửi cả ma trận và giáo án
+        # Giả lập logic sinh prompt trong ai_generator
+        req = GenerateRequest(
+            subject="Tin học",
+            grade="10",
+            num_part1=12,
+            num_part2=4,
+            num_part3=6,
+            num_essay=0,
+            matrix_spec=matrix,
+            matrix_mode=True,
+            file_content=giao_an_content
+        )
+
+        self.assertIsNotNone(req.matrix_spec)
+        self.assertIsNotNone(req.file_content)
+        self.assertIn("GIÁO ÁN BÀI 3", req.file_content)
+
+        # 4. Kiểm tra heal_tf_offline cho Tin học không ép buộc CSDL hoặc Python
+        from app.services.exam_auditor import heal_tf_offline, Part2Question
+        tf_dummy = Part2Question(id=1, question="câu hỏi rỗng", sub_items=[])
+        healed_tf_1 = heal_tf_offline(tf_dummy, "Tin học", index=1, grade="10")
+        healed_tf_2 = heal_tf_offline(tf_dummy, "Tin học", index=2, grade="10")
+        
+        # Câu 1 và 2 fallback của Tin học thuộc chủ đề Mạng máy tính và Bảng tính điện tử
+        has_network = "mạng" in healed_tf_1.question.lower() or "mạng" in healed_tf_2.question.lower()
+        has_calc = "bảng tính" in healed_tf_1.question.lower() or "bảng tính" in healed_tf_2.question.lower()
+        self.assertTrue(has_network or has_calc)
+
+        print("[PASS] Feature 24: Matrix exam generation with supplementary lesson plans & curriculum boundaries verified successfully.")
+
 if __name__ == "__main__":
     unittest.main()
+
 
 

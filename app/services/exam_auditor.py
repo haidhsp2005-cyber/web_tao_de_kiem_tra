@@ -1836,7 +1836,11 @@ def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str 
     default_distractors = {
         "mỹ thuật": ["Tượng tròn và phù điêu", "Tranh khắc gỗ và sơn mài", "Kiến trúc đình làng", "Đồ gốm mỹ nghệ"],
         "gdqp": ["Quân đội nhân dân", "Công an nhân dân", "Dân quân tự vệ", "Lực lượng dự bị động viên"],
-        "tin học": ["Cấu trúc rẽ nhánh `if-else`", "Vòng lặp `for` và `while`", "Kiểu dữ liệu danh sách `list`", "Hàm `def` trong Python"],
+        "tin học": (
+            ["Cấu trúc rẽ nhánh `if-else`", "Vòng lặp `for` và `while`", "Kiểu dữ liệu danh sách `list`", "Hàm `def` trong Python"]
+            if any(w in q.question.lower() for w in ["python", "lập trình", "đoạn mã", "biến", "hàm"])
+            else ["Hệ điều hành và quản lý tệp", "Mạng máy tính và Internet", "Bảng tính điện tử và xử lý dữ liệu", "An toàn thông tin và bản quyền số"]
+        ),
         "vật lý": ["Tỉ lệ thuận với bình phương biên độ", "Dao động điều hòa cùng chu kỳ", "Biến thiên tuần hoàn theo thời gian", "Không đổi theo thời gian"],
         "hóa học": ["Phản ứng xà phòng hóa", "Tạo dung dịch màu xanh lam", "Xuất hiện kết tủa trắng", "Không đổi màu quỳ tím"],
         "toán học": (
@@ -2207,24 +2211,34 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
                 "explanation": "Bài toán ứng dụng Trí tuệ nhân tạo trong đô thị thông minh, xử lý dữ liệu học máy và đạo đức số."
             },
             {
-                "question": "Một bệnh viện đa khoa triển khai hệ thống Cơ sở dữ liệu quan hệ quản lý khám chữa bệnh điện tử gồm hai bảng: BENH_NHAN(MaBN, HoTen, NgaySinh, BHYT) với MaBN là khóa chính; và HO_SO_KHAM(MaHS, MaBN, NgayKham, ChuanDoan, BacSi) với MaHS là khóa chính, MaBN là khóa ngoại tham chiếu đến bảng BENH_NHAN. Bệnh viện kết nối mạng nội bộ bảo mật để các y bác sĩ truy cập hồ sơ.",
+                "question": "Một trường học triển khai mạng máy tính nội bộ (LAN) kết nối các phòng học thông minh và văn phòng làm việc. Để đảm bảo an toàn thông tin số, nhà trường trang bị tường lửa (Firewall), thiết lập máy chủ xác thực và ban hành quy tắc an toàn thông tin khi truy cập Internet cho giáo viên và học sinh.",
                 "sub_items": [
-                    {"label": "a", "statement": "Thuộc tính MaBN trong bảng HO_SO_KHAM đóng vai trò khóa ngoại nhằm đảm bảo tính toàn vẹn tham chiếu giữa hồ sơ khám bệnh và dữ liệu bệnh nhân.", "is_correct": True, "explanation": "Khóa ngoại MaBN liên kết mỗi đợt khám với đúng hồ sơ nhân khẩu học của bệnh nhân."},
-                    {"label": "b", "statement": "Hệ quản trị CSDL cho phép thêm một bản ghi mới vào bảng HO_SO_KHAM với giá trị MaBN = 'BN999' ngay cả khi mã bệnh nhân này chưa từng xuất hiện trong bảng BENH_NHAN.", "is_correct": False, "explanation": "Ràng buộc toàn vẹn tham chiếu sẽ ngăn chặn việc chèn bản ghi con có khóa ngoại không tồn tại ở bảng cha."},
-                    {"label": "c", "statement": "Để ngăn chặn nguy cơ đánh cắp dữ liệu bệnh án khi truyền tải trong mạng nội bộ và qua Internet, hệ thống bắt buộc phải áp dụng giao thức truyền thông mã hóa HTTPS/TLS và phân quyền truy cập theo vai trò (RBAC).", "is_correct": True, "explanation": "HTTPS/TLS mã hóa dữ liệu truyền tải, còn RBAC đảm bảo chỉ bác sĩ phụ trách mới được đọc hồ sơ chuyên môn."},
-                    {"label": "d", "statement": "Để thuận tiện cho công việc hàng ngày, việc cấp tài khoản có quyền quản trị tối cao (DBA) có toàn quyền xóa dữ liệu cho toàn bộ nhân viên bệnh viện là phương pháp quản trị CSDL an toàn và được khuyến nghị.", "is_correct": False, "explanation": "Nguyên tắc an toàn thông tin là trao đặc quyền tối thiểu (Least Privilege); không được cấp quyền DBA bừa bãi."}
+                    {"label": "a", "statement": "Mạng máy tính trong phạm vi khuôn viên trường học nêu trên thuộc loại mạng cục bộ (LAN - Local Area Network).", "is_correct": True, "explanation": "Mạng kết nối các thiết bị trong phạm vi địa lý hẹp như tòa nhà trường học là mạng LAN."},
+                    {"label": "b", "statement": "Học sinh sử dụng mật khẩu đơn giản '123456' để đăng nhập vào cổng thông tin trường học nhằm giúp dễ nhớ là thói quen bảo mật tốt và được khuyến khích.", "is_correct": False, "explanation": "Mật khẩu đơn giản rất dễ bị bẻ khóa hoặc tấn công vét cạn (brute-force); cần dùng mật khẩu mạnh gồm chữ hoa, chữ thường, số và ký tự đặc biệt."},
+                    {"label": "c", "statement": "Hệ thống tường lửa (Firewall) đóng vai trò kiểm soát lưu lượng mạng ra vào dựa trên các quy tắc bảo mật được thiết lập trước.", "is_correct": True, "explanation": "Firewall giám sát và lọc các gói tin mạng để ngăn chặn truy cập trái phép."},
+                    {"label": "d", "statement": "Khi nhận được email lạ kèm đường link yêu cầu đăng nhập tài khoản để nhận học bổng, việc bấm ngay vào link và nhập thông tin cá nhân là hoàn toàn an toàn.", "is_correct": False, "explanation": "Đây là dấu hiệu điển hình của hình thức tấn công lừa đảo (Phishing); tuyệt đối không cung cấp thông tin tài khoản."}
                 ],
-                "explanation": "Kiến thức về mô hình cơ sở dữ liệu quan hệ, tính toàn vẹn dữ liệu và an toàn thông tin y tế."
+                "explanation": "Kiến thức về mạng máy tính cục bộ, thiết bị mạng và an toàn thông tin trên môi trường số."
             },
             {
-                "question": "Một cửa hàng trực tuyến áp dụng chương trình khuyến mãi tự động bằng đoạn mã Python sau để tính số tiền thanh toán cuối cùng của đơn hàng:\n```python\ndef tinh_tien(gia_goc, so_luong, ma_giam):\n    tong = gia_goc * so_luong\n    if tong >= 1000000 and ma_giam == 'VIP':\n        tong = tong * 0.85\n    elif tong >= 500000:\n        tong = tong * 0.90\n    return tong\n```\nMột khách hàng đặt mua 4 sản phẩm có đơn giá gốc 300.000 VNĐ/sản phẩm và nhập mã giảm giá 'VIP'.",
+                "question": "Giáo viên chủ nhiệm sử dụng phần mềm bảng tính điện tử để quản lý điểm kiểm tra định kỳ của lớp học gồm 40 học sinh. Bảng tính gồm các cột: STT, Họ và tên, Điểm Toán, Điểm Văn, Điểm Tin học, Điểm Trung bình (ĐTB). Giáo viên sử dụng hàm `=AVERAGE(C2:E2)` tại ô F2 để tính ĐTB cho học sinh đầu tiên.",
                 "sub_items": [
-                    {"label": "a", "statement": "Giá trị ban đầu của biến tong trước khi kiểm tra các điều kiện rẽ nhánh là 1.200.000 VNĐ.", "is_correct": True, "explanation": "tong = 300000 * 4 = 1200000 VNĐ."},
-                    {"label": "b", "statement": "Với đơn hàng trên, biểu thức logic (tong >= 1000000 and ma_giam == 'VIP') nhận giá trị True.", "is_correct": True, "explanation": "Cả hai vế tong >= 1000000 (1.200.000 >= 1.000.000) và ma_giam == 'VIP' đều đúng."},
-                    {"label": "c", "statement": "Số tiền thực tế khách hàng phải thanh toán sau khi thực thi hàm tinh_tien(300000, 4, 'VIP') là 960.000 VNĐ.", "is_correct": False, "explanation": "Sau khi giảm giá 15%, số tiền là: 1.200.000 * 0.85 = 1.020.000 VNĐ (chứ không phải 960.000 VNĐ)."},
-                    {"label": "d", "statement": "Nếu một khách hàng khác mua 2 sản phẩm (đơn giá gốc 300.000 VNĐ) nhưng không có mã 'VIP', hệ thống sẽ áp dụng nhánh elif và tính số tiền thanh toán là 540.000 VNĐ.", "is_correct": True, "explanation": "Tổng gốc là 600.000 VNĐ (>= 500.000), rơi vào nhánh elif giảm 10%: 600.000 * 0.90 = 540.000 VNĐ."}
+                    {"label": "a", "statement": "Hàm `=AVERAGE(C2:E2)` được dùng để tính trung bình cộng giá trị số trong khối ô từ C2 đến E2.", "is_correct": True, "explanation": "Hàm AVERAGE là hàm chuẩn trong bảng tính để tính giá trị trung bình cộng."},
+                    {"label": "b", "statement": "Khi sao chép công thức từ ô F2 xuống ô F3, địa chỉ tương đối trong công thức tự động đổi thành `=AVERAGE(C3:E3)`.", "is_correct": True, "explanation": "Địa chỉ tương đối tự động thay đổi theo hàng/cột tương ứng khi sao chép công thức."},
+                    {"label": "c", "statement": "Để lọc danh sách các học sinh có ĐTB từ 8.0 trở lên, giáo viên có thể sử dụng công cụ Tự động lọc (AutoFilter) với điều kiện '>= 8.0'.", "is_correct": True, "explanation": "Công cụ Filter cho phép lọc dữ liệu theo điều kiện giá trị số cụ thể."},
+                    {"label": "d", "statement": "Phần mềm bảng tính chỉ cho phép tính toán số học đơn giản và không thể biểu diễn dữ liệu bằng các dạng biểu đồ trực quan (hình cột, hình tròn).", "is_correct": False, "explanation": "Bảng tính hỗ trợ tạo rất nhiều dạng biểu đồ trực quan phong phú như Column, Bar, Line, Pie."}
                 ],
-                "explanation": "Kiến thức lập trình Python cấu trúc rẽ nhánh, biểu thức logic và ứng dụng thương mại điện tử."
+                "explanation": "Kiến thức về phần mềm bảng tính điện tử, các hàm thống kê cơ bản, sao chép công thức và trực quan hóa dữ liệu."
+            },
+            {
+                "question": "Một nhóm kỹ sư phần mềm thiết kế hệ thống quản lý dữ liệu cho ứng dụng trường học. Nhóm cân nhắc cấu trúc lưu trữ và các giải thuật xử lý dữ liệu phù hợp với yêu cầu bài toán.",
+                "sub_items": [
+                    {"label": "a", "statement": "Dữ liệu được tổ chức một cách khoa học giúp việc tìm kiếm, truy xuất và cập nhật thông tin diễn ra nhanh chóng và chính xác.", "is_correct": True, "explanation": "Tổ chức dữ liệu bài bản là cốt lõi của công nghệ thông tin."},
+                    {"label": "b", "statement": "Sao lưu dữ liệu định kỳ (Data Backup) là giải pháp quan trọng để phòng ngừa mất mát dữ liệu do sự cố phần cứng hoặc phần mềm độc hại.", "is_correct": True, "explanation": "Backup định kỳ giúp khôi phục hệ thống khi xảy ra sự cố."},
+                    {"label": "c", "statement": "Việc chia sẻ công khai toàn bộ mã nguồn có chứa mật khẩu kết nối của hệ thống lên mạng công cộng là phương pháp an toàn và bảo mật cao.", "is_correct": False, "explanation": "Để lộ thông tin nhạy cảm (credentials) trong mã nguồn là lỗ hổng an ninh nghiêm trọng."},
+                    {"label": "d", "statement": "Áp dụng các chuẩn mã hóa dữ liệu khi lưu trữ và truyền tải giúp bảo vệ thông tin khỏi các truy cập trái phép.", "is_correct": True, "explanation": "Mã hóa bảo vệ tính bí mật của dữ liệu."}
+                ],
+                "explanation": "Kiến thức về an toàn thông tin, bảo mật dữ liệu và nguyên lý lưu trữ trong tin học."
             }
         ]
     }

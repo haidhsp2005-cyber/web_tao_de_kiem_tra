@@ -43,7 +43,7 @@ CẤU TRÚC ĐỀ THEO SỐ LƯỢNG YÊU CẦU:
 - PHẦN II: Câu trắc nghiệm Đúng / Sai theo NGỮ CẢNH TÌNH HUỐNG THỰC TIỄN (Context-based / Case study). Số lượng yêu cầu: {num_part2} câu (khóa 'part2_tf'). Nếu {num_part2} = 0 thì để mảng rỗng [].
   * QUY CHUẨN ĐẶC BIỆT NÂNG CAO ĐỘ HẤP DẪN & Ý NGHĨA THỰC TIỄN CHO PHẦN II:
     + ĐỀ BÀI DẪN ('question'): BẮT BUỘC LÀ MỘT BÀI TOÁN TÌNH HUỐNG THỰC TẾ / NGỮ CẢNH DỰ ÁN / THÍ NGHIỆM / ĐOẠN MÃ NGUỒN / BẢNG SỐ LIỆU / ĐOẠN TRÍCH TƯ LIỆU SỬ LIỆU - PHÁP LÝ (Độ dài từ 40 đến 120 từ).
-      - Môn Tin học: Bối cảnh dự án CNTT thực tế (xây dựng hệ thống CSDL, đoạn mã Python xử lý dữ liệu, an ninh mạng/phòng chống lừa đảo, ứng dụng AI thị giác/LLM kèm đạo đức số).
+      - Môn Tin học: Bối cảnh dự án CNTT / tình huống thực tế BÁM SÁT CHÍNH XÁC CHỦ ĐỀ MA TRẬN VÀ TÀI LIỆU ĐÍNH KÈM (ví dụ: Bảng tính điện tử, an toàn số/phòng chống lừa đảo mạng, mạng máy tính, thiết bị số; CHỈ sử dụng CSDL hoặc Python KHI VÀ CHỈ KHI ma trận hoặc tài liệu yêu cầu. TUYỆT ĐỐI KHÔNG tự ý đưa CSDL hoặc Python vào nếu ma trận không có hoặc thuộc HK1 chưa học).
       - Môn Toán: BẮT BUỘC 100% các câu Phần II là bài toán mô hình hóa thực tế / ứng dụng đời sống (Toán 9: đo chiều cao ngọn hải đăng/tòa nhà qua góc nâng/góc hạ của giác kế, tính cước điện bậc thang/cước taxi bằng hệ phương trình, chuyển động ca nô trên sông xuôi dòng ngược dòng, thể tích và diện tích vật dụng thực tế hình trụ/hình nón như bồn nước inox; Toán THPT: tối ưu hóa chi phí/doanh thu hàm số, quy hoạch tài chính, quỹ đạo chuyển động, hình học không gian Oxyz trạm radar/định vị GPS, xác suất dịch bệnh/kiểm định). CẤM TUYỆT ĐỐI ra đề cộc lốc lý thuyết suông như 'Cho tam giác ABC...', 'Cho góc nhọn alpha...' hay 'Cho hệ phương trình... Xét các phát biểu sau:'.
       - Môn Vật lý: Thí nghiệm thực nghiệm, thiết bị đo lường/cảm biến công nghệ, sóng âm, quang học, chu trình nhiệt động lực học.
       - Môn Hóa học: Quy trình sản xuất hóa chất công nghiệp, xử lý ô nhiễm môi trường nước/khí thải, phản ứng hữu cơ, hóa dược.
@@ -2590,11 +2590,13 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
     if request.subject == "Tin học":
         user_prompt += (
             f"\n\nLƯU Ý ĐẶC THÙ MÔN TIN HỌC (LỚP {request.grade}) THEO CHƯƠNG TRÌNH GDPT 2018:\n"
-            f"- Đề thi bám sát chuẩn kiến thức kỹ năng môn Tin học lớp {request.grade}: Lập trình (Python/Scratch), Thuật toán, Mạng máy tính & Internet, Hệ điều hành, Trí tuệ nhân tạo (AI - đối với lớp 12), Cơ sở dữ liệu và Đạo đức/Pháp luật trong môi trường số.\n"
-            f"- Các đoạn mã chương trình (code) phải viết chuẩn cú pháp Python rõ ràng, thụt lề chuẩn, không có lỗi cú pháp.\n"
-            f"- Phần I: Các câu trắc nghiệm nhiều lựa chọn về cú pháp lệnh, kết quả thực thi đoạn code, chức năng thiết bị, khái niệm mạng và an toàn số.\n"
-            f"- Phần II (Đúng/Sai): BẮT BUỘC biên soạn dưới dạng TÌNH HUỐNG DỰ ÁN CNTT THỰC TẾ (ví dụ: xây dựng hệ thống CSDL có lược đồ bảng cụ thể, đoạn mã Python xử lý dữ liệu bán hàng/học sinh có input/output, kịch bản bảo mật mạng/tấn công lừa đảo, hoặc ứng dụng AI nhận diện khuôn mặt/xe cộ kèm đạo đức dữ liệu). 4 ý a, b, c, d lần lượt kiểm tra: a (Nhận diện khái niệm/thông số) - b (Hiểu cơ chế hoạt động/nguyên nhân) - c (Tính toán định lượng/truy vết kết quả thực thi) - d (Đánh giá tối ưu/an toàn thông tin/đạo đức số).\n"
-            f"- Phần III (Trả lời ngắn): Yêu cầu tính toán kết quả số cụ thể của đoạn mã (ví dụ: giá trị của biến đếm, tổng tích lũy, số lần lặp) hoặc chuyển đổi đơn vị dung lượng bộ nhớ (Byte, KB, MB, GB, bit)."
+            f"- Đề thi BẮT BUỘC bám sát ĐÚNG các chủ đề trong Ma trận, Bản đặc tả hoặc Giáo án/Tài liệu đính kèm của lớp {request.grade}.\n"
+            f"- TUYỆT ĐỐI TUÂN THỦ PHẠM VI NỘI DUNG VÀ HỌC KỲ (ĐẶC BIỆT CHÚ Ý TRÁNH LẪN LỘN CHƯƠNG TRÌNH HK1 VÀ HK2):\n"
+            f"  + CHỈ ra câu hỏi về Cơ sở dữ liệu (CSDL) hoặc Lập trình Python KHI VÀ CHỈ KHI các chủ đề này CÓ MẶT RÕ RÀNG trong Ma trận hoặc Giáo án/Tài liệu đính kèm.\n"
+            f"  + Nếu đề kiểm tra thuộc Học kỳ 1 hoặc các chủ đề căn bản (như Phần cứng, Hệ điều hành, Mạng máy tính, An toàn thông tin số, Bảng tính điện tử, Soạn thảo văn bản...), TUYỆT ĐỐI CẤM đưa các kiến thức chưa học như CSDL, SQL, hay cú pháp Python vào đề!\n"
+            f"- Phần I: Các câu trắc nghiệm nhiều lựa chọn theo đúng chủ đề bài học đã chỉ định.\n"
+            f"- Phần II (Đúng/Sai): Biên soạn dưới dạng TÌNH HUỐNG DỰ ÁN/ỨNG DỤNG CNTT THỰC TẾ PHÙ HỢP CHỦ ĐỀ MA TRẬN (ví dụ: dự án xử lý dữ liệu bảng tính, thiết lập mạng trường học, an toàn thông tin số, hoặc dự án lập trình/CSDL nếu ma trận yêu cầu). 4 ý a, b, c, d lần lượt kiểm tra: a (Nhận diện khái niệm/thông số) - b (Hiểu cơ chế hoạt động/nguyên nhân) - c (Tính toán định lượng/truy vết kết quả thực thi) - d (Đánh giá tối ưu/an toàn thông tin/đạo đức số).\n"
+            f"- Phần III (Trả lời ngắn): Yêu cầu tính toán kết quả số cụ thể theo đúng chủ đề (ví dụ: công thức bảng tính, đơn vị đo dung lượng thông tin Byte, KB, MB, GB, bit, địa chỉ IP hoặc kết quả thuật toán nếu có trong ma trận)."
         )
     if "toán" in request.subject.lower():
         user_prompt += (
@@ -2745,7 +2747,8 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             + "\n".join(custom_rules)
             + "\n3. Phần I (Trắc nghiệm nhiều lựa chọn): Ưu tiên các câu hỏi ở mức độ Biết và Hiểu theo tỷ lệ quy định.\n"
             "4. Phần II (Đúng - Sai): Mỗi câu gồm 4 ý con a, b, c, d với độ khó phân hóa từ Biết đến Hiểu và Vận dụng, đúng với chủ đề được chỉ định.\n"
-            "5. Phần III (Trả lời ngắn) và Phần IV (Tự luận): Tập trung vào mức độ Vận dụng, giải quyết bài toán thực tế theo đúng yêu cầu cần đạt."
+            "5. Phần III (Trả lời ngắn) và Phần IV (Tự luận): Tập trung vào mức độ Vận dụng, giải quyết bài toán thực tế theo đúng yêu cầu cần đạt.\n"
+            "6. 🚨 NGUYÊN TẮC BẢO VỆ PHẠM VI MA TRẬN: TUYỆT ĐỐI KHÔNG biên soạn câu hỏi có nội dung kiến thức nằm ngoài các Chủ đề đã liệt kê trong Ma trận. Đặc biệt với môn Tin học, KHÔNG tự ý đưa Cơ sở dữ liệu (CSDL) hoặc Lập trình Python vào nếu ma trận không yêu cầu."
         )
 
     if request.file_content:
@@ -2759,6 +2762,18 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"3. Ưu tiên chuyển hóa trực tiếp các bài tập, câu hỏi, dữ liệu số trong tài liệu/ảnh thành các câu trắc nghiệm, đúng sai và trả lời ngắn chuẩn GDPT 2025.\n"
             f"4. Nếu tài liệu đính kèm thể hiện rõ môn học và khối lớp cụ thể (ví dụ: Tin học 10, Vật lí 11, Hóa học 10, Toán 12...), "
             f"hãy tự động ưu tiên lấy đúng môn học và khối lớp của tài liệu để đặt tiêu đề 'title' và biên soạn toàn bộ đề thi chuẩn xác nhất."
+        )
+        
+    if request.matrix_spec and request.file_content:
+        user_prompt += (
+            f"\n\n🚨 NGUYÊN TẮC TỐI THƯỢNG - KẾT HỢP MA TRẬN & TÀI LIỆU/GIÁO ÁN ĐÍNH KÈM:\n"
+            f"1. BẢN ĐẶC TẢ MA TRẬN xác định KHUNG NĂNG LỰC, CẤU TRÚC VÀ TỶ LỆ MỨC ĐỘ NHẬN THỨC (Biết - Hiểu - Vận dụng).\n"
+            f"2. GIÁO ÁN/TÀI LIỆU ĐÍNH KÈM là NGUỒN DỮ LIỆU GỐC DUY NHẤT để xây dựng câu hỏi, bài tập và ngữ cảnh thực tế.\n"
+            f"3. TUYỆT ĐỐI KHÔNG BIÊN SOẠN BẤT KỲ CÂU HỎI NÀO CÓ KIẾN THỨC NẰM NGOÀI MA TRẬN VÀ NGOÀI CÁC TÀI LIỆU ĐÍNH KÈM.\n"
+            f"4. BẢO VỆ PHẠM VI CHƯƠNG TRÌNH & HỌC KỲ (ĐẶC BIỆT MÔN TIN HỌC VÀ CÁC MÔN KHOA HỌC):\n"
+            f"   - Nếu ma trận và giáo án thuộc Học kỳ 1 hoặc các chủ đề cơ bản (ví dụ: Tin học văn phòng, Bảng tính, Mạng máy tính, An toàn số, Phần cứng/Hệ điều hành):\n"
+            f"     TUYỆT ĐỐI CẤM đưa vào các kiến thức chuyên sâu chưa học như Cơ sở dữ liệu (CSDL, SQL), Ngôn ngữ lập trình Python, v.v. nếu trong ma trận và giáo án KHÔNG YÊU CẦU.\n"
+            f"   - 100% câu hỏi từ Phần I đến Phần IV phải tìm thấy được nguồn gốc hoặc tương thích hoàn toàn với các chủ đề và tài liệu được cung cấp.\n"
         )
         
     if request.num_part1 == 0:
