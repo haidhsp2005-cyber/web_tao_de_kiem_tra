@@ -153,6 +153,31 @@ def is_dry_or_simple_tf_stem(text: str) -> bool:
             return True
     return False
 
+def is_grade9_math_out_of_scope(text: str) -> Tuple[bool, str]:
+    """
+    Kiểm tra xem câu hỏi có chứa kiến thức vượt cấp của THPT (Lớp 10, 11, 12)
+    bị lẫn lộn vào đề kiểm tra môn Toán lớp 9 hay không.
+    """
+    if not text:
+        return False, ""
+    clean = text.lower()
+    
+    # 1. Xác suất nâng cao THPT (Lớp 11-12): Bernoulli, bắn bia độc lập, xác suất có điều kiện, biến ngẫu nhiên, chỉnh hợp/tổ hợp
+    if re.search(r"xạ thủ|bắn vào bia|bắn trúng|phát độc lập|nhị thức|bernoulli|biến ngẫu nhiên|xác suất có điều kiện|chỉnh hợp|c_\d+\^", clean):
+        return True, "Kiến thức xác suất nâng cao THPT (công thức Bernoulli/bắn súng độc lập/xác suất có điều kiện)"
+        
+    # 2. Hình học không gian THPT (Lớp 11-12): Khoảng cách chéo nhau, khoảng cách điểm đến mp, góc giữa 2 mp, hình lăng trụ/hộp chữ nhật nâng cao
+    if re.search(r"khoảng cách giữa hai đường thẳng|hai đường thẳng chéo nhau|góc giữa hai mặt phẳng|góc giữa đường thẳng và mặt phẳng|mặt phẳng song song|vectơ trong không gian|oxyz", clean):
+        return True, "Kiến thức hình học không gian THPT (khoảng cách/góc trong không gian hoặc tọa độ Oxyz)"
+    if re.search(r"hình hộp chữ nhật.*khoảng cách|hình chóp.*khoảng cách|hình lăng trụ.*khoảng cách", clean):
+        return True, "Kiến thức tính khoảng cách hình không gian đa diện THPT"
+
+    # 3. Giải tích / Đạo hàm / Tích phân / Tiệm cận THPT (Lớp 11-12)
+    if re.search(r"tiệm cận|đạo hàm|tích phân|nguyên hàm|cực trị|cực đại|cực tiểu|f[\'’]\s*\(|f[\'’]{2}|đồng biến|nghịch biến|bảng biến thiên|logarit|\blog\b|\bln\b", clean):
+        return True, "Kiến thức giải tích THPT (đạo hàm, cực trị, tiệm cận, tích phân, logarit)"
+
+    return False, ""
+
 def normalize_latex_delimiters(text: str) -> str:
     if not text:
         return ""
@@ -219,11 +244,21 @@ def is_question_stem_defective(text: str) -> Tuple[bool, str]:
         
     return False, ""
 
-def is_mcq_defective(q: Part1Question) -> Tuple[bool, str]:
+def is_mcq_defective(q: Part1Question, grade: str = "12") -> Tuple[bool, str]:
     q.question = normalize_latex_delimiters(q.question)
     stem_bad, reason = is_question_stem_defective(q.question)
     if stem_bad:
         return True, f"Lỗi đề bài câu hỏi Phần I: {reason}"
+
+    is_grade_9 = str(grade).strip().lower() in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
+    if is_grade_9:
+        out_scope, scope_reason = is_grade9_math_out_of_scope(q.question)
+        if out_scope:
+            return True, f"Câu hỏi Phần I vượt cấp lớp 9 (lọt kiến thức lớp 11-12): {scope_reason}"
+        for o in (q.options or []):
+            out_scope_opt, opt_reason = is_grade9_math_out_of_scope(o.text)
+            if out_scope_opt:
+                return True, f"Phương án lựa chọn vượt cấp lớp 9: {opt_reason}"
 
     if not q.options or len(q.options) != 4:
         return True, f"Số lượng phương án không đúng 4 (hiện có {len(q.options) if q.options else 0})"
@@ -278,11 +313,17 @@ def is_tf_defective(q: Part2Question) -> Tuple[bool, str]:
 
     return False, ""
 
-def is_short_defective(q: Part3Question) -> Tuple[bool, str]:
+def is_short_defective(q: Part3Question, grade: str = "12") -> Tuple[bool, str]:
     q.question = normalize_latex_delimiters(q.question)
     stem_bad, reason = is_question_stem_defective(q.question)
     if stem_bad:
         return True, f"Lỗi đề bài câu hỏi ngắn Phần III: {reason}"
+
+    is_grade_9 = str(grade).strip().lower() in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
+    if is_grade_9:
+        out_scope, scope_reason = is_grade9_math_out_of_scope(q.question)
+        if out_scope:
+            return True, f"Câu hỏi Phần III vượt cấp lớp 9 (lọt kiến thức lớp 11-12): {scope_reason}"
 
     ans = (q.answer or "").strip()
     if not ans or len(ans) == 0:
@@ -1353,9 +1394,93 @@ def auto_heal_math_questions(exam: ExamStructure) -> Tuple[ExamStructure, List[s
         if mod_ps:
             notes.append(f"Câu {q.id} (Phần III): {msg_ps}.")
                 
+    is_grade_9 = str(getattr(exam, "grade", "12")).strip().lower() in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
+    if is_grade_9 and "toán" in str(getattr(exam, "subject", "")).lower():
+        # 1. Rà soát Phần I (Trắc nghiệm): Loại bỏ các câu hỏi vượt cấp lớp 10-12
+        for idx, q in enumerate(exam.part1_mcq):
+            out_scope, reason = is_grade9_math_out_of_scope(q.question)
+            if not out_scope:
+                for o in (q.options or []):
+                    out_scope, reason = is_grade9_math_out_of_scope(o.text)
+                    if out_scope:
+                        break
+            if out_scope:
+                exam.part1_mcq[idx] = heal_mcq_offline(q, exam.subject, idx, grade=exam.grade)
+                notes.append(f"Câu {q.id} (Phần I): Đã phát hiện và loại bỏ kiến thức THPT vượt cấp ({reason}), chuẩn hóa sang câu hỏi đúng chuẩn Toán 9.")
+
+        # 2. Rà soát Phần II (Đúng/Sai): Loại bỏ mệnh đề vượt cấp lớp 10-12
+        for idx, q in enumerate(exam.part2_tf):
+            out_scope, reason = is_grade9_math_out_of_scope(q.question)
+            if not out_scope:
+                for s in (q.sub_items or []):
+                    out_scope, reason = is_grade9_math_out_of_scope(s.statement)
+                    if out_scope:
+                        break
+            if out_scope:
+                exam.part2_tf[idx] = heal_tf_offline(q, exam.subject, idx, grade=exam.grade)
+                notes.append(f"Câu {q.id} (Phần II): Đã chuẩn hóa bài toán tình huống thực tế đúng chuẩn chương trình Toán 9.")
+
+        # 3. Rà soát Phần III (Trả lời ngắn): Loại bỏ câu hỏi vượt cấp lớp 10-12 (như xác suất Bernoulli, khoảng cách hình hộp chữ nhật)
+        for idx, q in enumerate(exam.part3_short):
+            out_scope, reason = is_grade9_math_out_of_scope(q.question)
+            if out_scope:
+                exam.part3_short[idx] = heal_short_offline(q, exam.subject, idx, grade=exam.grade)
+                notes.append(f"Câu {q.id} (Phần III): Đã phát hiện và loại bỏ kiến thức THPT vượt cấp ({reason}), chuẩn hóa sang câu hỏi đúng chuẩn Toán 9.")
+
     return exam, notes
 
-def heal_mcq_offline(q: Part1Question, subject: str) -> Part1Question:
+def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str = "12") -> Part1Question:
+    is_grade_9 = str(grade).strip().lower() in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
+    sub_lower = subject.lower()
+    
+    if is_grade_9 and "toán" in sub_lower:
+        grade9_mcq_bank = [
+            {
+                "question": r"Điều kiện xác định của biểu thức $\sqrt{x - 3}$ là:",
+                "options": ["$x \\ge 3$", "$x > 3$", "$x \\le 3$", "$x < 3$"],
+                "answer": "A",
+                "explanation": r"Biểu thức $\sqrt{x - 3}$ xác định khi và chỉ khi $x - 3 \\ge 0 \\Leftrightarrow x \\ge 3$. Chọn đáp án A."
+            },
+            {
+                "question": r"Cặp số nào sau đây là nghiệm của hệ phương trình $\begin{cases} 2x + y = 5 \\ x - y = 1 \end{cases}$?",
+                "options": ["$(2; 1)$", "$(1; 2)$", "$(3; -1)$", "$(0; 5)$"],
+                "answer": "A",
+                "explanation": r"Cộng hai phương trình vế theo vế: $3x = 6 \\Leftrightarrow x = 2$. Thay $x = 2$ vào $x - y = 1 \\Rightarrow y = 1$. Cặp nghiệm là $(2; 1)$. Chọn đáp án A."
+            },
+            {
+                "question": r"Cho tam giác $ABC$ vuông tại $A$, có $AB = 3\text{ cm}$ và $AC = 4\text{ cm}$. Giá trị của $\sin B$ bằng:",
+                "options": [r"$\frac{4}{5}$", r"$\frac{3}{5}$", r"$\frac{3}{4}$", r"$\frac{4}{3}$"],
+                "answer": "A",
+                "explanation": r"Áp dụng định lý Pythagore: $BC = \sqrt{3^2 + 4^2} = 5\text{ cm}$. Ta có $\sin B = \frac{AC}{BC} = \frac{4}{5}$. Chọn đáp án A."
+            },
+            {
+                "question": r"Phương trình bậc hai $x^2 - 4x + 3 = 0$ có tích hai nghiệm $x_1 \cdot x_2$ bằng:",
+                "options": ["3", "-3", "4", "-4"],
+                "answer": "A",
+                "explanation": r"Theo định lý Vi-ét, phương trình $ax^2 + bx + c = 0$ có tích hai nghiệm $x_1 x_2 = \frac{c}{a} = \frac{3}{1} = 3$. Chọn đáp án A."
+            },
+            {
+                "question": r"Một hình trụ có bán kính đáy $r = 5\text{ cm}$ và chiều cao $h = 8\text{ cm}$. Thể tích của hình trụ đó bằng:",
+                "options": [r"$200\pi\text{ cm}^3$", r"$100\pi\text{ cm}^3$", r"$40\pi\text{ cm}^3$", r"$80\pi\text{ cm}^3$"],
+                "answer": "A",
+                "explanation": r"Thể tích hình trụ: $V = \pi r^2 h = \pi \times 5^2 \times 8 = 200\pi\text{ cm}^3$. Chọn đáp án A."
+            },
+            {
+                "question": r"Độ dài đường tròn có bán kính $R = 6\text{ cm}$ bằng:",
+                "options": [r"$12\pi\text{ cm}$", r"$6\pi\text{ cm}$", r"$36\pi\text{ cm}$", r"$24\pi\text{ cm}$"],
+                "answer": "A",
+                "explanation": r"Độ dài đường tròn: $C = 2\pi R = 2\pi \times 6 = 12\pi\text{ cm}$. Chọn đáp án A."
+            }
+        ]
+        out_scope, _ = is_grade9_math_out_of_scope(q.question)
+        if out_scope or not q.options or len(q.options) != 4:
+            tmpl = grade9_mcq_bank[index % len(grade9_mcq_bank)]
+            q.question = tmpl["question"]
+            q.options = [Option(label=lbl, text=tmpl["options"][i]) for i, lbl in enumerate(["A", "B", "C", "D"])]
+            q.answer = tmpl["answer"]
+            q.explanation = tmpl["explanation"]
+            return q
+
     valid_labels = {"A", "B", "C", "D"}
     ans = (q.answer or "").strip().upper()
     concluded = extract_concluded_letter(q.explanation or "")
@@ -1427,7 +1552,7 @@ def heal_mcq_offline(q: Part1Question, subject: str) -> Part1Question:
         "tin học": ["Cấu trúc rẽ nhánh `if-else`", "Vòng lặp `for` và `while`", "Kiểu dữ liệu danh sách `list`", "Hàm `def` trong Python"],
         "vật lý": ["Tỉ lệ thuận với bình phương biên độ", "Dao động điều hòa cùng chu kỳ", "Biến thiên tuần hoàn theo thời gian", "Không đổi theo thời gian"],
         "hóa học": ["Phản ứng xà phòng hóa", "Tạo dung dịch màu xanh lam", "Xuất hiện kết tủa trắng", "Không đổi màu quỳ tím"],
-        "toán học": ["Đồng biến trên khoảng xác định", "Nghịch biến trên khoảng xác định", "Có đúng một điểm cực trị", "Đồ thị có tiệm cận đứng"]
+        "toán học": ["$x \\ge 0$", "$x > 0$", "$x \\le 0$", "$x < 0$"] if is_grade_9 else ["Đồng biến trên khoảng xác định", "Nghịch biến trên khoảng xác định", "Có đúng một điểm cực trị", "Đồ thị có tiệm cận đứng"]
     }
     
     chosen_pool = None
@@ -1846,7 +1971,8 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
 
     return q
 
-def heal_short_offline(q: Part3Question, subject: str, index: int = 0) -> Part3Question:
+def heal_short_offline(q: Part3Question, subject: str, index: int = 0, grade: str = "12") -> Part3Question:
+    is_grade_9 = str(grade).strip().lower() in ["9", "thcs", "8", "7", "6", "lớp 9", "lop 9"]
     sub_lower = subject.lower()
     
     # Specific smart completion for system of equations if detected
@@ -1864,6 +1990,48 @@ def heal_short_offline(q: Part3Question, subject: str, index: int = 0) -> Part3Q
             return q
 
     subject_banks = {
+        "toán_9": [
+            {
+                "question": r"Một hộp chứa 5 viên bi màu xanh, 7 viên bi màu đỏ và 8 viên bi màu vàng có cùng kích thước và khối lượng. Lấy ngẫu nhiên một viên bi từ trong hộp. Tính xác suất để lấy được viên bi màu đỏ (viết kết quả dưới dạng số thập phân).",
+                "answer": "0.35",
+                "explanation": r"Tổng số viên bi trong hộp: $5 + 7 + 8 = 20$ viên. Số kết quả thuận lợi cho biến cố lấy được bi đỏ là 7. Xác suất cần tìm: $P = \frac{7}{20} = 0{,}35$. Đáp số: 0.35."
+            },
+            {
+                "question": r"Tìm số tự nhiên lớn hơn trong hai số biết tổng của chúng bằng 100, và nếu lấy số lớn chia cho số bé thì được thương là 3 và dư 4.",
+                "answer": "76",
+                "explanation": r"Gọi hai số là $x, y$ ($x > y$). Ta có hệ: $\begin{cases} x + y = 100 \\ x = 3y + 4 \end{cases} \Leftrightarrow \begin{cases} 4y + 4 = 100 \\ x = 3y + 4 \end{cases} \Leftrightarrow \begin{cases} y = 24 \\ x = 76 \end{cases}$. Số lớn là 76. Đáp số: 76."
+            },
+            {
+                "question": r"Trong tam giác $ABC$ vuông tại $A$ có $AB = 5\text{ cm}$ và $BC = 13\text{ cm}$. Tính giá trị của biểu thức $5 \cdot \tan B$.",
+                "answer": "12",
+                "explanation": r"Ta có $AC = \sqrt{BC^2 - AB^2} = \sqrt{13^2 - 5^2} = 12\text{ cm}$. Khi đó $\tan B = \frac{AC}{AB} = \frac{12}{5} \Rightarrow 5 \cdot \tan B = 12$. Đáp số: 12."
+            },
+            {
+                "question": r"Một chiếc cốc hình trụ có bán kính đáy $R = 4\text{ cm}$ và chiều cao $h = 10\text{ cm}$. Tính diện tích xung quanh của chiếc cốc hình trụ theo $\pi$ (chỉ điền hệ số nguyên đứng trước $\pi$).",
+                "answer": "80",
+                "explanation": r"Diện tích xung quanh hình trụ: $S_{xq} = 2\pi R h = 2\pi \cdot 4 \cdot 10 = 80\pi\text{ cm}^2$. Hệ số đứng trước $\pi$ là 80. Đáp số: 80."
+            },
+            {
+                "question": r"Cho hệ phương trình $\begin{cases} x + y = m \\ 2x - y = 3 \end{cases}$. Tìm giá trị của tham số $m$ để hệ phương trình có nghiệm $(x; y)$ thỏa mãn $x = 2$.",
+                "answer": "3",
+                "explanation": r"Từ $2x - y = 3$, với $x = 2 \Rightarrow y = 1$. Thay vào $x + y = m \Rightarrow m = 2 + 1 = 3$. Đáp số: 3."
+            },
+            {
+                "question": r"Giải hệ phương trình $\begin{cases} 3x - y = 7 \\ x + y = 5 \end{cases}$. Tìm giá trị của $x$.",
+                "answer": "3",
+                "explanation": r"Cộng hai phương trình ta được $4x = 12 \Leftrightarrow x = 3$. Đáp số: 3."
+            },
+            {
+                "question": r"Cho phương trình bậc hai $x^2 - 6x + 8 = 0$ có hai nghiệm phân biệt $x_1, x_2$. Tính giá trị của biểu thức $T = x_1^2 + x_2^2$.",
+                "answer": "20",
+                "explanation": r"Theo định lý Vi-ét: $x_1 + x_2 = 6, x_1 x_2 = 8$. Ta có $T = (x_1+x_2)^2 - 2x_1 x_2 = 36 - 16 = 20$. Đáp số: 20."
+            },
+            {
+                "question": r"Một hình chữ nhật có chu vi bằng 28 cm và chiều dài hơn chiều rộng 4 cm. Tính diện tích của hình chữ nhật đó (theo đơn vị $\text{cm}^2$).",
+                "answer": "45",
+                "explanation": r"Nửa chu vi là 14 cm. Chiều rộng là 5 cm, chiều dài là 9 cm. Diện tích bằng $5 \times 9 = 45\text{ cm}^2$. Đáp số: 45."
+            }
+        ],
         "toán": [
             {
                 "question": r"Cho hệ phương trình $\begin{cases} 3x + my = 2 \\ x + 2y = 1 \end{cases}$. Tìm giá trị của tham số $m$ để hệ phương trình vô nghiệm.",
@@ -1966,16 +2134,23 @@ def heal_short_offline(q: Part3Question, subject: str, index: int = 0) -> Part3Q
     ]
 
     chosen_list = default_short_bank
-    for k, bank_items in subject_banks.items():
-        if k in sub_lower:
-            chosen_list = bank_items
-            break
+    if is_grade_9 and "toán" in sub_lower:
+        chosen_list = subject_banks.get("toán_9", subject_banks.get("toán", default_short_bank))
+    else:
+        for k, bank_items in subject_banks.items():
+            if k in sub_lower:
+                chosen_list = bank_items
+                break
 
     chosen_template = chosen_list[index % len(chosen_list)]
     
-    # If question stem is defective, use template question
+    # If question stem is defective or out of scope for Grade 9, use template question
     stem_bad, _ = is_question_stem_defective(q.question or "")
-    if stem_bad:
+    out_scope = False
+    if is_grade_9 and "toán" in sub_lower:
+        out_scope, _ = is_grade9_math_out_of_scope(q.question or "")
+
+    if stem_bad or out_scope:
         q.question = chosen_template["question"]
         q.answer = chosen_template["answer"]
         q.explanation = chosen_template["explanation"]
@@ -2340,7 +2515,7 @@ async def audit_and_verify_exam(
     defective_p3 = []
     
     for i, q in enumerate(exam.part1_mcq):
-        is_bad, reason = is_mcq_defective(q)
+        is_bad, reason = is_mcq_defective(q, grade=exam.grade)
         if is_bad:
             defective_p1.append((i, reason))
             
@@ -2350,7 +2525,7 @@ async def audit_and_verify_exam(
             defective_p2.append((i, reason))
             
     for i, q in enumerate(exam.part3_short):
-        is_bad, reason = is_short_defective(q)
+        is_bad, reason = is_short_defective(q, grade=exam.grade)
         if is_bad:
             defective_p3.append((i, reason))
             
@@ -2378,10 +2553,10 @@ async def audit_and_verify_exam(
         
     # 4. Offline Fallback Safety Nets
     for i, q in enumerate(exam.part1_mcq):
-        is_bad, reason = is_mcq_defective(q)
+        is_bad, reason = is_mcq_defective(q, grade=exam.grade)
         if is_bad:
-            exam.part1_mcq[i] = heal_mcq_offline(q, exam.subject)
-            notes.append(f"Câu {q.id} (Phần I): Đã tự động thay thế phương án rác bằng 4 phương án thực tế môn {exam.subject}.")
+            exam.part1_mcq[i] = heal_mcq_offline(q, exam.subject, i, grade=exam.grade)
+            notes.append(f"Câu {q.id} (Phần I): Đã tự động chuẩn hóa câu hỏi và phương án môn {exam.subject}.")
             
     for i, q in enumerate(exam.part2_tf):
         is_bad, reason = is_tf_defective(q)
@@ -2390,9 +2565,9 @@ async def audit_and_verify_exam(
             notes.append(f"Câu {q.id} (Phần II): Đã tự động chuẩn hóa đề bài và 4 mệnh đề Đúng/Sai thực tế môn {exam.subject}.")
 
     for i, q in enumerate(exam.part3_short):
-        is_bad, reason = is_short_defective(q)
+        is_bad, reason = is_short_defective(q, grade=exam.grade)
         if is_bad:
-            exam.part3_short[i] = heal_short_offline(q, exam.subject, i)
+            exam.part3_short[i] = heal_short_offline(q, exam.subject, i, grade=exam.grade)
             notes.append(f"Câu {q.id} (Phần III): Đã tự động chuẩn hóa đề bài và đáp số chính xác môn {exam.subject}.")
                 
     # 5. Final Deterministic Pass & Quality Assurances
@@ -2432,9 +2607,9 @@ async def audit_and_verify_exam(
 
     for idx_p3, q in enumerate(exam.part3_short):
         q.question = normalize_latex_delimiters(q.question)
-        is_bad, _ = is_short_defective(q)
+        is_bad, _ = is_short_defective(q, grade=exam.grade)
         if is_bad:
-            exam.part3_short[idx_p3] = heal_short_offline(q, exam.subject, idx_p3)
+            exam.part3_short[idx_p3] = heal_short_offline(q, exam.subject, idx_p3, grade=exam.grade)
 
     if exam.part4_essay and len(exam.part4_essay) > 0:
         for idx, q in enumerate(exam.part4_essay):

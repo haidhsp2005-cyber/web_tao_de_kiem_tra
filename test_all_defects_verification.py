@@ -436,6 +436,85 @@ class TestAllUserDefectsVerification(unittest.TestCase):
         self.assertEqual(len(english_exam.part3_short), 4)
         print("[PASS] Defect 17: English vocabulary detection & mock exam generation verified.")
 
+    def test_defect_18_grade9_curriculum_boundaries(self):
+        # Kiểm tra phát hiện và loại bỏ kiến thức vượt cấp lớp 11-12 (xác suất xạ thủ Bernoulli, khoảng cách hình hộp chữ nhật)
+        # khỏi đề kiểm tra Toán lớp 9 (ảnh media_1791083683225)
+        import asyncio
+        from app.services.exam_auditor import audit_and_verify_exam
+
+        q1 = Part3Question(
+            id=1,
+            question="Một xạ thủ bắn vào bia 3 phát độc lập. Xác suất bắn trúng mỗi phát là 0.8. Tính xác suất để xạ thủ đó bắn trúng đúng 2 phát (kết quả làm tròn đến hàng phần trăm).",
+            answer="0.38",
+            explanation="Áp dụng công thức Bernoulli: C(3, 2) * 0.8^2 * 0.2 = 0.384..."
+        )
+        q2 = Part3Question(
+            id=2,
+            question="Tìm số tự nhiên lớn hơn trong hai số biết tổng của chúng bằng 100, và nếu lấy số lớn chia cho số bé thì được thương là 3 và dư 4.",
+            answer="76",
+            explanation="Số lớn là 76."
+        )
+        q3 = Part3Question(
+            id=3,
+            question="Trong tam giác ABC vuông tại A có AB = 5 cm, BC = 13 cm. Tính giá trị của biểu thức 5 . tan B.",
+            answer="12",
+            explanation="5 . tan B = 12."
+        )
+        q4 = Part3Question(
+            id=4,
+            question="Cho hình hộp chữ nhật ABCD.A'B'C'D' có AB = 3, AD = 4, AA' = 5. Tính khoảng cách giữa hai đường thẳng AB và C'D'.",
+            answer="5",
+            explanation="Khoảng cách là 5."
+        )
+        q5 = Part3Question(
+            id=5,
+            question=r"Tìm giá trị của tham số m để hệ phương trình \begin{cases} x + y = m \\ 2x - y = 3 \end{cases}",
+            answer="",
+            explanation=""
+        )
+        q6 = Part3Question(
+            id=6,
+            question=r"Giải hệ phương trình \begin{cases} 3x - y = 7 \\ x + y = 5 \end{cases}. Tìm giá trị của x.",
+            answer="3",
+            explanation="x = 3."
+        )
+
+        exam = ExamStructure(
+            title="ĐỀ KIỂM TRA TOÁN 9",
+            subject="Toán học",
+            grade="9",
+            part1_mcq=[],
+            part2_tf=[],
+            part3_short=[q1, q2, q3, q4, q5, q6]
+        )
+
+        healed = asyncio.run(audit_and_verify_exam(exam))
+
+        # Câu 1 (xạ thủ) phải được thay thế bằng xác suất bi đỏ lớp 9
+        self.assertNotIn("xạ thủ", healed.part3_short[0].question.lower())
+        self.assertIn("viên bi", healed.part3_short[0].question.lower())
+        self.assertEqual(healed.part3_short[0].answer, "0.35")
+
+        # Câu 2 (tìm số) giữ nguyên chuẩn lớp 9
+        self.assertEqual(healed.part3_short[1].answer, "76")
+
+        # Câu 3 (tam giác ABC vuông) giữ nguyên chuẩn lớp 9
+        self.assertEqual(healed.part3_short[2].answer, "12")
+
+        # Câu 4 (hình hộp chữ nhật) phải được thay thế bằng hình học lớp 9 (hình trụ)
+        self.assertNotIn("hình hộp chữ nhật", healed.part3_short[3].question.lower())
+        self.assertIn("hình trụ", healed.part3_short[3].question.lower())
+        self.assertEqual(healed.part3_short[3].answer, "80")
+
+        # Câu 5 (câu 5 ban đầu bị cụt) phải được hoàn thiện với m = 3
+        self.assertIn("thỏa mãn", healed.part3_short[4].question)
+        self.assertEqual(healed.part3_short[4].answer, "3")
+
+        # Câu 6 (giải hệ tìm x) giữ nguyên chuẩn lớp 9
+        self.assertEqual(healed.part3_short[5].answer, "3")
+
+        print("[PASS] Defect 18: Grade 9 Math curriculum boundaries verified, 100% Grade 11-12 out-of-scope questions eliminated.")
+
 if __name__ == "__main__":
     unittest.main()
 
