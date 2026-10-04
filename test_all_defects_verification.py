@@ -741,6 +741,98 @@ class TestAllUserDefectsVerification(unittest.TestCase):
         self.assertIsInstance(res["part4_essay"], list)
         print("[PASS] Defect 22: Type safety against non-iterable integers verified.")
 
+    def test_feature_23_matrix_custom_question_counts(self):
+        # Kiểm tra tính năng: Tùy chọn số lượng câu hỏi 4 phần khác với ma trận gốc
+        # nhưng vẫn giữ nguyên chủ đề và các mức độ nhận thức (Biết - Hiểu - Vận dụng)
+        from app.services.models import (
+            ExamMatrixSpec, Cv7991TopicItem, CognitiveBreakdown, CognitiveSummary,
+            TopicRequirements, GenerateRequest, calculate_exam_scoring
+        )
+        from app.services.ai_generator import normalize_exam_data
+
+        # 1. Tạo ma trận gốc với cấu hình mặc định (12 câu P1, 4 câu P2, 6 câu P3, 0 câu Tự luận)
+        matrix = ExamMatrixSpec(
+            title="MA TRẬN ĐỀ KIỂM TRA ĐỊNH KỲ TOÁN 9",
+            subject="Toán học",
+            grade="9",
+            duration_minutes=45,
+            num_part1=12,
+            num_part2=4,
+            num_part3=6,
+            num_essay=0,
+            cognitive_summary=CognitiveSummary(
+                biet_count=10, biet_pct=40.0,
+                hieu_count=8, hieu_pct=30.0,
+                vd_count=4, vd_pct=30.0
+            ),
+            topics=[
+                Cv7991TopicItem(
+                    id=1,
+                    topic="Căn bậc hai và căn bậc ba",
+                    sub_topic="Tính toán và rút gọn biểu thức chứa căn",
+                    requirements=TopicRequirements(
+                        recognition="Nhận biết điều kiện xác định của căn thức bậc hai.",
+                        comprehension="Thực hiện được các phép tính khai phương, trục căn thức ở mẫu.",
+                        application="Vận dụng rút gọn biểu thức chứa căn thức bậc hai."
+                    )
+                ),
+                Cv7991TopicItem(
+                    id=2,
+                    topic="Hệ hai phương trình bậc nhất hai ẩn",
+                    sub_topic="Giải hệ phương trình và bài toán thực tế",
+                    requirements=TopicRequirements(
+                        recognition="Nhận biết hệ hai phương trình bậc nhất hai ẩn.",
+                        comprehension="Giải hệ bằng phương pháp thế hoặc cộng đại số.",
+                        application="Giải bài toán thực tế bằng cách lập hệ phương trình."
+                    )
+                )
+            ]
+        )
+
+        # 2. Người dùng tùy biến số câu khác hoàn toàn với ma trận gốc:
+        # P1 = 16 câu (thay vì 12), P2 = 2 câu (thay vì 4), P3 = 4 câu (thay vì 6), Tự luận = 1 câu (thay vì 0)
+        req = GenerateRequest(
+            mode="matrix",
+            subject="Toán học",
+            grade="9",
+            num_part1=16,
+            num_part2=2,
+            num_part3=4,
+            num_essay=1,
+            matrix_spec=matrix,
+            matrix_mode=True
+        )
+
+        # 3. Kiểm tra thuật toán phân bổ điểm: Thang điểm 10.0 luôn chuẩn xác
+        scoring = calculate_exam_scoring(
+            num_p1=req.num_part1,
+            num_p2=req.num_part2,
+            num_p3=req.num_part3,
+            num_p4=req.num_essay
+        )
+        self.assertEqual(scoring.total_points, 10.0)
+        self.assertEqual(scoring.part1_points, 4.0)  # 16 * 0.25 = 4.0
+        self.assertEqual(scoring.part2_points, 2.0)  # 2 * 1.0 = 2.0
+        self.assertAlmostEqual(scoring.part1_points + scoring.part2_points + scoring.part3_points + scoring.part4_points, 10.0, places=2)
+
+        # 4. Kiểm tra chuẩn hóa đề thi theo số lượng tùy biến
+        mock_ai_output = {
+            "title": "ĐỀ KIỂM TRA ĐỊNH KỲ TOÁN 9",
+            "subject": "Toán học",
+            "grade": "9",
+            "part1_mcq": [{"id": i, "question": f"Câu hỏi TN {i}", "options": [{"label": "A", "text": "1"}, {"label": "B", "text": "2"}, {"label": "C", "text": "3"}, {"label": "D", "text": "4"}], "answer": "A"} for i in range(1, 17)],
+            "part2_tf": [{"id": i, "question": f"Bài toán tình huống {i}", "sub_items": [{"label": "a", "statement": "Mệnh đề 1", "is_correct": True}, {"label": "b", "statement": "Mệnh đề 2", "is_correct": False}, {"label": "c", "statement": "Mệnh đề 3", "is_correct": True}, {"label": "d", "statement": "Mệnh đề 4", "is_correct": False}]} for i in range(1, 3)],
+            "part3_short": [{"id": i, "question": f"Câu hỏi ngắn {i}", "answer": str(i)} for i in range(1, 5)],
+            "part4_essay": [{"id": 1, "question": "Bài toán thực tế tự luận 1", "points": scoring.part4_points, "explanation": "- Ý 1\n- Ý 2"}]
+        }
+        normalized = normalize_exam_data(mock_ai_output, default_subject="Toán học", default_grade="9")
+        self.assertEqual(len(normalized["part1_mcq"]), 16)
+        self.assertEqual(len(normalized["part2_tf"]), 2)
+        self.assertEqual(len(normalized["part3_short"]), 4)
+        self.assertEqual(len(normalized["part4_essay"]), 1)
+
+        print("[PASS] Defect 23: Custom question counts for matrix generation validated with preserved cognitive levels & 10.0 scale.")
+
 if __name__ == "__main__":
     unittest.main()
 

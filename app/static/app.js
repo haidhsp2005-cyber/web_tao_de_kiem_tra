@@ -636,6 +636,16 @@ createApp({
       if (file) uploadMatrixFile(file);
     };
 
+    const resetMatrixQuestionCounts = () => {
+      if (matrixSpec.value) {
+        if (matrixSpec.value.num_part1 !== undefined) form.num_part1 = matrixSpec.value.num_part1;
+        if (matrixSpec.value.num_part2 !== undefined) form.num_part2 = matrixSpec.value.num_part2;
+        if (matrixSpec.value.num_part3 !== undefined) form.num_part3 = matrixSpec.value.num_part3;
+        if (matrixSpec.value.num_essay !== undefined) form.num_essay = matrixSpec.value.num_essay;
+        showToast("Đã khôi phục số lượng câu hỏi mặc định theo ma trận gốc!");
+      }
+    };
+
     const startGenerateFromMatrix = async () => {
       inputMode.value = "matrix";
       await startGenerate();
@@ -946,6 +956,7 @@ createApp({
       showRawMatrixModal,
       handleMatrixFileSelect,
       handleMatrixFileDrop,
+      resetMatrixQuestionCounts,
       startGenerateFromMatrix,
       isExtracting,
       isGenerating,

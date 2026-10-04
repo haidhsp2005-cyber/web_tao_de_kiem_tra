@@ -2676,13 +2676,24 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
 
     if request.matrix_spec:
         ms = request.matrix_spec
+        orig_p1 = getattr(ms, "num_part1", 12)
+        orig_p2 = getattr(ms, "num_part2", 4)
+        orig_p3 = getattr(ms, "num_part3", 6)
+        orig_p4 = getattr(ms, "num_essay", 0)
+        is_custom_counts = (
+            request.num_part1 != orig_p1 or
+            request.num_part2 != orig_p2 or
+            request.num_part3 != orig_p3 or
+            request.num_essay != orig_p4
+        )
+        
         matrix_details = []
         matrix_details.append(f"TIÊU ĐỀ MA TRẬN: {ms.title}")
         matrix_details.append(f"MÔN HỌC: {ms.subject} - KHỐI LỚP: {ms.grade} - THỜI GIAN: {ms.duration_minutes} PHÚT")
-        matrix_details.append(f"TỔNG CÂU HỎI: Phần I: {request.num_part1} câu | Phần II: {request.num_part2} câu | Phần III: {request.num_part3} câu | Tự luận: {request.num_essay} câu")
+        matrix_details.append(f"SỐ LƯỢNG CÂU HỎI BẮT BUỘC TẠO THEO YÊU CẦU: Phần I: {request.num_part1} câu | Phần II: {request.num_part2} câu | Phần III: {request.num_part3} câu | Tự luận: {request.num_essay} câu")
         
         cs = ms.cognitive_summary
-        matrix_details.append(f"PHÂN BỔ MỨC ĐỘ NHẬN THỨC (CÔNG VĂN 7991): Biết ({cs.biet_pct}%) - Hiểu ({cs.hieu_pct}%) - Vận dụng ({cs.vd_pct}%)")
+        matrix_details.append(f"PHÂN BỔ MỨC ĐỘ NHẬN THỨC THEO MA TRẬN (CÔNG VĂN 7991): Biết ({cs.biet_pct}%) - Hiểu ({cs.hieu_pct}%) - Vận dụng ({cs.vd_pct}%)")
         
         matrix_details.append("\nDANH MỤC CÁC CHỦ ĐỀ & BẢN ĐẶC TẢ YÊU CẦU CẦN ĐẠT (CÔNG VĂN 7991):")
         for t in ms.topics:
@@ -2693,7 +2704,7 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             p2_c = t.part2_tf.biet + t.part2_tf.hieu + t.part2_tf.vd
             p3_c = t.part3_short.biet + t.part3_short.hieu + t.part3_short.vd
             p4_c = t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd
-            topic_str += f" [Số câu: P1: {p1_c} (Biết {t.part1_mcq.biet}, Hiểu {t.part1_mcq.hieu}, VD {t.part1_mcq.vd}) | P2: {p2_c} câu | P3: {p3_c} câu | Tự luận: {p4_c} câu]"
+            topic_str += f" [Tham khảo phân bổ gốc: P1: {p1_c} (Biết {t.part1_mcq.biet}, Hiểu {t.part1_mcq.hieu}, VD {t.part1_mcq.vd}) | P2: {p2_c} câu | P3: {p3_c} câu | Tự luận: {p4_c} câu]"
             matrix_details.append(topic_str)
             if t.requirements:
                 if t.requirements.recognition:
@@ -2703,13 +2714,36 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
                 if t.requirements.application:
                     matrix_details.append(f"  + Yêu cầu mức Vận dụng: {t.requirements.application}")
                     
+        custom_rules = []
+        if is_custom_counts:
+            custom_rules.append(
+                f"\n⭐ LƯU Ý ĐẶC BIỆT QUAN TRỌNG - NGƯỜI DÙNG TÙY BIẾN SỐ LƯỢNG CÂU HỎI KHÁC VỚI MA TRẬN GỐC:\n"
+                f"- Số lượng câu gốc trong ma trận là: P1: {orig_p1}, P2: {orig_p2}, P3: {orig_p3}, Tự luận: {orig_p4}.\n"
+                f"- Số lượng câu hỏi THỰC TẾ NGƯỜI DÙNG CHỌN là: P1: {request.num_part1} câu, P2: {request.num_part2} câu, P3: {request.num_part3} câu, Tự luận: {request.num_essay} câu.\n"
+                f"- BẮT BUỘC sinh CHÍNH XÁC ĐÚNG VÀ ĐỦ số lượng câu hỏi theo yêu cầu của người dùng:\n"
+                f"  + Phần I: Bắt buộc đúng {request.num_part1} câu trong 'part1_mcq'.\n"
+                f"  + Phần II: Bắt buộc đúng {request.num_part2} câu trong 'part2_tf'.\n"
+                f"  + Phần III: Bắt buộc đúng {request.num_part3} câu trong 'part3_short'.\n"
+                f"  + Phần IV: Bắt buộc đúng {request.num_essay} câu trong 'part4_essay'.\n"
+                f"- BẢO TOÀN CÁC MỨC ĐỘ NHẬN THỨC VÀ YÊU CẦU CẦN ĐẠT ĐÃ NHẬN DẠNG THEO MA TRẬN:\n"
+                f"  + Dù số lượng câu hỏi có thay đổi, BẠN BẮT BUỘC VẪN PHẢI SINH CÂU HỎI THEO ĐÚNG CÁC MỨC ĐỘ NHẬN THỨC ĐÃ ĐƯỢC NHẬN DẠNG: Biết ({cs.biet_pct}%) - Hiểu ({cs.hieu_pct}%) - Vận dụng ({cs.vd_pct}%).\n"
+                f"  + Từng câu hỏi vẫn bám sát 100% vào các Chủ đề kiến thức và các 'Yêu cầu cần đạt' (Biết / Hiểu / Vận dụng) đã nêu chi tiết trong Bản đặc tả ở trên.\n"
+                f"  + Nếu số câu hỏi tăng lên: lấy thêm các câu hỏi phong phú cùng chủ đề và mức độ nhận thức tương ứng.\n"
+                f"  + Nếu số câu hỏi giảm đi: ưu tiên các chủ đề trọng tâm nhưng vẫn đảm bảo phủ đủ các mức Biết - Hiểu - Vận dụng theo tỷ lệ ma trận.\n"
+                f"  + Chỉ khác về số lượng câu hỏi; còn bản chất kiến thức, phạm vi chủ đề và độ phân hóa nhận thức vẫn tuân thủ 100% ma trận và bản đặc tả!"
+            )
+        else:
+            custom_rules.append(
+                f"\nQUY TẮC BẮT BUỘC KHI TẠO ĐỀ THEO MA TRẬN & BẢN ĐẶC TẢ:\n"
+                f"1. Số lượng câu hỏi từng phần: Phần I: {request.num_part1} câu, Phần II: {request.num_part2} câu, Phần III: {request.num_part3} câu, Tự luận: {request.num_essay} câu.\n"
+                f"2. BẮT BUỘC biên soạn các câu hỏi đáp ứng chuẩn xác các 'Yêu cầu mức Biết', 'Yêu cầu mức Hiểu', 'Yêu cầu mức Vận dụng' đã nêu trong Bản đặc tả."
+            )
+            
         user_prompt += (
             f"\n\nBẢNG MA TRẬN & ĐẶC TẢ CHI TIẾT (CHUẨN CÔNG VĂN 7991/BGDĐT-GDTrH):\n"
             + "\n".join(matrix_details)
-            + "\n\nQUY TẮC BẮT BUỘC KHI TẠO ĐỀ THEO MA TRẬN & BẢN ĐẶC TẢ:\n"
-            "1. Từng câu hỏi phải bám sát 100% vào các chủ đề, đơn vị kiến thức và đúng số lượng câu hỏi được phân bổ ở trên.\n"
-            "2. BẮT BUỘC biên soạn các câu hỏi đáp ứng chuẩn xác các 'Yêu cầu mức Biết', 'Yêu cầu mức Hiểu', 'Yêu cầu mức Vận dụng' đã nêu trong Bản đặc tả.\n"
-            "3. Phần I (Trắc nghiệm nhiều lựa chọn): Ưu tiên các câu hỏi ở mức độ Biết và Hiểu theo tỷ lệ quy định.\n"
+            + "\n".join(custom_rules)
+            + "\n3. Phần I (Trắc nghiệm nhiều lựa chọn): Ưu tiên các câu hỏi ở mức độ Biết và Hiểu theo tỷ lệ quy định.\n"
             "4. Phần II (Đúng - Sai): Mỗi câu gồm 4 ý con a, b, c, d với độ khó phân hóa từ Biết đến Hiểu và Vận dụng, đúng với chủ đề được chỉ định.\n"
             "5. Phần III (Trả lời ngắn) và Phần IV (Tự luận): Tập trung vào mức độ Vận dụng, giải quyết bài toán thực tế theo đúng yêu cầu cần đạt."
         )
@@ -2727,6 +2761,12 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"hãy tự động ưu tiên lấy đúng môn học và khối lớp của tài liệu để đặt tiêu đề 'title' và biên soạn toàn bộ đề thi chuẩn xác nhất."
         )
         
+    if request.num_part1 == 0:
+        user_prompt += "\nLƯU Ý: Người dùng chọn 0 câu Phần I (Trắc nghiệm). BẮT BUỘC để mảng 'part1_mcq' rỗng []."
+    if request.num_part2 == 0:
+        user_prompt += "\nLƯU Ý: Người dùng chọn 0 câu Phần II (Đúng/Sai). BẮT BUỘC để mảng 'part2_tf' rỗng []."
+    if request.num_part3 == 0:
+        user_prompt += "\nLƯU Ý: Người dùng chọn 0 câu Phần III (Trả lời ngắn). BẮT BUỘC để mảng 'part3_short' rỗng []."
     if request.num_essay == 0:
         user_prompt += "\nLƯU Ý QUAN TRỌNG: Người dùng chọn 0 câu tự luận. TUYỆT ĐỐI KHÔNG TẠO BẤT KỲ CÂU HỎI TỰ LUẬN NÀO, trường 'part4_essay' BẮT BUỘC để mảng rỗng []."
     else:
