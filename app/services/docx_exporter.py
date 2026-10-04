@@ -15,6 +15,7 @@ from typing import List, Optional, Dict, Any
 from .models import ExamStructure, ExamVariant, Option, Part1Question, Part2Question, Part3Question, ExamScoring, calculate_exam_scoring, sync_part4_essay_points, clean_essay_explanation
 from .explanation_sync import synchronize_mcq_explanation_with_answer
 from .diagram_generator import auto_attach_diagrams_to_exam
+from .exam_auditor import auto_wrap_and_sanitize_math
 
 # Locate MML2OMML.XSL
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -87,6 +88,12 @@ def add_formatted_text_with_math(paragraph, text: str, bold=False, italic=False,
     if not text:
         return
     
+    # Auto wrap and sanitize any bare LaTeX or unformatted math expressions before parsing
+    try:
+        text = auto_wrap_and_sanitize_math(text)
+    except Exception:
+        pass
+
     # Split text by math delimiters: $$...$$ or $...$
     pattern = r'(\$\$.*?\$\$|\$.*?\$)'
     tokens = re.split(pattern, text)
@@ -111,8 +118,16 @@ def add_formatted_text_with_math(paragraph, text: str, bold=False, italic=False,
                         r_node.insert(0, rPr)
                 paragraph._p.append(docx_math_element)
             else:
-                # Fallback to plain run
-                run = paragraph.add_run(raw_math)
+                # Fallback to plain run with sanitized math symbols so raw LaTeX backslashes don't show
+                clean_fallback = raw_math
+                clean_fallback = re.sub(r'\\sqrt\{([^}]+)\}', r'√(\1)', clean_fallback)
+                clean_fallback = re.sub(r'\\frac\{([^}]+)\}\{([^}]+)\}', r'(\1)/(\2)', clean_fallback)
+                clean_fallback = re.sub(r'\\widehat\{([^}]+)\}', r'^\1', clean_fallback)
+                clean_fallback = clean_fallback.replace(r'\neq', '≠').replace(r'\le', '≤').replace(r'\ge', '≥')
+                clean_fallback = clean_fallback.replace(r'\alpha', 'α').replace(r'\beta', 'β').replace(r'\pi', 'π')
+                clean_fallback = clean_fallback.replace(r'\pm', '±').replace(r'\times', '×').replace(r'^\circ', '°')
+                clean_fallback = clean_fallback.replace('\\', '')
+                run = paragraph.add_run(clean_fallback)
                 run.bold = bold
                 run.italic = italic
                 run.font.name = font_name

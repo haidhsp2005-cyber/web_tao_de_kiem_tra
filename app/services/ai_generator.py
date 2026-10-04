@@ -44,7 +44,7 @@ CẤU TRÚC ĐỀ THEO SỐ LƯỢNG YÊU CẦU:
   * QUY CHUẨN ĐẶC BIỆT NÂNG CAO ĐỘ HẤP DẪN & Ý NGHĨA THỰC TIỄN CHO PHẦN II:
     + ĐỀ BÀI DẪN ('question'): BẮT BUỘC LÀ MỘT BÀI TOÁN TÌNH HUỐNG THỰC TẾ / NGỮ CẢNH DỰ ÁN / THÍ NGHIỆM / ĐOẠN MÃ NGUỒN / BẢNG SỐ LIỆU / ĐOẠN TRÍCH TƯ LIỆU SỬ LIỆU - PHÁP LÝ (Độ dài từ 40 đến 120 từ).
       - Môn Tin học: Bối cảnh dự án CNTT thực tế (xây dựng hệ thống CSDL, đoạn mã Python xử lý dữ liệu, an ninh mạng/phòng chống lừa đảo, ứng dụng AI thị giác/LLM kèm đạo đức số).
-      - Môn Toán: Bài toán mô hình hóa thực tế (tối ưu hóa chi phí/doanh thu, quy hoạch tài chính, quỹ đạo chuyển động, hình học không gian Oxyz công trình kiến trúc, xác suất dịch bệnh).
+      - Môn Toán: BẮT BUỘC 100% các câu Phần II là bài toán mô hình hóa thực tế / ứng dụng đời sống (Toán 9: đo chiều cao ngọn hải đăng/tòa nhà qua góc nâng/góc hạ của giác kế, tính cước điện bậc thang/cước taxi bằng hệ phương trình, chuyển động ca nô trên sông xuôi dòng ngược dòng, thể tích và diện tích vật dụng thực tế hình trụ/hình nón như bồn nước inox; Toán THPT: tối ưu hóa chi phí/doanh thu hàm số, quy hoạch tài chính, quỹ đạo chuyển động, hình học không gian Oxyz trạm radar/định vị GPS, xác suất dịch bệnh/kiểm định). CẤM TUYỆT ĐỐI ra đề cộc lốc lý thuyết suông như 'Cho tam giác ABC...', 'Cho góc nhọn alpha...' hay 'Cho hệ phương trình... Xét các phát biểu sau:'.
       - Môn Vật lý: Thí nghiệm thực nghiệm, thiết bị đo lường/cảm biến công nghệ, sóng âm, quang học, chu trình nhiệt động lực học.
       - Môn Hóa học: Quy trình sản xuất hóa chất công nghiệp, xử lý ô nhiễm môi trường nước/khí thải, phản ứng hữu cơ, hóa dược.
       - Môn Sinh học: Nghiên cứu di truyền người (phả hệ, đột biến), công nghệ sinh học y tế, cân bằng sinh thái môi trường.
@@ -80,8 +80,10 @@ QUY TẮC BẮT BUỘC ĐỂ KHÔNG BỊ TRÀN TOKEN HOẶC THIẾU CÂU HỎI:
 3. TUYỆT ĐỐI KHÔNG sử dụng dấu ngoặc kép đôi "..." bên trong nội dung văn bản (dùng dấu nháy đơn '...' thay vì "..." để đảm bảo tính hợp lệ của JSON).
 4. Mọi công thức toán học, ký hiệu khoa học, phương trình phản ứng BẮT BUỘC phải đặt trong dấu $...$ (nội dòng) hoặc $$...$$ (khối).
    Ví dụ: $x^2 + 2x - 3 = 0$, $\\int_0^1 x dx$, $\\vec{F} = m\\vec{a}$, $CH_3COOH + C_2H_5OH \\rightleftharpoons CH_3COOC_2H_5 + H_2O$.
+   * TUYỆT ĐỐI KHÔNG VIẾT CÔNG THỨC TOÁN BẰNG TỪ NGỮ TIẾNG VIỆT: Cấm viết 'm khác 1', 'căn 2', 'C^ = 30°' mà BẮT BUỘC phải viết '$m \\neq 1$', '$\\sqrt{2}$', '$\\widehat{C} = 30^\\circ$'.
+   * TUYỆT ĐỐI KHÔNG VIẾT LỆNH LATEX TRẦN KHÔNG CÓ DẤU ĐÔ LA $: Cấm viết '3\\sqrt{3} cm', '\\alpha', 'sin^2\\alpha', 'cosB + cosC = 1.2' mà BẮT BUỘC phải viết '$3\\sqrt{3}$ cm', '$\\alpha$', '$\\sin^2\\alpha$', '$\\cos B + \\cos C = 1{,}2$'.
    * QUY TẮC BẮT BUỘC CHO HỆ PHƯƠNG TRÌNH & ĐỀ BÀI:
-     + Khi viết hệ phương trình, BẮT BUỘC DÙNG CÚ PHÁP: $\\begin{cases} phương_trình_1 \\\\ phương_trình_2 \\end{cases}$ (TUYỆT ĐỐI KHÔNG DÙNG \\left\\{\\begin{matrix}).
+     + Khi viết hệ phương trình, BẮT BUỘC DÙNG CÚ PHÁP: $\\begin{cases} phương_trình_1 \\\\ phương_trình_2 \\end{cases}$ (TUYỆT ĐỐI KHÔNG DÙNG \\left\\{\\begin{matrix} hoặc ngoặc đơn giản { ... / ...).
      + BẮT BUỘC CÂU HỎI PHẢI HOÀN CHỈNH, ĐẦY ĐỦ LỆNH HỎI: Ví dụ: 'Cho hệ phương trình $\\begin{cases} 3x + my = 2 \\\\ x + 2y = 1 \\end{cases}$. Tìm giá trị của $m$ để hệ có nghiệm duy nhất.'. TUYỆT ĐỐI KHÔNG DỪNG NGANG SAU CÔNG THỨC MÀ KHÔNG HỎI GÌ.
      + BẮT BUỘC đóng đủ cặp dấu $...$ và các cặp ngoặc nhọn {}.
 5. TÍNH ĐỒNG NHẤT TUYỆT ĐỐI 100% GIỮA ĐÁP ÁN VÀ LỜI GIẢI CHI TIẾT:
@@ -2333,10 +2335,23 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"- Phần III (Trả lời ngắn): Yêu cầu tính toán kết quả số cụ thể của đoạn mã (ví dụ: giá trị của biến đếm, tổng tích lũy, số lần lặp) hoặc chuyển đổi đơn vị dung lượng bộ nhớ (Byte, KB, MB, GB, bit)."
         )
     if "toán" in request.subject.lower():
+        grade_str = str(request.grade)
+        grade_note = ""
+        if grade_str in ("9", "lớp 9", "lop 9"):
+            grade_note = (
+                f"- ĐỐI VỚI TOÁN LỚP 9: BẮT BUỘC 100% CÁC CÂU PHẦN II LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ:\n"
+                f"  + Tình huống 1: Bài toán thực tế về hệ thức lượng tam giác vuông / tỉ số lượng giác (ngọn hải đăng hoặc tòa nhà cao tầng, giác kế đo góc nâng/góc hạ quan sát tàu thuyền hoặc ca nô trên biển, bóng của tháp trên mặt đất).\n"
+                f"  + Tình huống 2: Giải bài toán bằng cách lập hệ phương trình bậc nhất hai ẩn (hóa đơn tiền điện sinh hoạt theo bậc thang lũy tiến, cước dịch vụ taxi, bài toán chuyển động ca nô xuôi ngược dòng sông).\n"
+                f"  + Tình huống 3: Hình học không gian thực tế (tính diện tích xung quanh, diện tích toàn phần, thể tích bồn nước inox hình trụ, bể nước gia đình, phễu nón, quả cầu).\n"
+                f"  + Tình huống 4: Ứng dụng hàm số bậc nhất / bậc hai vào kinh doanh, chi phí và lợi nhuận bán hàng hoặc diện tích tối ưu.\n"
+                f"- CẤM TUYỆT ĐỐI ra đề cộc lốc lý thuyết suông như 'Cho tam giác ABC vuông tại A...', 'Cho góc nhọn alpha bất kỳ...', 'Cho hệ phương trình bậc nhất hai ẩn: {{ 2x - y = 3 / x + 2y = 4 }}.\n"
+            )
         user_prompt += (
-            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN TOÁN HỌC:\n"
-            f"- Khuyến khích các bài toán mô hình hóa thực tế (tối ưu hóa chi phí sản xuất, doanh thu, lợi nhuận, quy hoạch tài chính, quỹ đạo chuyển động, hình học không gian Oxyz công trình kiến trúc, xác suất dịch bệnh/kiểm định).\n"
-            f"- 4 ý con a, b, c, d phân hóa từ Nhận biết thông số -> Hiểu tính chất -> Vận dụng tính toán -> Vận dụng cao đánh giá tối ưu."
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN TOÁN HỌC (LỚP {request.grade}):\n"
+            f"- BẮT BUỘC 100% CÁC CÂU LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ / MÔ HÌNH HÓA ĐỜI SỐNG (tối ưu hóa chi phí sản xuất, doanh thu, lợi nhuận, cước dịch vụ, bài toán chuyển động, đo đạc góc nâng/hạ, hình trụ/nón/cầu thực tế, tọa độ không gian Oxyz trạm radar/GPS, xác suất kiểm định y tế).\n"
+            f"{grade_note}"
+            f"- 4 ý con a, b, c, d phân hóa từ Nhận biết thông số đề bài -> Hiểu bản chất mô hình -> Vận dụng tính toán đại lượng cụ thể -> Vận dụng cao đánh giá tối ưu hóa/kết luận thực tiễn.\n"
+            f"- MỌI CÔNG THỨC TOÁN, BIẾN SỐ, ĐƠN VỊ KÈM CÔNG THỨC BẮT BUỘC ĐƯỢC BỌC TRONG $...$ (ví dụ: $3\\sqrt{3}$ cm, $\\alpha$, $m \\neq 1$, $\\sin B$, $\\begin{{cases}} 2x - y = 3 \\\\ x + 2y = 4 \\end{{cases}}$). CẤM viết tiếng Việt ('căn 2', 'm khác 1') hoặc LaTeX trần không có $."
         )
     if any(s in request.subject.lower() for s in ["vật lý", "vật lí", "hóa học", "sinh học"]):
         user_prompt += (

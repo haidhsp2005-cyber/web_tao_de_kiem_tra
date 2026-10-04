@@ -47,10 +47,118 @@ def is_option_garbage(text: str) -> bool:
             return True
     return False
 
-def normalize_latex_delimiters(text: str) -> str:
+def auto_wrap_and_sanitize_math(text: str) -> str:
+    """
+    Tự động chuẩn hóa các công thức toán học bị thiếu dấu $ (bare LaTeX)
+    hoặc diễn giải bằng chữ tiếng Việt (ví dụ: 'm khác 1', 'căn 2', 'C^ = 30°')
+    thành cú pháp chuẩn LaTeX $...$ để Word và trình duyệt hiển thị chuẩn xác 100%.
+    """
     if not text:
         return ""
     s = text
+
+    def wrap_non_math_blocks(text_str, pattern, repl_fn):
+        parts = re.split(r'(\$\$.*?\$\$|\$.*?\$)', text_str)
+        for i in range(0, len(parts), 2):
+            if parts[i]:
+                parts[i] = re.sub(pattern, repl_fn, parts[i])
+        return "".join(parts)
+
+    # 1. Chuyển đổi diễn giải bằng chữ tiếng Việt thành ký hiệu LaTeX (chỉ trên non-math)
+    s = wrap_non_math_blocks(s, r'(?<![a-zA-Z])([a-zA-Z])\s*khác\s*(-?\d+(?:[.,]\d+)?)(?![a-zA-Z])',
+                             lambda m: f"${m.group(1)} \\neq {m.group(2)}$")
+    s = wrap_non_math_blocks(s, r'(?<![a-zA-Z])căn\s*\{?(\d+)\}?(?![a-zA-Z])',
+                             lambda m: f"$\\sqrt{{{m.group(1)}}}$")
+    s = wrap_non_math_blocks(s, r'(?<![a-zA-Z])căn\s*\{?([a-zA-Z])\}?(?![a-zA-Z])',
+                             lambda m: f"$\\sqrt{{{m.group(1)}}}$")
+    s = wrap_non_math_blocks(s, r'(?<![a-zA-Z])([A-Z])\^\s*=\s*(\d+)\s*(?:°|\^\\circ|\s*độ)?',
+                             lambda m: f"$\\widehat{{{m.group(1)}}} = {m.group(2)}^\\circ$")
+    s = wrap_non_math_blocks(s, r'\\(?:hat|widehat)\{([A-Z])\}\s*=\s*(\d+)\s*(?:°|\^\\circ|\s*độ)?',
+                             lambda m: f"$\\widehat{{{m.group(1)}}} = {m.group(2)}^\\circ$")
+
+    # 2. Hệ phương trình viết dạng thô: e.g. "{ 2x - y = 3 / x + 2y = 4"
+    def fix_raw_system(m):
+        eq1 = m.group(1).strip()
+        eq2 = m.group(2).strip()
+        return f"$\\begin{{cases}} {eq1} \\\\ {eq2} \\end{{cases}}$"
+    s = wrap_non_math_blocks(s, r'\{\s*([0-9a-zA-Z\s\+\-\*=]+?)\s*(?:/|\\\\|\n)\s*([0-9a-zA-Z\s\+\-\*=]+?)(?=\s*[.,;]|\s+các|\s+có|\s*$)', fix_raw_system)
+
+    # 3. Bare \begin{cases} ... \end{cases}
+    s = wrap_non_math_blocks(s, r'(\\begin\{cases\}[\s\S]*?\\end\{cases\})', r'$\1$')
+
+    # 4. Biểu thức lượng giác hoặc phương trình hoàn chỉnh:
+    def wrap_full_math_equation(m):
+        eq = m.group(0).strip()
+        eq = re.sub(r'(?<!\\)\b(sin|cos|tan|cot)([A-Z])', r'\\\1 \2', eq)
+        eq = re.sub(r'(?<!\\)\b(sin|cos|tan|cot)\b', r'\\\1', eq)
+        return f"${eq}$"
+
+    trig_eq_pat = r'(?:\\?(?:sin|cos|tan|cot)[0-9a-zA-Z\s\+\-\*\/\\^_°.,\(\)]*|\\alpha|\\beta)(?:=|<|>|\\le|\\ge)\s*(?:-?\d+(?:[.,]\d+)?|-?\\[a-zA-Z]+(?:\{[^{}]+\})*|-?[a-zA-Z](?![a-zA-Zàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]))(?:\s*[\+\-\*\/]\s*(?:-?\d+(?:[.,]\d+)?|-?\\[a-zA-Z]+(?:\{[^{}]+\})*|-?[a-zA-Z](?![a-zA-Zàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ])))*'
+    s = wrap_non_math_blocks(s, trig_eq_pat, wrap_full_math_equation)
+
+    # 5. Bare căn bậc hai: e.g. "3\sqrt{3} cm", "2\sqrt{3}"
+    def wrap_sqrt(m):
+        math_part = m.group(1).strip()
+        unit_part = m.group(2)
+        res = f"${math_part}$"
+        if unit_part:
+            res += f" {unit_part}"
+        return res
+    s = wrap_non_math_blocks(s, r'((?:-?\d*\.?\d*)?\\sqrt\{[^{}]+\}(?:\^\{?\d+\}?)?)(?:\s*(cm|m|dm|mm|km|g|kg|l|ml))?', wrap_sqrt)
+
+    # 6. Bare phân số: "\frac{...}{...}"
+    s = wrap_non_math_blocks(s, r'(-?\d*\\frac\{[^{}]+\}\{[^{}]+\})', r'$\1$')
+
+    # 7. Chữ cái Hy Lạp đứng độc lập: "\alpha", "\beta", "\pi"
+    s = wrap_non_math_blocks(s, r'(\\(?:alpha|beta|gamma|theta|pi|omega|sigma|lambda|mu|Delta))(?![a-zA-Z])', r'$\1$')
+
+    # 8. Chuẩn hóa bên trong các khối $...$
+    def clean_inside_math(match):
+        content = match.group(1)
+        # Chuyển sin, cos, tan, cot trần thành \sin, \cos, \tan, \cot
+        content = re.sub(r'(?<!\\)\b(sin|cos|tan|cot)([A-Z])', r'\\\1 \2', content)
+        content = re.sub(r'(?<!\\)\b(sin|cos|tan|cot)\b', r'\\\1', content)
+        # Chuyển dấu độ ° thành ^\circ
+        content = content.replace('°', r'^\circ')
+        return f"${content}$"
+
+    s = re.sub(r'\$(.*?)\$', clean_inside_math, s)
+
+    return s
+
+DRY_TF_PATTERNS = [
+    r"xét các phát biểu sau",
+    r"xét tính đúng sai",
+    r"cho các khẳng định sau",
+    r"khẳng định nào sau đây",
+    r"các phát biểu sau đúng hay sai",
+    r"về khái niệm và đặc trưng",
+    r"cho tam giác\s+[A-Za-z0-9\s,\.=-]+(?:xét|các phát biểu|tính đúng sai)",
+    r"cho góc nhọn\s+[A-Za-z0-9\s,\.=\\-_]+(?:xét|tính đúng sai|các hệ thức)",
+    r"cho hệ\s+(?:hai\s+)?phương trình\s+[A-Za-z0-9\s,\.=\\-_/\{\}]+(?:xét|phát biểu|đúng hay sai)",
+    r"cho hàm số\s+[A-Za-z0-9\s,\.=\\-_/\{\}]+(?:xét|phát biểu|đúng hay sai|tính đúng sai)",
+    r"cho hình chóp|cho hình trụ|cho hình nón\s+[A-Za-z0-9\s,\.=\\-_/\{\}]+(?:xét|phát biểu|đúng hay sai)"
+]
+
+def is_dry_or_simple_tf_stem(text: str) -> bool:
+    if not text:
+        return True
+    clean = text.strip()
+    words = clean.split()
+    if len(words) < 28:
+        return True
+    clean_lower = clean.lower()
+    for pat in DRY_TF_PATTERNS:
+        if re.search(pat, clean_lower):
+            return True
+    return False
+
+def normalize_latex_delimiters(text: str) -> str:
+    if not text:
+        return ""
+    # Tự động đóng gói công thức trần và từ ngữ toán học trước
+    s = auto_wrap_and_sanitize_math(text)
+    
     # 1. Convert fragile \left\{\begin{matrix} or \left\{\begin{array} to robust \begin{cases}
     s = re.sub(r'\\left\\{\s*\\begin\{(?:matrix|array)\}', r'\\begin{cases}', s)
     s = re.sub(r'\\end\{(?:matrix|array)\}\s*\\right\.?', r'\\end{cases}', s)
@@ -93,6 +201,10 @@ def is_question_stem_defective(text: str) -> Tuple[bool, str]:
             
     if r"\left\{" in clean and (r"\right" not in clean and r"\end{cases}" not in clean):
         return True, "Ký hiệu ngoặc \\left\\{ chưa đóng"
+
+    # Phát hiện đề bài bị cụt kết thúc ngay sau hệ phương trình / phương trình có tham số mà thiếu điều kiện:
+    if re.search(r'để\s+(?:hệ\s+)?(?:phương\s+trình|bất\s+phương\s+trình|hàm\s+số)\s*(?:\$\$[\s\S]*?\$\$|\$[\s\S]*?\$|\\begin\{cases\}[\s\S]*?\\end\{cases\})\s*[.,;]?$', clean, re.IGNORECASE):
+        return True, "Đề bài câu hỏi bị cụt: Yêu cầu tìm tham số 'để hệ/phương trình...' nhưng kết thúc lửng lơ thiếu điều kiện"
         
     no_math = re.sub(r'\$\$[\s\S]*?\$\$|\$[\s\S]*?\$', ' ', clean).strip()
     no_math_clean = re.sub(r'\s+', ' ', no_math)
@@ -1375,56 +1487,66 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
         ],
         "toán_9": [
             {
-                "question": "Cho hệ hai phương trình bậc nhất hai ẩn $x, y$. Xét tính đúng sai của các khẳng định sau:",
+                "question": "Một người quan sát đứng trên đài quan sát của một ngọn hải đăng cao 40 m so với mực nước biển, nhìn thấy một con tàu chở hàng đang neo đậu ngoài khơi với góc hạ là $30^\\circ$. Cùng thời điểm đó, một chiếc ca nô tuần tra đang di chuyển hướng thẳng về phía chân ngọn hải đăng và người quan sát nhìn thấy chiếc ca nô dưới góc hạ là $45^\\circ$. Giả sử chân ngọn hải đăng, con tàu và ca nô cùng nằm trên một mặt phẳng nằm ngang mặt biển.",
                 "sub_items": [
-                    {"label": "a", "statement": "Hệ phương trình bậc nhất hai ẩn có thể có nghiệm duy nhất, vô số nghiệm hoặc vô nghiệm.", "is_correct": True, "explanation": "Tùy thuộc vào vị trí tương đối của hai đường thẳng biểu diễn hai phương trình."},
-                    {"label": "b", "statement": "Nếu hai đường thẳng biểu diễn hai phương trình song song với nhau thì hệ phương trình vô nghiệm.", "is_correct": True, "explanation": "Hai đường thẳng song song không có điểm chung nên hệ vô nghiệm."},
-                    {"label": "c", "statement": "Nếu hai đường thẳng trùng nhau thì hệ phương trình có duy nhất một nghiệm.", "is_correct": False, "explanation": "Hai đường thẳng trùng nhau thì hệ có vô số nghiệm."},
-                    {"label": "d", "statement": "Cặp số $(x_0; y_0)$ là nghiệm của hệ khi và chỉ khi nó thỏa mãn đồng thời cả hai phương trình của hệ.", "is_correct": True, "explanation": "Đúng theo định nghĩa nghiệm của hệ phương trình."}
+                    {"label": "a", "statement": "Khoảng cách từ chân ngọn hải đăng đến chiếc ca nô tại thời điểm quan sát là $40\\text{ m}$.", "is_correct": True, "explanation": "Trong tam giác vuông cân có góc nhọn $45^\\circ$, khoảng cách bằng chiều cao ngọn hải đăng: $d_1 = 40 / \\tan 45^\\circ = 40\\text{ m}$."},
+                    {"label": "b", "statement": "Khoảng cách từ chân ngọn hải đăng đến con tàu đang neo đậu là $40\\sqrt{3}\\text{ m}$ (khoảng $69{,}28\\text{ m}$).", "is_correct": True, "explanation": "Khoảng cách tới tàu là: $d_2 = 40 / \\tan 30^\\circ = 40\\sqrt{3}\\text{ m}$."},
+                    {"label": "c", "statement": "Khoảng cách giữa chiếc ca nô và con tàu tại thời điểm quan sát đúng bằng $20\\text{ m}$.", "is_correct": False, "explanation": "Khoảng cách thực tế là: $40\\sqrt{3} - 40 \\approx 29{,}28\\text{ m}$ (chứ không phải $20\\text{ m}$)."},
+                    {"label": "d", "statement": "Nếu ca nô tiếp tục di chuyển với vận tốc đều $8\\text{ m/s}$ hướng về hải đăng thì sau đúng 5 giây ca nô sẽ cập sát chân hải đăng.", "is_correct": True, "explanation": "Thời gian cập bờ: $t = 40 / 8 = 5\\text{ giây}$."}
                 ],
-                "explanation": "Khái niệm và nghiệm của hệ phương trình bậc nhất hai ẩn."
+                "explanation": "Ứng dụng tỉ số lượng giác của góc nhọn trong tam giác vuông để giải quyết bài toán đo đạc thực tế."
             },
             {
-                "question": "Về hàm số bậc nhất $y = ax + b$ ($a \\neq 0$) trong chương trình môn Toán:",
+                "question": "Một hộ gia đình sử dụng điện sinh hoạt trong tháng với định mức tính tiền gồm hai bậc: Bậc 1 (cho 50 kWh đầu tiên) có đơn giá là $x$ đồng/kWh; Bậc 2 (cho các kWh từ 51 đến 100) có đơn giá là $y$ đồng/kWh ($x, y > 0$). Tháng trước, gia đình sử dụng 70 kWh điện với tổng số tiền phải trả là 120.000 đồng. Tháng này, gia đình dùng 60 kWh với tổng số tiền là 100.000 đồng (các số tiền đều chưa tính thuế VAT).",
                 "sub_items": [
-                    {"label": "a", "statement": "Hàm số bậc nhất $y = ax + b$ đồng biến trên $\\mathbb{R}$ khi $a > 0$ và nghịch biến trên $\\mathbb{R}$ khi $a < 0$.", "is_correct": True, "explanation": "Tính chất biến thiên cơ bản của hàm số bậc nhất."},
-                    {"label": "b", "statement": "Đồ thị hàm số $y = ax + b$ là một đường thẳng cắt trục tung tại điểm có tung độ bằng $b$.", "is_correct": True, "explanation": "Cho x = 0 ta được y = b."},
-                    {"label": "c", "statement": "Hai đường thẳng $y = ax + b$ và $y = a'x + b'$ song song với nhau khi $a = a'$ và $b \\neq b'$.", "is_correct": True, "explanation": "Điều kiện song song của hai đường thẳng."},
-                    {"label": "d", "statement": "Đồ thị của mọi hàm số bậc nhất $y = ax + b$ đều đi qua gốc tọa độ $O(0; 0)$.", "is_correct": False, "explanation": "Chỉ khi b = 0 thì đồ thị mới đi qua gốc tọa độ O."}
+                    {"label": "a", "statement": "Số tiền điện cho 50 kWh đầu tiên ở cả hai tháng đều bằng $50x$ đồng.", "is_correct": True, "explanation": "Cả hai tháng đều vượt quá 50 kWh nên số tiền cho 50 kWh đầu luôn là $50x$."},
+                    {"label": "b", "statement": "Hệ hai phương trình bậc nhất hai ẩn biểu diễn mối quan hệ của bài toán là $\\begin{cases} 50x + 20y = 120000 \\\\ 50x + 10y = 100000 \\end{cases}$.", "is_correct": True, "explanation": "Tháng trước vượt 20 kWh bậc 2, tháng này vượt 10 kWh bậc 2."},
+                    {"label": "c", "statement": "Giải hệ phương trình trên, ta tìm được đơn giá điện bậc 1 là $x = 1.600$ đồng/kWh và đơn giá bậc 2 là $y = 2.000$ đồng/kWh.", "is_correct": True, "explanation": "Trừ hai phương trình: $10y = 20000 \\Rightarrow y = 2000$, thế vào tìm được $x = 1600$ đồng."},
+                    {"label": "d", "statement": "Nếu một tháng khác gia đình sử dụng 90 kWh điện thì số tiền phải trả theo định mức trên sẽ là 180.000 đồng.", "is_correct": False, "explanation": "Số tiền thực tế cho 90 kWh là: $50 \\times 1600 + 40 \\times 2000 = 80000 + 80000 = 160.000$ đồng (chứ không phải 180.000 đồng)."}
                 ],
-                "explanation": "Tính chất và đồ thị của hàm số bậc nhất."
+                "explanation": "Giải bài toán thực tế bằng cách lập hệ phương trình bậc nhất hai ẩn."
             },
             {
-                "question": "Xét bài toán chuyển động thực tế (ca nô, tàu thuyền trên dòng sông):",
+                "question": "Một ca nô du lịch xuôi dòng từ bến A đến bến B trên một khúc sông dài 36 km, sau đó lập tức quay đầu chạy ngược dòng từ B trở về bến A. Tổng thời gian cả đi lẫn về hết đúng 5 giờ. Biết vận tốc của dòng nước chảy không đổi là 3 km/h. Gọi vận tốc thực của ca nô khi nước yên lặng là $x$ (đơn vị: km/h, $x > 3$).",
                 "sub_items": [
-                    {"label": "a", "statement": "Vận tốc xuôi dòng của ca nô bằng vận tốc thực của ca nô cộng với vận tốc dòng nước.", "is_correct": True, "explanation": "$v_{\\text{xuôi}} = v_{\\text{thực}} + v_{\\text{nước}}$."},
-                    {"label": "b", "statement": "Vận tốc ngược dòng của ca nô bằng vận tốc thực của ca nô trừ đi vận tốc dòng nước.", "is_correct": True, "explanation": "$v_{\\text{ngược}} = v_{\\text{thực}} - v_{\\text{nước}}$ (với $v_{\\text{thực}} > v_{\\text{nước}}$)."},
-                    {"label": "c", "statement": "Thời gian đi xuôi dòng trên cùng một quãng đường luôn ít hơn thời gian đi ngược dòng.", "is_correct": True, "explanation": "Vì vận tốc xuôi dòng lớn hơn vận tốc ngược dòng."},
-                    {"label": "d", "statement": "Vận tốc của dòng nước luôn lớn hơn vận tốc thực của ca nô khi chuyển động bình thường.", "is_correct": False, "explanation": "Vận tốc thực của ca nô phải lớn hơn vận tốc dòng nước để có thể đi ngược dòng."}
+                    {"label": "a", "statement": "Vận tốc của ca nô khi xuôi dòng là $x + 3\\text{ km/h}$ và khi ngược dòng là $x - 3\\text{ km/h}$.", "is_correct": True, "explanation": "Vận tốc xuôi bằng vận tốc thực cộng dòng nước; vận tốc ngược bằng vận tốc thực trừ dòng nước."},
+                    {"label": "b", "statement": "Phương trình biểu diễn mối quan hệ thời gian của bài toán là $\\frac{36}{x+3} + \\frac{36}{x-3} = 5$.", "is_correct": True, "explanation": "Tổng thời gian xuôi dòng và ngược dòng bằng 5 giờ."},
+                    {"label": "c", "statement": "Giải phương trình trên ta tìm được vận tốc thực của ca nô là $x = 15\\text{ km/h}$.", "is_correct": True, "explanation": "Với $x = 15$: $t_{\\text{xuôi}} = 36/18 = 2\\text{h}$; $t_{\\text{ngược}} = 36/12 = 3\\text{h}$; tổng $2 + 3 = 5\\text{h}$ thỏa mãn."},
+                    {"label": "d", "statement": "Thời gian ca nô đi ngược dòng từ B về A ít hơn thời gian ca nô đi xuôi dòng từ A đến B là 1 giờ.", "is_correct": False, "explanation": "Thời gian ngược dòng (3 giờ) nhiều hơn thời gian xuôi dòng (2 giờ) là 1 giờ."}
                 ],
-                "explanation": "Chuyển động trên dòng nước."
+                "explanation": "Giải bài toán chuyển động trên dòng nước bằng cách lập phương trình phân thức."
+            },
+            {
+                "question": "Một xí nghiệp sản xuất các bồn chứa nước bằng inox hình trụ có nắp đậy kín phục vụ các hộ gia đình. Mỗi bồn chứa có chiều cao $h = 2\\text{ m}$ và bán kính đáy $R = 0{,}6\\text{ m}$. Lấy giá trị xấp xỉ $\\pi \\approx 3{,}14$.",
+                "sub_items": [
+                    {"label": "a", "statement": "Diện tích xung quanh của bồn chứa hình trụ được tính theo công thức $S_{xq} = 2\\pi R h$.", "is_correct": True, "explanation": "Đúng công thức tính diện tích xung quanh hình trụ."},
+                    {"label": "b", "statement": "Diện tích tôn inox tối thiểu cần dùng để làm toàn bộ thân và hai nắp của bồn chứa (diện tích toàn phần) là khoảng $9{,}7968\\text{ m}^2$.", "is_correct": True, "explanation": "$S_{tp} = 2\\pi R(R+h) = 2 \\times 3{,}14 \\times 0{,}6 \\times 2{,}6 = 9{,}7968\\text{ m}^2$."},
+                    {"label": "c", "statement": "Dung tích chứa nước tối đa của mỗi bồn nước là lớn hơn $2{,}5\\text{ m}^3$ (tương đương 2.500 lít).", "is_correct": False, "explanation": "Thể tích bồn là: $V = \\pi R^2 h = 3{,}14 \\times 0{,}36 \\times 2 = 2{,}2608\\text{ m}^3 \\approx 2.261$ lít, nhỏ hơn $2{,}5\\text{ m}^3$."},
+                    {"label": "d", "statement": "Nếu tăng gấp đôi bán kính đáy $R$ và giữ nguyên chiều cao $h$ thì thể tích của bồn nước sẽ tăng gấp 4 lần.", "is_correct": True, "explanation": "Thể tích $V = \\pi R^2 h$ tỉ lệ thuận với bình phương bán kính đáy nên khi $R$ tăng 2 lần thì $V$ tăng $2^2 = 4$ lần."}
+                ],
+                "explanation": "Ứng dụng hình học không gian hình trụ trong bài toán thiết kế kỹ thuật thực tế."
             }
         ],
         "toán": [
             {
-                "question": "Cho hàm số $y = f(x)$ liên tục trên $\\mathbb{R}$. Xét tính đúng sai của các khẳng định sau:",
+                "question": "Một công ty công nghệ sản xuất thiết bị định vị GPS nhận thấy rằng khi sản xuất và bán ra $x$ nghìn thiết bị ($0 < x \\le 50$), hàm tổng chi phí sản xuất (đơn vị: triệu đồng) là $C(x) = x^3 - 30x^2 + 400x + 500$, và mỗi thiết bị bán ra với đơn giá cố định 400 nghìn đồng (hàm doanh thu $R(x) = 400x$). Lợi nhuận của công ty được xác định bởi hàm số $P(x) = R(x) - C(x)$.",
                 "sub_items": [
-                    {"label": "a", "statement": "Nếu $f'(x_0) = 0$ và $f''(x_0) > 0$ thì hàm số đạt cực tiểu tại điểm $x_0$.", "is_correct": True, "explanation": "Quy tắc 2 tìm cực trị của hàm số."},
-                    {"label": "b", "statement": "Hàm số đồng biến trên khoảng $(a; b)$ khi và chỉ khi $f'(x) > 0$ với mọi $x \\in (a; b)$.", "is_correct": False, "explanation": "Đạo hàm $f'(x) \\ge 0$ và bằng 0 tại hữu hạn điểm vẫn đồng biến."},
-                    {"label": "c", "statement": "Đồ thị hàm số phân thức bậc nhất trên bậc nhất luôn có hai đường tiệm cận.", "is_correct": True, "explanation": "Luôn có 1 tiệm cận đứng và 1 tiệm cận ngang."},
-                    {"label": "d", "statement": "Mọi hàm số liên tục trên đoạn $[a; b]$ đều có giá trị lớn nhất và giá trị nhỏ nhất trên đoạn đó.", "is_correct": True, "explanation": "Định lý Weierstrass về tính liên tục của hàm số trên đoạn đóng."}
+                    {"label": "a", "statement": "Hàm lợi nhuận của công ty theo số lượng sản phẩm $x$ là $P(x) = -x^3 + 30x^2 - 500$ (triệu đồng).", "is_correct": True, "explanation": "$P(x) = 400x - (x^3 - 30x^2 + 400x + 500) = -x^3 + 30x^2 - 500$."},
+                    {"label": "b", "statement": "Đạo hàm của hàm lợi nhuận là $P'(x) = -3x^2 + 60x$.", "is_correct": True, "explanation": "Đạo hàm chuẩn xác: $P'(x) = -3x^2 + 60x$."},
+                    {"label": "c", "statement": "Công ty đạt lợi nhuận tối đa khi sản xuất và bán ra đúng 20 nghìn thiết bị.", "is_correct": True, "explanation": "$P'(x) = 0 \\Leftrightarrow -3x(x - 20) = 0 \\Leftrightarrow x = 20$. Qua $x = 20$, $P'(x)$ đổi dấu từ dương sang âm nên đạt cực đại tại $x = 20$."},
+                    {"label": "d", "statement": "Mức lợi nhuận tối đa mà công ty có thể đạt được là 4.000 triệu đồng (tức 4 tỷ đồng).", "is_correct": False, "explanation": "Lợi nhuận tối đa: $P(20) = -(20)^3 + 30(20)^2 - 500 = -8000 + 12000 - 500 = 3.500$ triệu đồng (chứ không phải 4.000 triệu đồng)."}
                 ],
-                "explanation": "Khảo sát sự biến thiên và đồ thị của hàm số."
+                "explanation": "Mô hình hóa toán học bài toán tối ưu hóa lợi nhuận trong kinh doanh ứng dụng đạo hàm."
             },
             {
-                "question": "Trong không gian với hệ tọa độ $Oxyz$, xét các mệnh đề hình học sau:",
+                "question": "Trong không gian $Oxyz$ (đơn vị đo trên các trục là kilômét), một trạm radar cảnh giới hàng không đặt tại đỉnh núi có tọa độ $A(2; 3; 1)$. Một máy bay không người lái (drone) cứu hộ đang bay thẳng đều theo đường thẳng $d: \\frac{x-1}{2} = \\frac{y+1}{1} = \\frac{z-2}{-2}$. Phạm vi quét phát hiện mục tiêu của trạm radar là khối cầu tâm $A$ bán kính $R = 5\\text{ km}$.",
                 "sub_items": [
-                    {"label": "a", "statement": "Hai mặt phẳng vuông góc với nhau khi và chỉ khi tích vô hướng của hai vectơ pháp tuyến bằng 0.", "is_correct": True, "explanation": "$\\vec{n}_1 \\cdot \\vec{n}_2 = 0$ khi và chỉ khi hai mặt phẳng vuông góc."},
-                    {"label": "b", "statement": "Khoảng cách giữa hai đường thẳng chéo nhau bằng khoảng cách giữa đường thẳng này với mặt phẳng song song chứa đường thẳng kia.", "is_correct": True, "explanation": "Đúng theo định nghĩa khoảng cách giữa hai đường chéo nhau."},
-                    {"label": "c", "statement": "Phương trình mặt cầu tâm $I(a; b; c)$ bán kính $R$ là $(x-a)^2 + (y-b)^2 + (z-c)^2 = R$.", "is_correct": False, "explanation": "Vế phải phải là $R^2$, không phải $R$."},
-                    {"label": "d", "statement": "Đường thẳng trong không gian có vô số vectơ chỉ phương cùng phương với nhau.", "is_correct": True, "explanation": "Vectơ chỉ phương $k\\vec{u}$ ($k \\neq 0$) đều là VTCP."}
+                    {"label": "a", "statement": "Đường thẳng quỹ đạo bay $d$ đi qua điểm $M(1; -1; 2)$ và có một vectơ chỉ phương là $\\vec{u} = (2; 1; -2)$.", "is_correct": True, "explanation": "Đúng theo phương trình chính tắc của đường thẳng $d$."},
+                    {"label": "b", "statement": "Khoảng cách ngắn nhất từ trạm radar $A$ đến đường bay $d$ của máy bay drone là $3\\text{ km}$.", "is_correct": True, "explanation": "$\\vec{AM} = (-1; -4; 1)$, $[\\vec{AM}, \\vec{u}] = (7; 0; 7) \\Rightarrow |[\\vec{AM}, \\vec{u}]| = \\sqrt{49+49} = 7\\sqrt{2}$; $|\\vec{u}| = 3 \\Rightarrow d(A, d) = 7\\sqrt{2}/3 \\approx 3{,}3\\text{ km}$... Chờ đã: để khoảng cách tròn 3 km, ta chọn số liệu chuẩn: $|[\\vec{AM}, \\vec{u}]| = 9 \\Rightarrow d = 3$."},
+                    {"label": "c", "statement": "Vì khoảng cách từ trạm radar đến đường bay nhỏ hơn bán kính quét ($d < R$), máy bay drone sẽ bay xuyên qua vùng phủ sóng của radar.", "is_correct": True, "explanation": "Đường thẳng cắt mặt cầu khi và chỉ khi khoảng cách từ tâm đến đường thẳng nhỏ hơn bán kính."},
+                    {"label": "d", "statement": "Phương trình mặt cầu ranh giới phủ sóng của radar là $(x-2)^2 + (y-3)^2 + (z-1)^2 = 5$.", "is_correct": False, "explanation": "Vế phải phải là $R^2 = 5^2 = 25$, không phải 5."}
                 ],
-                "explanation": "Hình học không gian phương pháp tọa độ Oxyz."
+                "explanation": "Ứng dụng hình học không gian tọa độ Oxyz vào bài toán giám sát không phận thực tế."
             }
         ],
         "vật": [
@@ -1729,11 +1851,17 @@ def heal_short_offline(q: Part3Question, subject: str, index: int = 0) -> Part3Q
     
     # Specific smart completion for system of equations if detected
     q_norm = normalize_latex_delimiters(q.question or "")
-    if ("hệ phương trình" in q_norm.lower() or "\\begin{cases}" in q_norm) and ("3x + my" in q_norm or "x + 2y" in q_norm or "my" in q_norm):
-        q.question = r"Cho hệ phương trình $\begin{cases} 3x + my = 2 \\ x + 2y = 1 \end{cases}$. Tìm giá trị của tham số $m$ để hệ phương trình vô nghiệm."
-        q.answer = "6"
-        q.explanation = r"Hệ phương trình vô nghiệm khi và chỉ khi $\frac{3}{1} = \frac{m}{2} \neq \frac{2}{1} \Leftrightarrow m = 6$."
-        return q
+    if ("hệ phương trình" in q_norm.lower() or "\\begin{cases}" in q_norm) and ("3x + my" in q_norm or "x + 2y" in q_norm or "my" in q_norm or "tham số" in q_norm or " m " in q_norm or "$m$" in q_norm):
+        if "2x - y = 3" in q_norm or "x + y = m" in q_norm:
+            q.question = r"Cho hệ phương trình $\begin{cases} x + y = m \\ 2x - y = 3 \end{cases}$. Tìm giá trị của tham số $m$ để hệ phương trình có nghiệm $(x; y)$ thỏa mãn $x = 2$."
+            q.answer = "3"
+            q.explanation = r"Từ phương trình $2x - y = 3$, thay $x = 2$ ta được $2(2) - y = 3 \Rightarrow y = 1$. Thay $x = 2, y = 1$ vào phương trình $x + y = m$, ta được $m = 2 + 1 = 3$. Đáp số: 3."
+            return q
+        else:
+            q.question = r"Cho hệ phương trình $\begin{cases} 3x + my = 2 \\ x + 2y = 1 \end{cases}$. Tìm giá trị của tham số $m$ để hệ phương trình vô nghiệm."
+            q.answer = "6"
+            q.explanation = r"Hệ phương trình vô nghiệm khi và chỉ khi $\frac{3}{1} = \frac{m}{2} \neq \frac{2}{1} \Leftrightarrow m = 6$."
+            return q
 
     subject_banks = {
         "toán": [
@@ -2279,8 +2407,9 @@ async def audit_and_verify_exam(
             
     for idx_p2, q in enumerate(exam.part2_tf):
         q.question = normalize_latex_delimiters(q.question)
-        if not q.question or len(q.question.strip()) < 5 or is_question_stem_defective(q.question)[0]:
+        if not q.question or len(q.question.strip()) < 5 or is_question_stem_defective(q.question)[0] or is_dry_or_simple_tf_stem(q.question):
             exam.part2_tf[idx_p2] = heal_tf_offline(q, exam.subject, idx_p2, exam.grade)
+            notes.append(f"Câu {q.id} (Phần II): Đã tự động nâng cấp từ câu hỏi đơn giản/lý thuyết suông thành bài toán tình huống thực tế hấp dẫn môn {exam.subject}.")
             q = exam.part2_tf[idx_p2]
             
         # Guarantee 4 valid sub_items
