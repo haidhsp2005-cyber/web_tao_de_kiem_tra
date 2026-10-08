@@ -1835,6 +1835,7 @@ def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str 
     
     default_distractors = {
         "mỹ thuật": ["Tượng tròn và phù điêu", "Tranh khắc gỗ và sơn mài", "Kiến trúc đình làng", "Đồ gốm mỹ nghệ"],
+        "âm nhạc": ["Nhịp 2/4 và nhịp 4/4", "Gam Đô trưởng và La thứ", "Nhạc cụ dây và gõ dân tộc", "Hát bè và hòa thanh"],
         "gdqp": ["Quân đội nhân dân", "Công an nhân dân", "Dân quân tự vệ", "Lực lượng dự bị động viên"],
         "tin học": (
             ["Cấu trúc rẽ nhánh `if-else`", "Vòng lặp `for` và `while`", "Kiểu dữ liệu danh sách `list`", "Hàm `def` trong Python"]
@@ -2137,6 +2138,18 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
                     {"label": "d", "statement": "Trong thời đại công nghiệp số, việc bảo tồn di sản tranh sơn mài chỉ nên bó hẹp trong bảo tàng, không nên kết hợp đưa họa tiết sơn mài vào thiết kế đồ họa bao bì hay sản phẩm ứng dụng đương đại.", "is_correct": False, "explanation": "Ứng dụng mỹ thuật truyền thống vào thiết kế sáng tạo hiện đại là xu hướng bảo tồn và lan tỏa giá trị di sản bền vững."}
                 ],
                 "explanation": "Nghệ thuật tranh sơn mài truyền thống Việt Nam và bảo tồn di sản mỹ thuật."
+            }
+        ],
+        "âm nhạc": [
+            {
+                "question": "Dân ca Quan họ Bắc Ninh là một trong những di sản văn hóa phi vật thể đại diện của nhân loại được UNESCO công nhận. Nghệ thuật hát quan họ mang nét đặc trưng độc đáo với lề lối ứng xử văn hóa thanh lịch, hình thức hát đối đáp giữa liền anh và liền chị, sử dụng các làn điệu phong phú với kỹ thuật hát 'vang, rền, nền, nảy'. Nhạc cụ phụ họa truyền thống thường rất hạn chế hoặc hát mộc để tôn vinh chất giọng tự nhiên của người hát.",
+                "sub_items": [
+                    {"label": "a", "statement": "Kỹ thuật hát 'vang, rền, nền, nảy' là đặc trưng nghệ thuật biểu cảm tiêu biểu của giọng hát dân ca Quan họ Bắc Ninh.", "is_correct": True, "explanation": "Đây là 4 tiêu chuẩn kỹ thuật thanh nhạc cốt lõi trong nghệ thuật hát Quan họ truyền thống."},
+                    {"label": "b", "statement": "Dân ca Quan họ truyền thống thường dùng dàn nhạc giao hưởng phương Tây với trống jazz để đệm chính trong toàn bộ canh hát cổ truyền.", "is_correct": False, "explanation": "Hát Quan họ truyền thống chủ yếu hát mộc, không dùng dàn nhạc hiện đại để giữ trọn vẻ tinh tế của làn điệu."},
+                    {"label": "c", "statement": "Hình thức diễn xướng đối đáp giao duyên giữa các liền anh và liền chị thể hiện nét đẹp văn hóa ứng xử nhân văn, lịch thiệp của người Việt.", "is_correct": True, "explanation": "Hát đối đáp thể hiện sự hòa hợp, tôn trọng và tài năng ứng biến thơ ca, âm nhạc giữa đôi bên."},
+                    {"label": "d", "statement": "Để bảo tồn di sản Quan họ, chúng ta chỉ nên cấm hoàn toàn giới trẻ tiếp cận hoặc biểu diễn các bản phối khí âm nhạc dân gian đương đại.", "is_correct": False, "explanation": "Bảo tồn di sản cần kết hợp giữa gìn giữ cốt cách truyền thống và khuyến khích thế hệ trẻ sáng tạo, lan tỏa âm nhạc dân tộc."}
+                ],
+                "explanation": "Di sản nghệ thuật Dân ca Quan họ Bắc Ninh và bảo tồn bản sắc âm nhạc dân tộc."
             }
         ],
         "công nghệ": [

@@ -53,6 +53,7 @@ CẤU TRÚC ĐỀ THEO SỐ LƯỢNG YÊU CẦU:
       - Môn Giáo dục Kinh tế và Pháp luật (GDKT&PL): Kịch bản tình huống pháp lý đời sống thực tế, tranh chấp hợp đồng kinh doanh/thương mại điện tử, bảo vệ quyền lợi người tiêu dùng, quan hệ lao động hoặc an ninh mạng (50-100 từ). 4 ý con: a (Nhận diện chủ thể/quan hệ pháp lý) - b (Phân tích hành vi vi phạm pháp luật) - c (Vận dụng quyền và nghĩa vụ công dân) - d (Đánh giá bài học tuân thủ pháp luật và văn hóa kinh doanh).
       - Môn Giáo dục Quốc phòng và An ninh (GDQP&AN): Tình huống bảo vệ chủ quyền biên giới hải đảo, an ninh phi truyền thống, cứu nạn cứu hộ, phòng cháy chữa cháy, sơ cấp cứu ban đầu hoặc kỹ năng an toàn quân sự (50-100 từ). 4 ý con: a (Nhận biết quy định/vũ khí/biện pháp) - b (Hiểu nguyên tắc chiến thuật/pháp luật quốc phòng) - c (Vận dụng xử trí tình huống giả định) - d (Đánh giá trách nhiệm công dân trong sự nghiệp bảo vệ Tổ quốc).
       - Môn Mỹ thuật / Nghệ thuật: Tình huống phân tích tác phẩm mỹ thuật, di sản văn hóa truyền thống (tranh lụa, sơn mài, kiến trúc cổ), trường phái tạo hình, hoặc ứng dụng thiết kế đồ họa / mỹ thuật số đương đại (50-100 từ). 4 ý con: a (Nhận biết tác giả/tác phẩm/chất liệu) - b (Hiểu ngôn ngữ tạo hình/bố cục/màu sắc) - c (Vận dụng nguyên lý thị giác) - d (Đánh giá giá trị thẩm mỹ, nhân văn và bảo tồn di sản).
+      - Môn Âm nhạc: Tình huống phân tích tác phẩm âm nhạc, làn điệu dân ca truyền thống (Quan họ, Ca trù, Đờn ca tài tử, Cồng chiêng), cấu trúc tiết tấu - giai điệu - hòa âm, nhạc cụ dân tộc hoặc công nghệ sản xuất âm nhạc (50-100 từ). 4 ý con: a (Nhận biết tác giả/tác phẩm/thể loại/nhạc cụ) - b (Hiểu tính chất âm nhạc/tiết tấu/giai điệu/hình thức) - c (Vận dụng đọc nhạc/ký âm/kỹ năng thực hành biểu diễn) - d (Đánh giá giá trị biểu cảm thẩm mỹ và gìn giữ bản sắc âm nhạc dân tộc).
       - Môn Công nghệ: Tình huống thiết kế hệ thống kỹ thuật, mạch điều khiển thông minh Smart Home/IoT, cơ khí chế tạo, tự động hóa, kỹ thuật điện dân dụng/công nghiệp, hoặc nông nghiệp công nghệ cao (50-100 từ). 4 ý con: a (Nhận biết linh kiện/thông số) - b (Hiểu nguyên lý hoạt động/sơ đồ khối) - c (Tính toán công suất/thông số kỹ thuật) - d (Đánh giá giải pháp tiết kiệm năng lượng/an toàn lao động).
       - Môn Tiếng Anh: Đoạn trích bài báo khoa học/công nghệ/đời sống thực tế (60-120 từ) kèm 4 nhận định đánh giá đọc hiểu chuyên sâu (main idea, specific detail, contextual inference, vocabulary in context).
       - Môn Ngữ văn: Trích đoạn ngữ liệu ngoài SGK (thơ, truyện ngắn, tản văn, nghị luận xã hội 60-120 từ) kèm 4 nhận định đánh giá đọc hiểu phân tích thẩm mỹ và tư tưởng tác phẩm.
@@ -1650,6 +1651,527 @@ def get_mock_informatics_exam() -> ExamStructure:
         audit_report=create_default_audit_report("Tin học")
     )
 
+def get_mock_art_exam() -> ExamStructure:
+    mcqs = [
+        Part1Question(
+            id=1,
+            question="Tranh dân gian Đông Hồ (Bắc Ninh) sử dụng chất liệu nền độc đáo truyền thống là loại giấy nào sau đây?",
+            options=[
+                Option(label="A", text="Giấy điệp quét màu tự nhiên từ bột vỏ con sò điệp trên nền giấy dó"),
+                Option(label="B", text="Giấy bìa carton công nghiệp tráng bóng"),
+                Option(label="C", text="Giấy vải toan nhập khẩu phủ sơn dầu"),
+                Option(label="D", text="Giấy báo tái chế ép nhiệt phẳng")
+            ],
+            answer="A",
+            explanation="Tranh Đông Hồ dùng giấy dó quét bột điệp nghiền mịn từ vỏ sò biển, tạo nền sáng lấp lánh ánh kim tự nhiên."
+        ),
+        Part1Question(
+            id=2,
+            question="Ba màu cơ bản (màu gốc) nguyên bản trong hội họa tạo hình mà từ đó có thể pha trộn ra các màu khác là",
+            options=[
+                Option(label="A", text="Đỏ, Vàng, Lam"),
+                Option(label="B", text="Đỏ, Lục, Lam"),
+                Option(label="C", text="Cam, Tím, Lục"),
+                Option(label="D", text="Trắng, Đen, Xám")
+            ],
+            answer="A",
+            explanation="Trong lý thuyết màu sắc tạo hình, Đỏ, Vàng và Lam (Xanh lam) là ba màu cơ bản bậc 1 không thể pha ra từ màu khác."
+        ),
+        Part1Question(
+            id=3,
+            question="Chất liệu nào sau đây là chất liệu truyền thống đặc thù tạo nên nét độc đáo lộng lẫy của nghệ thuật tranh sơn mài Việt Nam?",
+            options=[
+                Option(label="A", text="Sơn ta tự nhiên, vàng quỳ, bạc thếp và vỏ trứng"),
+                Option(label="B", text="Màu nước acrylic và sáp dầu công nghiệp"),
+                Option(label="C", text="Sơn xịt công nghiệp nitrocellulose"),
+                Option(label="D", text="Bột phấn màu pastel ép khô")
+            ],
+            answer="A",
+            explanation="Nghệ thuật sơn mài Việt Nam sử dụng nhựa cây sơn ta kết hợp vàng quỳ, bạc thếp, vỏ trứng và son để tạo chiều sâu huyền ảo sau khi mài."
+        ),
+        Part1Question(
+            id=4,
+            question="Bức danh họa 'Thiếu nữ bên hoa huệ' (1943) khắc họa vẻ đẹp thanh tao của người phụ nữ Hà thành là kiệt tác của danh họa nào?",
+            options=[
+                Option(label="A", text="Tô Ngọc Vân"),
+                Option(label="B", text="Trần Văn Cẩn"),
+                Option(label="C", text="Nguyễn Gia Trí"),
+                Option(label="D", text="Bùi Xuân Phái")
+            ],
+            answer="A",
+            explanation="'Thiếu nữ bên hoa huệ' là tác phẩm sơn dầu xuất sắc đỉnh cao của họa sĩ Tô Ngọc Vân sáng tác năm 1943."
+        ),
+        Part1Question(
+            id=5,
+            question="Tập hợp các yếu tố nào sau đây cấu thành ngôn ngữ thị giác cơ bản của nghệ thuật tạo hình?",
+            options=[
+                Option(label="A", text="Đường nét, hình khối, màu sắc, đậm nhạt và không gian"),
+                Option(label="B", text="Giai điệu, tiết tấu, hòa âm và nhạc cụ"),
+                Option(label="C", text="Cốt truyện, nhân vật, đối thoại và tình huống"),
+                Option(label="D", text="Cú pháp, thuật toán, biến số và điều kiện")
+            ],
+            answer="A",
+            explanation="Ngôn ngữ thị giác tạo hình gồm đường nét, mảng hình, khối, màu sắc, độ đậm nhạt (sắc độ) và tổ chức không gian."
+        ),
+        Part1Question(
+            id=6,
+            question="Dòng gốm cổ truyền Chu Đậu (Hải Dương) nổi tiếng trong lịch sử mỹ thuật Việt Nam với kỹ thuật trang trí men nào?",
+            options=[
+                Option(label="A", text="Men lam tro trấu họa tiết hoa sen, chim muông vẽ dưới men"),
+                Option(label="B", text="Men rạn đắp nổi màu ngọc bích nhân tạo"),
+                Option(label="C", text="Men bóng tráng màu kim loại công nghiệp"),
+                Option(label="D", text="Gốm đất nung đen không tráng men")
+            ],
+            answer="A",
+            explanation="Gốm Chu Đậu thế kỷ 14 - 17 nổi tiếng thế giới với men lam tro vỏ trấu mộc mạc tinh xảo, thể hiện đậm đà hồn Việt."
+        ),
+        Part1Question(
+            id=7,
+            question="Nguyên lý bố cục sắp xếp các yếu tố tạo hình đối xứng hoàn toàn qua một trục hoặc tâm tạo cảm giác trang nghiêm, tĩnh tại gọi là",
+            options=[
+                Option(label="A", text="Cân bằng đối xứng"),
+                Option(label="B", text="Cân bằng bất đối xứng"),
+                Option(label="C", text="Nhịp điệu chuyển động tự do"),
+                Option(label="D", text="Tương phản gay gắt")
+            ],
+            answer="A",
+            explanation="Cân bằng đối xứng (Symmetrical balance) tạo cảm giác ổn định, vững chắc và trang nghiêm thường thấy trong kiến trúc đền đài."
+        ),
+        Part1Question(
+            id=8,
+            question="Đặc điểm khác biệt cốt lõi giữa tác phẩm điêu khắc tượng tròn và tác phẩm phù điêu (chạm nổi) là",
+            options=[
+                Option(label="A", text="Tượng tròn chiếm lĩnh không gian ba chiều trọn vẹn và có thể ngắm nhìn 360 độ"),
+                Option(label="B", text="Phù điêu luôn có kích thước lớn hơn tượng tròn"),
+                Option(label="C", text="Tượng tròn chỉ được đắp trên mặt phẳng tường hoặc bệ đá"),
+                Option(label="D", text="Phù điêu không bao giờ sử dụng chất liệu đồng hay đá")
+            ],
+            answer="A",
+            explanation="Tượng tròn là tác phẩm điêu khắc hoàn chỉnh đa chiều, người thưởng thức có thể quan sát từ mọi góc nhìn xung quanh."
+        ),
+        Part1Question(
+            id=9,
+            question="Quần thể di sản kiến trúc - điêu khắc Chăm Pa nổi tiếng bằng gạch nung và đá sa thạch tọa lạc tại Quảng Nam là",
+            options=[
+                Option(label="A", text="Thánh địa Mỹ Sơn"),
+                Option(label="B", text="Hoàng thành Thăng Long"),
+                Option(label="C", text="Cố đô Huế"),
+                Option(label="D", text="Thành nhà Hồ")
+            ],
+            answer="A",
+            explanation="Thánh địa Mỹ Sơn là quần thể kiến trúc đền tháp điêu khắc Chăm Pa độc đáo được UNESCO công nhận là Di sản văn hóa thế giới."
+        ),
+        Part1Question(
+            id=10,
+            question="Cặp màu nào sau đây là cặp màu bổ túc trực tiếp đối xứng nhau trên vòng tròn màu sắc chuẩn?",
+            options=[
+                Option(label="A", text="Đỏ và Xanh lục"),
+                Option(label="B", text="Đỏ và Cam"),
+                Option(label="C", text="Vàng và Cam"),
+                Option(label="D", text="Lam và Lục")
+            ],
+            answer="A",
+            explanation="Đỏ và Xanh lục (Red - Green) là cặp màu bổ túc đối kháng trực tiếp, đặt cạnh nhau sẽ tôn nhau lên rực rỡ nhất."
+        ),
+        Part1Question(
+            id=11,
+            question="Lĩnh vực thiết kế đồ họa ứng dụng hiện đại (Graphic Design) đóng vai trò then chốt trong hoạt động nào sau đây?",
+            options=[
+                Option(label="A", text="Thiết kế hệ thống nhận diện thương hiệu, bao bì sản phẩm và poster truyền thông"),
+                Option(label="B", text="Thi công lắp đặt hệ thống đường ống nước ngầm"),
+                Option(label="C", text="Lập trình hệ điều hành vi xử lý máy tính nhúng"),
+                Option(label="D", text="Sản xuất xi măng và vật liệu xây dựng thô")
+            ],
+            answer="A",
+            explanation="Thiết kế đồ họa truyền tải thông điệp thị giác thông qua logo, bộ nhận diện thương hiệu, bao bì và các ấn phẩm truyền thông."
+        ),
+        Part1Question(
+            id=12,
+            question="Danh họa nào được tôn vinh là bậc thầy mở đường và đưa nghệ thuật tranh lụa hiện đại Việt Nam vươn tầm thế giới?",
+            options=[
+                Option(label="A", text="Nguyễn Phan Chánh"),
+                Option(label="B", text="Bùi Xuân Phái"),
+                Option(label="C", text="Nguyễn Tư Nghiêm"),
+                Option(label="D", text="Dương Bích Liên")
+            ],
+            answer="A",
+            explanation="Họa sĩ Nguyễn Phan Chánh nổi tiếng với kỹ thuật rửa lụa điêu luyện và các bức tranh lụa mang đậm tâm hồn Việt như 'Chơi ô ăn quan', 'Rửa rau cầu ao'."
+        )
+    ]
+
+    tf_questions = [
+        Part2Question(
+            id=1,
+            question="Nghệ thuật tranh sơn mài Việt Nam là một đóng góp độc đáo của hội họa Việt Nam vào kho tàng mỹ thuật thế giới. Bắt nguồn từ kỹ nghệ sơn ta thủ công truyền thống dùng trang trí đồ thờ tự, các họa sĩ Trường Mỹ thuật Đông Dương (tiêu biểu như Nguyễn Gia Trí, Trần Văn Cẩn) đã dày công nghiên cứu, đưa vào các chất liệu mới như vỏ trứng, vàng quỳ, bạc thếp kết hợp kỹ thuật mài tỉ mỉ để tạo nên ngôn ngữ hội họa sơn mài đỉnh cao.",
+            sub_items=[
+                SubItem(label="a", statement="Vỏ trứng, vàng quỳ, bạc thếp và son là những chất liệu đặc trưng tạo nên hiệu ứng thị giác lung linh, huyền ảo trong tranh sơn mài truyền thống Việt Nam.", is_correct=True, explanation="Đây là các chất liệu tạo hình truyền thống độc đáo của nghệ thuật sơn mài."),
+                SubItem(label="b", statement="Kỹ thuật mài trong tranh sơn mài có thể được thực hiện hoàn toàn ngẫu nhiên bằng máy công nghiệp tốc độ cao mà không cần sự cảm nhận thị giác và bàn tay tinh tế của nghệ sĩ.", is_correct=False, explanation="Mài sơn mài đòi hỏi kỹ thuật thủ công điêu luyện và cảm quan thẩm mỹ để làm lộ các lớp màu ẩn sâu bên dưới."),
+                SubItem(label="c", statement="Họa sĩ Nguyễn Gia Trí được tôn vinh là bậc thầy của nghệ thuật sơn mài Việt Nam với các kiệt tác tiêu biểu như 'Vườn xuân Trung Nam Bắc'.", is_correct=True, explanation="Nguyễn Gia Trí là danh họa tiên phong đưa sơn mài lên đỉnh cao nghệ thuật tạo hình hiện đại."),
+                SubItem(label="d", statement="Trong thời đại công nghiệp số, việc bảo tồn di sản tranh sơn mài chỉ nên bó hẹp trong bảo tàng, không nên kết hợp đưa họa tiết sơn mài vào thiết kế đồ họa bao bì hay sản phẩm ứng dụng đương đại.", is_correct=False, explanation="Ứng dụng mỹ thuật truyền thống vào thiết kế sáng tạo hiện đại là xu hướng bảo tồn và lan tỏa giá trị di sản bền vững.")
+            ],
+            explanation="Nghệ thuật tranh sơn mài truyền thống Việt Nam và bảo tồn di sản mỹ thuật."
+        ),
+        Part2Question(
+            id=2,
+            question="Một nhóm học sinh lớp 10 thực hiện dự án thiết kế bao bì và bộ nhận diện thương hiệu cho sản phẩm trà thảo mộc organic địa phương. Nhóm lựa chọn phong cách thiết kế tối giản (Minimalism), sử dụng hình vẽ nét mảnh mô phỏng lá trà, màu sắc chủ đạo là xanh lục tự nhiên kết hợp vàng đất ấm áp trên chất liệu giấy kraft thân thiện với môi trường.",
+            sub_items=[
+                SubItem(label="a", statement="Việc sử dụng màu xanh lục kết hợp vàng đất giúp gợi liên tưởng trực tiếp đến thiên nhiên, cây cỏ và tính chất organic lành mạnh của sản phẩm trà thảo mộc.", is_correct=True, explanation="Màu sắc trong thiết kế bao bì có tác động tâm lý mạnh mẽ giúp định vị đặc tính sản phẩm."),
+                SubItem(label="b", statement="Phong cách thiết kế tối giản đòi hỏi phải nhồi nhét tối đa mọi hình ảnh, hoa văn rực rỡ và nhiều kiểu chữ khác nhau lên toàn bộ diện tích mặt bao bì.", is_correct=False, explanation="Chủ nghĩa tối giản chú trọng sự tinh giản chi tiết, khoảng trống thị giác thoáng đãng và bố cục khúc chiết."),
+                SubItem(label="c", statement="Chất liệu giấy kraft màu nâu mộc mạc vừa bảo vệ môi trường vừa tăng giá trị cảm nhận thủ công, mộc mạc và an toàn cho người tiêu dùng.", is_correct=True, explanation="Chất liệu bao bì là một phần của trải nghiệm thị giác và xúc giác thẩm mỹ."),
+                SubItem(label="d", statement="Tên thương hiệu và thông tin thành phần trên bao bì nên sử dụng phông chữ uốn lượn rối mắt, không cần chú ý đến trật tự thị giác hay tính dễ đọc đối với khách hàng.", is_correct=False, explanation="Phân cấp thị giác và tính dễ đọc là nguyên tắc sống còn trong thiết kế đồ họa bao bì.")
+            ],
+            explanation="Thiết kế đồ họa bao bì ứng dụng và phân cấp thị giác hiện đại."
+        ),
+        Part2Question(
+            id=3,
+            question="Trong dòng chảy mỹ thuật cổ truyền Việt Nam, nghệ thuật điêu khắc gỗ đình làng thế kỷ 16 - 18 phản ánh sinh động cuộc sống đời thường của người nông dân Bắc Bộ. Khác với nghệ thuật cung đình mang tính quy phạm cung kính, nghệ thuật chạm khắc đình làng mang tính dân gian phóng khoáng, hóm hỉnh với các hoạt cảnh như đánh vật, chèo thuyền, mẹ gánh con, trai gái trêu đùa.",
+            sub_items=[
+                SubItem(label="a", statement="Chạm khắc gỗ đình làng thể hiện tính hiện thực mộc mạc, gần gũi với đời sống lao động và sinh hoạt văn hóa dân gian làng xã.", is_correct=True, explanation="Đây là giá trị nhân văn sâu sắc của nghệ thuật dân gian truyền thống."),
+                SubItem(label="b", statement="Nghệ thuật đình làng luôn tuân thủ nghiêm ngặt các quy tắc tỉ lệ giải phẫu học cơ thể chính xác của nghệ thuật hàn lâm phương Tây.", is_correct=False, explanation="Nghệ nhân dân gian tạo hình theo cảm quan biểu cảm, phóng đại và tự do, không gò bó theo giải phẫu hàn lâm."),
+                SubItem(label="c", statement="Chất liệu gỗ mít, gỗ lim cùng kỹ thuật đục chạm lộng, chạm thủng giúp các mảng chạm khắc có độ thoáng sáng và chiều sâu không gian sống động.", is_correct=True, explanation="Chạm lộng là kỹ thuật điêu khắc gỗ tinh xảo bậc thầy của các nghệ nhân xưa."),
+                SubItem(label="d", statement="Các bức chạm khắc đình làng là nguồn tư liệu quý giá nghiên cứu về trang phục, tập tục và đời sống tinh thần của nhân dân ta thời xưa.", is_correct=True, explanation="Điêu khắc đình làng ghi lại bức tranh chân thực về xã hội và văn hóa Đại Việt.")
+            ],
+            explanation="Nghệ thuật điêu khắc gỗ đình làng Việt Nam thế kỷ 16 - 18."
+        ),
+        Part2Question(
+            id=4,
+            question="Một đô thị hiện đại quy hoạch xây dựng tượng đài và công viên tượng điêu khắc ngoài trời bên bờ sông. Ban quy hoạch thảo luận về việc lựa chọn ngôn ngữ điêu khắc biểu trưng, tỷ lệ kích thước tương quan với không gian quảng trường và các chất liệu có khả năng chống chịu thời tiết nhiệt đới khắc nghiệt như đá hoa cương (granite), đá bazan và hợp kim đồng đúc.",
+            sub_items=[
+                SubItem(label="a", statement="Tượng đài công cộng ngoài trời cần có tỷ lệ hài hòa tương thích với không gian kiến trúc quảng trường và tầm nhìn của công chúng từ nhiều khoảng cách.", is_correct=True, explanation="Nguyên lý tương quan tỷ lệ và không gian quy hoạch là cốt lõi của điêu khắc đô thị."),
+                SubItem(label="b", statement="Chất liệu thạch cao mềm không sơn phủ chống thấm là lựa chọn hoàn hảo nhất cho các công trình tượng đài ngoài trời vĩnh cửu bên bờ sông.", is_correct=False, explanation="Thạch cao dễ hút ẩm, mục rữa và hỏng nhanh dưới mưa nắng; ngoài trời phải dùng đá tự nhiên, đồng hoặc thép không gỉ."),
+                SubItem(label="c", statement="Điêu khắc công viên đô thị vừa mang giá trị thẩm mỹ làm đẹp cảnh quan, vừa tạo không gian sinh hoạt cộng đồng và giáo dục lịch sử - văn hóa.", is_correct=True, explanation="Tượng ngoài trời kết nối nghệ thuật với công chúng và đời sống xã hội."),
+                SubItem(label="d", statement="Mọi bức tượng điêu khắc nghệ thuật đương đại ngoài trời đều bắt buộc phải sao chép rập khuôn chính xác một bức tượng cổ thời Phục hưng mà không được phép sáng tạo cái mới.", is_correct=False, explanation="Nghệ thuật công cộng đương đại khuyến khích ngôn ngữ tạo hình sáng tạo, phản ánh tinh thần thời đại và bản sắc địa phương.")
+            ],
+            explanation="Điêu khắc không gian công cộng đô thị và vật liệu bền vững."
+        )
+    ]
+
+    short_questions = [
+        Part3Question(
+            id=1,
+            question="Trong hệ màu cơ bản (màu gốc) của hội họa tạo hình, có bao nhiêu màu gốc không thể pha ra từ màu khác (chỉ ghi số nguyên)?",
+            answer="3",
+            explanation="Ba màu gốc cơ bản là Đỏ, Vàng, Lam (tổng cộng 3 màu)."
+        ),
+        Part3Question(
+            id=2,
+            question="Bức danh họa 'Thiếu nữ bên hoa huệ' được danh họa Tô Ngọc Vân hoàn thành vào năm nào (ghi số năm gồm 4 chữ số)?",
+            answer="1943",
+            explanation="Tác phẩm được sáng tác vào năm 1943 tại Hà Nội."
+        ),
+        Part3Question(
+            id=3,
+            question="Cặp màu bổ túc trực tiếp đối xứng với màu Đỏ trên vòng tròn màu sắc thuần sắc là màu gì?",
+            answer="Xanh lục",
+            explanation="Màu đối xứng trực tiếp với Đỏ là Xanh lục (Lục / Xanh lá)."
+        ),
+        Part3Question(
+            id=4,
+            question="Nghệ thuật làm tranh dân gian Hàng Trống sử dụng kỹ thuật vờn màu độc đáo bằng bao nhiêu chiếc bút lông cùng lúc (chỉ ghi số nguyên)?",
+            answer="2",
+            explanation="Nghệ nhân dùng đồng thời 2 bút: một bút chấm màu và một bút chấm nước lã để vờn loang đậm nhạt tinh tế."
+        ),
+        Part3Question(
+            id=5,
+            question="Trong lý thuyết bố cục thị giác mỹ thuật cơ bản, có mấy nguyên lý thị giác cốt lõi: Cân bằng, Nhịp điệu, Tương phản, Tỷ lệ, Hài hòa (chỉ ghi số nguyên)?",
+            answer="5",
+            explanation="Gồm 5 nguyên lý thị giác cốt lõi: Cân bằng, Nhịp điệu, Tương phản, Tỷ lệ và Hài hòa."
+        ),
+        Part3Question(
+            id=6,
+            question="Danh họa Nguyễn Phan Chánh nổi tiếng nhất trong lịch sử mỹ thuật Việt Nam với chất liệu sáng tác nào?",
+            answer="Tranh lụa",
+            explanation="Nguyễn Phan Chánh là bậc thầy mở đường cho tranh lụa hiện đại Việt Nam."
+        )
+    ]
+
+    essay_questions = [
+        Part4EssayQuestion(
+            id=1,
+            question="Phân tích nét đặc sắc về chất liệu, ngôn ngữ tạo hình và giá trị biểu cảm của nghệ thuật tranh sơn mài truyền thống Việt Nam. Em hãy đề xuất một giải pháp để ứng dụng hoa văn sơn mài vào thiết kế sản phẩm mỹ thuật đương đại.",
+            points=1.0,
+            answer="Phân tích chất liệu sơn mài (sơn ta, vỏ trứng, vàng quỳ), kỹ thuật mài độc đáo và ứng dụng sáng tạo vào thiết kế đồ họa / bao bì hiện đại.",
+            explanation="- Nêu được nguồn gốc và các chất liệu độc đáo của sơn mài: sơn ta, son, vàng quỳ, bạc thếp, vỏ trứng.\n- Giải thích được quy trình mài tạo hình làm lộ các lớp màu ẩn sâu, tạo chiều sâu không gian huyền ảo.\n- Đánh giá được sự giao thoa giữa mỹ nghệ truyền thống và hội họa hiện đại.\n- Đề xuất giải pháp ứng dụng hoa văn sơn mài vào sản phẩm đương đại (hộp quà, bao bì, trang sức, ốp lưng điện thoại)."
+        )
+    ]
+
+    return ExamStructure(
+        title="ĐỀ KIỂM TRA ĐỊNH KỲ MÔN MỸ THUẬT 10",
+        subject="Mỹ thuật",
+        grade="10",
+        duration_minutes=45,
+        school_name="SỞ GD&ĐT ... - TRƯỜNG THPT ...",
+        academic_year="NĂM HỌC 2026 - 2027",
+        code="101",
+        part1_mcq=mcqs,
+        part2_tf=tf_questions,
+        part3_short=short_questions,
+        part4_essay=essay_questions,
+        scoring=calculate_exam_scoring(num_p1=len(mcqs), num_p2=len(tf_questions), num_p3=len(short_questions), num_p4=len(essay_questions)),
+        audit_report=create_default_audit_report("Mỹ thuật")
+    )
+
+
+def get_mock_music_exam() -> ExamStructure:
+    mcqs = [
+        Part1Question(
+            id=1,
+            question="Khóa nhạc thông dụng nhất đặt ở đầu khuông nhạc để xác định vị trí nốt Sol nằm ở dòng kẻ thứ hai là",
+            options=[
+                Option(label="A", text="Khóa Sol"),
+                Option(label="B", text="Khóa Fa"),
+                Option(label="C", text="Khóa Đô"),
+                Option(label="D", text="Khóa La")
+            ],
+            answer="A",
+            explanation="Khóa Sol bắt đầu vẽ từ dòng kẻ thứ hai của khuông nhạc 5 dòng kẻ, xác định nốt nằm ở dòng 2 là nốt Sol 1."
+        ),
+        Part1Question(
+            id=2,
+            question="Trong số chỉ nhịp 2/4, mỗi ô nhịp có bao nhiêu phách và độ dài thời gian của mỗi phách có giá trị bằng hình nốt nào?",
+            options=[
+                Option(label="A", text="2 phách, mỗi phách bằng một nốt đen"),
+                Option(label="B", text="4 phách, mỗi phách bằng một nốt trắng"),
+                Option(label="C", text="3 phách, mỗi phách bằng một nốt móc đơn"),
+                Option(label="D", text="2 phách, mỗi phách bằng một nốt tròn")
+            ],
+            answer="A",
+            explanation="Số chỉ nhịp 2/4: Số 2 ở trên chỉ 2 phách trong một ô nhịp, số 4 ở dưới quy định mỗi phách tương đương 1 nốt đen."
+        ),
+        Part1Question(
+            id=3,
+            question="Nhạc cụ cổ truyền độc đáo của Việt Nam chỉ có duy nhất một dây nhưng diễn tấu được muôn vàn cung bậc cảm xúc nhờ cần đàn uốn dẻo là",
+            options=[
+                Option(label="A", text="Đàn bầu (Độc huyền cầm)"),
+                Option(label="B", text="Đàn tranh (Thập lục huyền cầm)"),
+                Option(label="C", text="Đàn nguyệt (Đàn kìm)"),
+                Option(label="D", text="Đàn nhị (Đàn cò)")
+            ],
+            answer="A",
+            explanation="Đàn bầu chỉ có một dây sắt, người chơi gảy nốt bồi và tay trái rung cần đàn uốn lượn để biến đổi cao độ mềm mại như tiếng người nói."
+        ),
+        Part1Question(
+            id=4,
+            question="Ca khúc bất hủ 'Tiến quân ca' - Quốc ca chính thức của nước Cộng hòa Xã hội Chủ nghĩa Việt Nam do nhạc sĩ tài ba nào sáng tác?",
+            options=[
+                Option(label="A", text="Nhạc sĩ Văn Cao"),
+                Option(label="B", text="Nhạc sĩ Phạm Tuyên"),
+                Option(label="C", text="Nhạc sĩ Lưu Hữu Phước"),
+                Option(label="D", text="Nhạc sĩ Trịnh Công Sơn")
+            ],
+            answer="A",
+            explanation="Nhạc sĩ Văn Cao sáng tác 'Tiến quân ca' vào cuối năm 1944 tại Hà Nội; bài hát được chọn làm Quốc ca từ Quốc hội khóa I (1946)."
+        ),
+        Part1Question(
+            id=5,
+            question="Khoảng cách cao độ giữa hai nốt nhạc Đô (C) và Sol (G) tự nhiên tạo thành quãng gì trong lý thuyết âm nhạc?",
+            options=[
+                Option(label="A", text="Quãng 5 đúng (gồm 3 cung và 1 nửa cung)"),
+                Option(label="B", text="Quãng 4 đúng"),
+                Option(label="C", text="Quãng 3 trưởng"),
+                Option(label="D", text="Quãng 8 đúng")
+            ],
+            answer="A",
+            explanation="Khoảng cách từ Đô lên Sol gồm 5 bậc âm (Đô - Rê - Mi - Pha - Sol) với 3,5 cung, là Quãng 5 đúng (Perfect 5th)."
+        ),
+        Part1Question(
+            id=6,
+            question="Dân ca Quan họ Bắc Ninh được tổ chức UNESCO chính thức vinh danh là Di sản văn hóa phi vật thể đại diện của nhân loại vào năm nào?",
+            options=[
+                Option(label="A", text="Năm 2009"),
+                Option(label="B", text="Năm 2003"),
+                Option(label="C", text="Năm 2015"),
+                Option(label="D", text="Năm 1999")
+            ],
+            answer="A",
+            explanation="Dân ca Quan họ Bắc Ninh được UNESCO công nhận vào ngày 30/9/2009."
+        ),
+        Part1Question(
+            id=7,
+            question="Không gian văn hóa Cồng chiêng Tây Nguyên là di sản kiệt tác truyền khẩu gắn liền với sinh hoạt cộng đồng và lễ hội của các dân tộc nào sau đây?",
+            options=[
+                Option(label="A", text="Ba Na, Gia Rai, Ê Đê, M'Nông, Cơ Ho..."),
+                Option(label="B", text="Tày, Nùng, Thái, Mường"),
+                Option(label="C", text="Kinh, Hoa, Chăm"),
+                Option(label="D", text="Khmer, H'Mông, Dao")
+            ],
+            answer="A",
+            explanation="Cồng chiêng Tây Nguyên là tiếng nói tâm linh thiêng liêng gắn bó máu thịt với đồng bào các dân tộc thiểu số vùng Trường Sơn - Tây Nguyên."
+        ),
+        Part1Question(
+            id=8,
+            question="Dấu hóa bất thường (dấu thăng, giáng, bình) đặt ngay trước một nốt nhạc trong bản nhạc có tác dụng gì?",
+            options=[
+                Option(label="A", text="Làm thay đổi cao độ của nốt nhạc đó và các nốt cùng tên trong phạm vi cùng một ô nhịp"),
+                Option(label="B", text="Thay đổi nhịp độ tốc độ của toàn bộ bản nhạc"),
+                Option(label="C", text="Tăng âm lượng vang lên gấp đôi"),
+                Option(label="D", text="Có tác dụng cho toàn bộ tác phẩm từ đầu đến cuối")
+            ],
+            answer="A",
+            explanation="Dấu hóa bất thường chỉ có giá trị hiệu lực đối với các nốt cùng tên trong phạm vi ô nhịp chứa nó."
+        ),
+        Part1Question(
+            id=9,
+            question="Hình thức biểu diễn âm nhạc mà trong đó các giọng hát hoặc bè nhạc khác nhau vang lên đồng thời với giai điệu độc lập nhưng kết hợp hài hòa gọi là",
+            options=[
+                Option(label="A", text="Hát bè / Hợp xướng đa thanh (Polyphony/Harmony)"),
+                Option(label="B", text="Hát đồng ca một bè đơn điệu"),
+                Option(label="C", text="Hát solo đơn ca"),
+                Option(label="D", text="Đọc rap không nhạc nền")
+            ],
+            answer="A",
+            explanation="Hát bè đa thanh là nghệ thuật hòa quyện nhiều bè giọng có cao độ khác nhau tạo nên hòa âm phong phú và chiều sâu cảm xúc."
+        ),
+        Part1Question(
+            id=10,
+            question="Tác phẩm khí nhạc - thanh nhạc hoành tráng nào sau đây được coi là đỉnh cao trường ca của tân nhạc Việt Nam do Văn Cao sáng tác năm 1947?",
+            options=[
+                Option(label="A", text="Trường ca Sông Lô"),
+                Option(label="B", text="Du kích Sông Thao"),
+                Option(label="C", text="Hò kéo pháo"),
+                Option(label="D", text="Người Hà Nội")
+            ],
+            answer="A",
+            explanation="'Trường ca Sông Lô' của Văn Cao sáng tác sau chiến thắng Sông Lô thu đông 1947, là một kiệt tác âm nhạc đồ sộ với cấu trúc giao hưởng phong phú."
+        ),
+        Part1Question(
+            id=11,
+            question="Hệ thống thang âm ngũ cung đặc trưng trong âm nhạc cổ truyền dân gian Việt Nam gồm 5 bậc âm lần lượt là",
+            options=[
+                Option(label="A", text="Hò, Xự, Xang, Xê, Cống"),
+                Option(label="B", text="Do, Re, Mi, Fa, Sol"),
+                Option(label="C", text="Cung, Thương, Giốc, Chủy, Vũ"),
+                Option(label="D", text="La, Si, Do, Re, Mi")
+            ],
+            answer="A",
+            explanation="Hò, Xự, Xang, Xê, Cống là hệ thống tên gọi 5 bậc âm ngũ cung truyền thống dân tộc Việt Nam trong đờn ca tài tử và chèo, tuồng."
+        ),
+        Part1Question(
+            id=12,
+            question="Trong số chỉ nhịp 4/4 (kí hiệu là chữ C), trọng âm tiết tấu của các phách được phân bổ như thế nào?",
+            options=[
+                Option(label="A", text="Phách 1 mạnh, phách 2 nhẹ, phách 3 mạnh vừa, phách 4 nhẹ"),
+                Option(label="B", text="Tất cả 4 phách đều mạnh bằng nhau"),
+                Option(label="C", text="Phách 1 nhẹ, phách 2 mạnh, phách 3 nhẹ, phách 4 mạnh"),
+                Option(label="D", text="Phách 1 mạnh, phách 2 mạnh vừa, phách 3 nhẹ, phách 4 mạnh")
+            ],
+            answer="A",
+            explanation="Nhịp 4/4 là nhịp 4 phách với chu kỳ: Mạnh - Nhẹ - Mạnh vừa - Nhẹ."
+        )
+    ]
+
+    tf_questions = [
+        Part2Question(
+            id=1,
+            question="Dân ca Quan họ Bắc Ninh là một trong những di sản văn hóa phi vật thể đại diện của nhân loại được UNESCO vinh danh. Nghệ thuật hát quan họ mang nét đặc trưng độc đáo với lề lối ứng xử văn hóa thanh lịch, hình thức hát đối đáp giữa liền anh và liền chị, sử dụng các làn điệu phong phú với kỹ thuật hát 'vang, rền, nền, nảy'. Nhạc cụ phụ họa truyền thống thường rất hạn chế hoặc hát mộc để tôn vinh chất giọng tự nhiên của người hát.",
+            sub_items=[
+                SubItem(label="a", statement="Kỹ thuật hát 'vang, rền, nền, nảy' là đặc trưng nghệ thuật biểu cảm tiêu biểu của giọng hát dân ca Quan họ Bắc Ninh.", is_correct=True, explanation="Đây là 4 tiêu chuẩn kỹ thuật thanh nhạc cốt lõi trong nghệ thuật hát Quan họ truyền thống."),
+                SubItem(label="b", statement="Dân ca Quan họ truyền thống thường dùng dàn nhạc giao hưởng phương Tây với trống jazz để đệm chính trong toàn bộ canh hát cổ truyền.", is_correct=False, explanation="Hát Quan họ truyền thống chủ yếu hát mộc, không dùng dàn nhạc hiện đại để giữ trọn vẻ tinh tế của làn điệu."),
+                SubItem(label="c", statement="Hình thức diễn xướng đối đáp giao duyên giữa các liền anh và liền chị thể hiện nét đẹp văn hóa ứng xử nhân văn, lịch thiệp của người Việt.", is_correct=True, explanation="Hát đối đáp thể hiện sự hòa hợp, tôn trọng và tài năng ứng biến thơ ca, âm nhạc giữa đôi bên."),
+                SubItem(label="d", statement="Để bảo tồn di sản Quan họ, chúng ta chỉ nên cấm hoàn toàn giới trẻ tiếp cận hoặc biểu diễn các bản phối khí âm nhạc dân gian đương đại.", is_correct=False, explanation="Bảo tồn di sản cần kết hợp giữa gìn giữ cốt cách truyền thống và khuyến khích thế hệ trẻ sáng tạo, lan tỏa âm nhạc dân tộc.")
+            ],
+            explanation="Di sản nghệ thuật Dân ca Quan họ Bắc Ninh và bảo tồn bản sắc âm nhạc dân tộc."
+        ),
+        Part2Question(
+            id=2,
+            question="Không gian văn hóa Cồng chiêng Tây Nguyên trải rộng trên 5 tỉnh Kon Tum, Gia Lai, Đắk Lắk, Đắk Nông và Lâm Đồng. Cồng chiêng không chỉ đơn thuần là nhạc cụ gõ bằng đồng mà còn là tiếng nói tâm linh thiêng liêng, phương tiện giao tiếp giữa con người với thần linh (Yàng) trong các nghi lễ vòng đời và lễ hội nông nghiệp như Lễ mừng lúa mới, Lễ bỏ mả.",
+            sub_items=[
+                SubItem(label="a", statement="Cồng là loại có núm ở giữa và chiêng là loại không có núm phẳng bề mặt, mỗi chiếc phát ra một cao độ âm thanh khác nhau trong dàn nhạc.", is_correct=True, explanation="Phân biệt cồng (có núm) và chiêng (bằng phẳng) là kiến thức nhạc cụ học cơ bản."),
+                SubItem(label="b", statement="Âm nhạc cồng chiêng Tây Nguyên chỉ được phép chơi bởi một nhạc công duy nhất gõ toàn bộ dàn cồng chiêng trong phòng thu kín.", is_correct=False, explanation="Diễn tấu cồng chiêng là sinh hoạt âm nhạc tập thể cộng đồng, mỗi người phụ trách một chiếc chiêng theo tiết tấu nghiêm ngặt."),
+                SubItem(label="c", statement="Giai điệu cồng chiêng vang lên giữa núi rừng Tây Nguyên phản ánh không gian sinh thái hoang sơ, hùng vĩ và tinh thần thượng võ, đoàn kết buôn làng.", is_correct=True, explanation="Không gian biểu diễn cồng chiêng gắn liền mật thiết với thiên nhiên và văn hóa bản địa."),
+                SubItem(label="d", statement="Việc giáo dục truyền dạy kỹ năng đánh cồng chiêng cho thanh thiếu niên dân tộc thiểu số là giải pháp sống còn để ngăn chặn nguy cơ mai một di sản.", is_correct=True, explanation="Trao truyền di sản cho thế hệ trẻ là hạt nhân bảo tồn văn hóa phi vật thể.")
+            ],
+            explanation="Di sản Không gian văn hóa Cồng chiêng Tây Nguyên."
+        ),
+        Part2Question(
+            id=3,
+            question="Nghệ thuật Đờn ca tài tử Nam Bộ hình thành và phát triển từ cuối thế kỷ 19, là loại hình nghệ thuật dân gian độc đáo của người dân Nam Bộ. Dàn nhạc tài tử thường gồm Đàn kìm (nguyệt), Đàn tranh, Đàn cò (nhị), Đàn bầu và sau này có thêm Đàn ghi-ta phím lõm. Nhạc tài tử dùng hệ thống 20 bài bản tổ gồm 4 điệu chính: Bắc, Hạ, Nam, Oán.",
+            sub_items=[
+                SubItem(label="a", statement="Đàn ghi-ta phím lõm là nhạc cụ phương Tây được người nghệ sĩ Nam Bộ cải biên sáng tạo tài tình để nhấn nhá được các cung bậc luyến láy vọng cổ.", is_correct=True, explanation="Ghi-ta phím lõm là biểu tượng cho sự tiếp biến và dung hòa văn hóa âm nhạc độc đáo của người Nam Bộ."),
+                SubItem(label="b", statement="Điệu Bắc trong Đờn ca tài tử mang tính chất trang nghiêm, vui tươi; trong khi điệu Oán mang âm hưởng buồn bã, ai oán và sâu lắng.", is_correct=True, explanation="Tính chất biểu cảm của các điệu thức tài tử quy định sắc thái cảm xúc rõ rệt."),
+                SubItem(label="c", statement="Đờn ca tài tử chỉ được biểu diễn trong các nhà hát lớn sang trọng có bán vé đắt đỏ, tuyệt đối không được sinh hoạt trong đời sống dân dã.", is_correct=False, explanation="Đờn ca tài tử bắt nguồn từ đời sống sinh hoạt mộc mạc sau giờ lao động của người dân miệt vườn sông nước."),
+                SubItem(label="d", statement="Tính ngẫu hứng (chữ đàn, hoa lá) của từng nhạc công trong khuôn khổ lòng bản thể hiện trình độ tài hoa và cá tính nghệ thuật của người chơi.", is_correct=True, explanation="Ngẫu hứng tài hoa là đặc trưng cốt lõi của Đờn ca tài tử.")
+            ],
+            explanation="Nghệ thuật Đờn ca tài tử Nam Bộ và hệ thống bài bản cổ nhạc."
+        ),
+        Part2Question(
+            id=4,
+            question="Một ban nhạc trẻ gồm các bạn học sinh thực hiện dự án sản xuất ca khúc mang phong cách World Music kết hợp nhạc cụ dân tộc (sáo trúc, đàn tranh) với giai điệu Pop hiện đại. Nhóm sử dụng phần mềm thu âm chuyên nghiệp (DAW) để ghi âm, biên tập nốt MIDI, cân bằng âm sắc (EQ) và hiệu ứng vang (Reverb) nhằm tạo không gian âm nhạc vừa hiện đại vừa đậm chất Việt.",
+            sub_items=[
+                SubItem(label="a", statement="Việc kết hợp sáo trúc, đàn tranh vào nền hòa âm hiện đại là xu hướng tích cực giúp đưa âm nhạc dân tộc đến gần hơn với giới trẻ và bạn bè quốc tế.", is_correct=True, explanation="Xu hướng kết hợp Pop/World Music với chất liệu dân gian đang rất thành công trong nền âm nhạc đương đại."),
+                SubItem(label="b", statement="Thu âm và xử lý trên máy tính (DAW) cho phép người sản xuất chỉnh sửa nhịp phách, cao độ và cân đối âm lượng giữa nhạc cụ mộc và nhạc cụ điện tử.", is_correct=True, explanation="Công nghệ số đóng vai trò quan trọng trong sản xuất âm nhạc chuyên nghiệp."),
+                SubItem(label="c", statement="Khi hòa âm, người nhạc sĩ có thể tùy tiện phối các hợp âm nghịch chát chúa mà không cần tuân theo bất kỳ quy luật hòa thanh nào khiến bài hát trở nên hỗn loạn.", is_correct=False, explanation="Hòa âm đòi hỏi kiến thức chuyên môn vững chắc để giai điệu và hòa thanh tôn vinh cảm xúc âm nhạc."),
+                SubItem(label="d", statement="Tôn trọng bản quyền tác giả đối với các tác phẩm phái sinh hoặc trích dẫn âm nhạc là chuẩn mực đạo đức và pháp lý bắt buộc trong hoạt động sáng tạo nghệ thuật.", is_correct=True, explanation="Luật Sở hữu trí tuệ quy định nghiêm ngặt về quyền tác giả âm nhạc.")
+            ],
+            explanation="Ứng dụng công nghệ âm nhạc số và gìn giữ bản sắc âm nhạc dân tộc."
+        )
+    ]
+
+    short_questions = [
+        Part3Question(
+            id=1,
+            question="Trong số chỉ nhịp 2/4, có bao nhiêu phách trong mỗi ô nhịp (chỉ ghi số nguyên)?",
+            answer="2",
+            explanation="Nhịp 2/4 có 2 phách trong mỗi ô nhịp, mỗi phách có giá trị bằng một nốt đen."
+        ),
+        Part3Question(
+            id=2,
+            question="Thang âm ngũ cung truyền thống Việt Nam (Hò, Xự, Xang, Xê, Cống) gồm bao nhiêu bậc âm cơ bản (chỉ ghi số nguyên)?",
+            answer="5",
+            explanation="Thang âm ngũ cung gồm 5 bậc âm cơ bản."
+        ),
+        Part3Question(
+            id=3,
+            question="Khoảng cách cao độ giữa nốt Đô và nốt Đố kế tiếp (quãng 8 đúng) gồm bao nhiêu cung nguyên?",
+            answer="6",
+            explanation="Quãng 8 đúng gồm 12 nửa cung, tương đương 6 cung nguyên."
+        ),
+        Part3Question(
+            id=4,
+            question="Đàn Bầu (Độc huyền cầm) của Việt Nam có bao nhiêu dây đàn (chỉ ghi số nguyên)?",
+            answer="1",
+            explanation="Đàn bầu chỉ có đúng 1 dây duy nhất."
+        ),
+        Part3Question(
+            id=5,
+            question="Dân ca Quan họ Bắc Ninh được tổ chức UNESCO chính thức công nhận là Di sản văn hóa phi vật thể của nhân loại vào năm nào (ghi số năm gồm 4 chữ số)?",
+            answer="2009",
+            explanation="Quan họ Bắc Ninh được UNESCO công nhận vào năm 2009."
+        ),
+        Part3Question(
+            id=6,
+            question="Bài hát 'Tiến quân ca' - Quốc ca Việt Nam do nhạc sĩ Văn Cao sáng tác vào năm nào (ghi số năm gồm 4 chữ số)?",
+            answer="1944",
+            explanation="Nhạc sĩ Văn Cao sáng tác 'Tiến quân ca' vào năm 1944."
+        )
+    ]
+
+    essay_questions = [
+        Part4EssayQuestion(
+            id=1,
+            question="Phân tích nét độc đáo của âm nhạc dân gian truyền thống Việt Nam (thông qua ví dụ Dân ca Quan họ hoặc Đờn ca tài tử). Trình bày suy nghĩ của em về trách nhiệm của học sinh trong việc trân trọng, gìn giữ và lan tỏa tình yêu âm nhạc dân tộc trong thời đại hội nhập quốc tế.",
+            points=1.0,
+            answer="Phân tích nét đặc trưng của dân ca (làn điệu, lề lối ứng xử, kỹ thuật hát, nhạc cụ) và trách nhiệm công dân trẻ trong việc bảo tồn, quảng bá âm nhạc dân tộc.",
+            explanation="- Nêu được đặc điểm nổi bật của loại hình dân ca chọn phân tích (làn điệu mộc mạc trữ tình, kỹ thuật hát 'vang, rền, nền, nảy' hoặc ngẫu hứng tài tử).\n- Phân tích được giá trị thẩm mỹ, nhân văn và bản sắc văn hóa dân tộc gửi gắm qua lời ca giai điệu.\n- Liên hệ trách nhiệm của học sinh: chủ động tìm hiểu học hỏi, không phân biệt đối xử nhạc dân tộc, tích cực tham gia biểu diễn ngoại khóa.\n- Đề xuất hình thức lan tỏa âm nhạc dân gian trên mạng xã hội hoặc kết hợp nhạc cụ truyền thống với phong cách hiện đại."
+        )
+    ]
+
+    return ExamStructure(
+        title="ĐỀ KIỂM TRA ĐỊNH KỲ MÔN ÂM NHẠC 10",
+        subject="Âm nhạc",
+        grade="10",
+        duration_minutes=45,
+        school_name="SỞ GD&ĐT ... - TRƯỜNG THPT ...",
+        academic_year="NĂM HỌC 2026 - 2027",
+        code="101",
+        part1_mcq=mcqs,
+        part2_tf=tf_questions,
+        part3_short=short_questions,
+        part4_essay=essay_questions,
+        scoring=calculate_exam_scoring(num_p1=len(mcqs), num_p2=len(tf_questions), num_p3=len(short_questions), num_p4=len(essay_questions)),
+        audit_report=create_default_audit_report("Âm nhạc")
+    )
+
 _key_rotation_counter = 0
 
 
@@ -2191,6 +2713,10 @@ def get_base_mock_exam(subject: str) -> ExamStructure:
         return get_mock_gdqp_exam()
     elif "anh" in sub_lower or "english" in sub_lower:
         return get_mock_english_exam()
+    elif "mỹ thuật" in sub_lower or "my thuat" in sub_lower or "hội họa" in sub_lower or "art" in sub_lower:
+        return get_mock_art_exam()
+    elif "âm nhạc" in sub_lower or "am nhac" in sub_lower or "music" in sub_lower or "nhạc" in sub_lower:
+        return get_mock_music_exam()
     else:
         return get_mock_math_exam()
 
@@ -2647,11 +3173,17 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"- BẮT BUỘC xây dựng tình huống thực tế hoặc tình huống giả định (50-100 từ) về bảo vệ chủ quyền biên giới hải đảo, an ninh mạng/an ninh phi truyền thống, phòng chống tội phạm học đường, phòng cháy chữa cháy, kỹ năng cứu nạn cứu hộ và sơ cấp cứu ban đầu.\n"
             f"- 4 ý con a, b, c, d phân hóa từ nhận biết quy định pháp luật -> hiểu nguyên tắc tác chiến/phòng thủ -> vận dụng kỹ năng xử lý tình huống -> đánh giá ý thức trách nhiệm bảo vệ Tổ quốc của học sinh."
         )
-    if any(s in request.subject.lower() for s in ["mỹ thuật", "nghệ thuật", "âm nhạc"]):
+    if any(s in request.subject.lower() for s in ["mỹ thuật", "nghệ thuật", "hội họa"]):
         user_prompt += (
             f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN MỸ THUẬT / NGHỆ THUẬT:\n"
             f"- BẮT BUỘC xây dựng bối cảnh thẩm mỹ thực tế (50-100 từ): nghiên cứu tác phẩm nghệ thuật, di sản văn hóa vật thể/phi vật thể (tranh dân gian Đông Hồ, gốm Chu Đậu, điêu khắc đình làng, mỹ thuật hiện đại), hoặc dự án thiết kế đồ họa / mỹ thuật ứng dụng đương đại.\n"
             f"- 4 ý con a, b, c, d phân hóa: nhận biết tác giả/chất liệu -> hiểu ngôn ngữ thị giác (đường nét, mảng miếng, hòa sắc) -> vận dụng nguyên lý tạo hình -> đánh giá giá trị thẩm mỹ, nhân văn và giải pháp bảo tồn di sản."
+        )
+    if any(s in request.subject.lower() for s in ["âm nhạc", "nhạc", "music"]):
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN ÂM NHẠC:\n"
+            f"- BẮT BUỘC xây dựng bối cảnh âm nhạc thực tế (50-100 từ): trích đoạn tác phẩm âm nhạc Việt Nam hoặc thế giới, bối cảnh diễn xướng làn điệu dân ca truyền thống (Quan họ Bắc Ninh, Đờn ca tài tử Nam Bộ, Cồng chiêng Tây Nguyên, Ca trù, Hát xoan), hoặc dự án sản xuất / hòa âm phối khí hiện đại.\n"
+            f"- 4 ý con a, b, c, d phân hóa: nhận biết tác giả/tác phẩm/thể loại/nhạc cụ -> hiểu tính chất âm nhạc, cấu trúc tiết tấu, giai điệu, hòa âm -> vận dụng đọc nhạc/ký âm/thực hành biểu diễn -> đánh giá giá trị cảm xúc thẩm mỹ và ý thức giữ gìn, lan tỏa di sản âm nhạc dân tộc."
         )
     if "công nghệ" in request.subject.lower():
         user_prompt += (
@@ -3009,21 +3541,7 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc các 
             print(f"[Exam Completion Warning] Không thể gọi AI sinh bổ sung: {comp_err}")
 
     # Fallback safety: If ANY part is STILL short of the requested count, supplement from curriculum bank
-    sub_lower = request.subject.lower()
-    if "tin" in sub_lower or "informatics" in sub_lower:
-        fallback_bank = get_mock_informatics_exam()
-    elif "lý" in sub_lower or "vật lí" in sub_lower:
-        fallback_bank = get_mock_physics_exam()
-    elif "hóa" in sub_lower:
-        fallback_bank = get_mock_chemistry_exam()
-    elif "sinh" in sub_lower:
-        fallback_bank = get_mock_biology_exam()
-    elif "gdqp" in sub_lower or "quân sự" in sub_lower or "quốc phòng" in sub_lower:
-        fallback_bank = get_mock_gdqp_exam()
-    elif "anh" in sub_lower or "english" in sub_lower:
-        fallback_bank = get_mock_english_exam()
-    else:
-        fallback_bank = get_mock_math_exam()
+    fallback_bank = get_base_mock_exam(request.subject)
 
     # Part 1 Fallback Guarantee
     while num_p1_needed > 0 and len(normalized["part1_mcq"]) < num_p1_needed:

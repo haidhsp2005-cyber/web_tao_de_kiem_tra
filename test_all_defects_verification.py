@@ -931,6 +931,103 @@ class TestAllUserDefectsVerification(unittest.TestCase):
 
         print("[PASS] Feature 24: Matrix exam generation with supplementary lesson plans & curriculum boundaries verified successfully.")
 
+    def test_defect_25_ipad_validation_and_coercion(self):
+        """
+        Kiểm tra độ bền vững chống lỗi 422 [object Object] trên thiết bị di động / iPad Safari:
+        - iPad Safari có thể gửi chuỗi rỗng `""`, `None`, số dạng chuỗi '12', số tự luận '0' khi trường input bị xóa.
+        - GenerateRequest tự động ép kiểu về các giá trị mặc định hợp lệ thay vì bắn lỗi 422 RequestValidationError.
+        """
+        from app.services.models import GenerateRequest
+
+        # Giả lập payload từ iPad với các trường số bị rỗng hoặc null
+        req = GenerateRequest.model_validate({
+            "mode": "",
+            "subject": "",
+            "grade": "",
+            "topic": "",
+            "num_part1": "",
+            "num_part2": None,
+            "num_part3": "6",
+            "num_essay": "",
+            "file_content": "Kế hoạch bài dạy Mỹ thuật 10..."
+        })
+
+        self.assertEqual(req.num_part1, 12)
+        self.assertEqual(req.num_part2, 4)
+        self.assertEqual(req.num_part3, 6)
+        self.assertEqual(req.num_essay, 0)
+        self.assertEqual(req.grade, "12")
+        self.assertEqual(req.subject, "Toán học")
+        self.assertEqual(req.mode, "prompt")
+
+        # Kiểm tra với môn Mỹ thuật và số câu tùy chỉnh dạng chuỗi
+        req_art = GenerateRequest.model_validate({
+            "subject": "Mỹ thuật",
+            "grade": 10,
+            "num_part1": "10",
+            "num_part2": "2",
+            "num_part3": "4",
+            "num_essay": "1"
+        })
+        self.assertEqual(req_art.subject, "Mỹ thuật")
+        self.assertEqual(req_art.grade, "10")
+        self.assertEqual(req_art.num_part1, 10)
+        self.assertEqual(req_art.num_part2, 2)
+        self.assertEqual(req_art.num_part3, 4)
+        self.assertEqual(req_art.num_essay, 1)
+
+        print("[PASS] Defect 25: iPad Safari payload coercion and 422 protection verified successfully.")
+
+    def test_defect_26_art_and_music_curriculum(self):
+        """
+        Kiểm tra hỗ trợ đầy đủ môn Mỹ thuật và môn Âm nhạc:
+        - get_mock_art_exam và get_mock_music_exam chuẩn cấu trúc, thang điểm 10.0.
+        - get_base_mock_exam điều hướng chính xác cho Mỹ thuật và Âm nhạc.
+        - Kiểm tra các câu hỏi kiến thức bản xứ đặc trưng (sơn mài, Văn Cao, Quan họ, Tô Ngọc Vân...).
+        """
+        from app.services.ai_generator import (
+            get_mock_art_exam, get_mock_music_exam, get_base_mock_exam
+        )
+        from app.services.exam_auditor import heal_tf_offline, Part2Question
+
+        # 1. Đề thi mẫu môn Mỹ thuật
+        art_exam = get_mock_art_exam()
+        self.assertEqual(art_exam.subject, "Mỹ thuật")
+        self.assertGreaterEqual(len(art_exam.part1_mcq), 12)
+        self.assertGreaterEqual(len(art_exam.part2_tf), 4)
+        self.assertGreaterEqual(len(art_exam.part3_short), 6)
+        self.assertGreaterEqual(len(art_exam.part4_essay), 1)
+        self.assertAlmostEqual(art_exam.scoring.total_points, 10.0, places=2)
+        # Kiểm tra nội dung nghệ thuật đặc trưng
+        all_art_text = " ".join([q.question for q in art_exam.part1_mcq] + [q.question for q in art_exam.part2_tf])
+        self.assertTrue(any(k in all_art_text for k in ["sơn mài", "Đông Hồ", "Tô Ngọc Vân", "Chu Đậu"]))
+
+        # 2. Đề thi mẫu môn Âm nhạc
+        music_exam = get_mock_music_exam()
+        self.assertEqual(music_exam.subject, "Âm nhạc")
+        self.assertGreaterEqual(len(music_exam.part1_mcq), 12)
+        self.assertGreaterEqual(len(music_exam.part2_tf), 4)
+        self.assertGreaterEqual(len(music_exam.part3_short), 6)
+        self.assertGreaterEqual(len(music_exam.part4_essay), 1)
+        self.assertAlmostEqual(music_exam.scoring.total_points, 10.0, places=2)
+        # Kiểm tra nội dung âm nhạc đặc trưng
+        all_music_text = " ".join([q.question for q in music_exam.part1_mcq] + [q.question for q in music_exam.part2_tf])
+        self.assertTrue(any(k in all_music_text for k in ["Quan họ", "Văn Cao", "Cồng chiêng", "Đàn bầu", "nhịp 2/4"]))
+
+        # 3. get_base_mock_exam điều hướng chính xác
+        self.assertEqual(get_base_mock_exam("Mỹ thuật").subject, "Mỹ thuật")
+        self.assertEqual(get_base_mock_exam("Hội họa").subject, "Mỹ thuật")
+        self.assertEqual(get_base_mock_exam("Âm nhạc").subject, "Âm nhạc")
+        self.assertEqual(get_base_mock_exam("nhạc lí").subject, "Âm nhạc")
+
+        # 4. Kiểm tra heal_tf_offline cho Âm nhạc
+        dummy_tf = Part2Question(id=1, question="", sub_items=[])
+        healed_music_tf = heal_tf_offline(dummy_tf, "Âm nhạc", index=1, grade="10")
+        self.assertIn("Quan họ", healed_music_tf.question)
+        self.assertEqual(len(healed_music_tf.sub_items), 4)
+
+        print("[PASS] Defect 26: Fine Arts (My thuat) and Music (Am nhac) curriculum & mock exams verified successfully.")
+
 if __name__ == "__main__":
     unittest.main()
 

@@ -603,7 +603,8 @@ createApp({
           form.subject = data.matrix.subject;
           const standardList = [
             "Toán học", "Vật lý", "Hóa học", "Sinh học", "Tiếng Anh", "Lịch sử", "Địa lý",
-            "Giáo dục kinh tế & Pháp luật", "Tin học", "Giáo dục Quốc phòng & An ninh", "Công nghệ", "Ngữ văn"
+            "Giáo dục kinh tế & Pháp luật", "Tin học", "Giáo dục Quốc phòng & An ninh", "Công nghệ", "Ngữ văn",
+            "Mỹ thuật", "Âm nhạc"
           ];
           isCustomSubject.value = !standardList.includes(data.matrix.subject);
         }
@@ -730,7 +731,20 @@ createApp({
         let msg = `${defaultMsg} (mã lỗi ${response.status})`;
         try {
           const errData = await response.json();
-          if (errData && errData.detail) msg = errData.detail;
+          if (errData && errData.detail) {
+            if (Array.isArray(errData.detail)) {
+              msg = errData.detail.map(d => {
+                const loc = Array.isArray(d.loc) ? d.loc.filter(x => x !== 'body').join('.') : (d.loc || '');
+                return `${loc ? loc + ': ' : ''}${d.msg || JSON.stringify(d)}`;
+              }).join(' | ');
+            } else if (typeof errData.detail === 'object') {
+              msg = errData.detail.message || JSON.stringify(errData.detail);
+            } else {
+              msg = String(errData.detail);
+            }
+          } else if (errData && errData.message) {
+            msg = typeof errData.message === 'object' ? JSON.stringify(errData.message) : String(errData.message);
+          }
         } catch (e) {
           if (response.status === 502 || response.status === 503) {
             msg = "Máy chủ Render đang triển khai cập nhật hoặc khởi động lại (502/503). Vui lòng nhấn 'Tạo đề kiểm tra' lại sau vài giây.";
@@ -743,25 +757,45 @@ createApp({
       return await response.json();
     };
 
+    // Helper to format any error cleanly into human-readable text
+    const formatErrorMessage = (err, fallback) => {
+      if (!err) return fallback || "Đã xảy ra lỗi không xác định.";
+      let str = "";
+      if (typeof err === "string") str = err;
+      else if (err.message && typeof err.message === "string") str = err.message;
+      else {
+        try { str = JSON.stringify(err); } catch (_) { str = String(err); }
+      }
+      if (!str || str === "[object Object]") {
+        return fallback || "Lỗi kết nối máy chủ hoặc dữ liệu gửi lên không hợp lệ.";
+      }
+      return str;
+    };
+
     // Generate Exam
     const startGenerate = async () => {
       isGenerating.value = true;
       generateError.value = "";
       try {
         const keysList = parsedKeys.value;
+        const parseNum = (val, def) => {
+          if (val === "" || val === null || val === undefined) return def;
+          const n = parseInt(val, 10);
+          return isNaN(n) ? def : Math.max(0, n);
+        };
         const payload = {
-          mode: inputMode.value,
-          subject: form.subject,
-          grade: form.grade,
-          topic: form.topic,
-          prompt: form.prompt,
-          file_content: form.file_content,
+          mode: inputMode.value || "prompt",
+          subject: String(form.subject || "Toán học"),
+          grade: String(form.grade || "12"),
+          topic: form.topic || "",
+          prompt: form.prompt || "",
+          file_content: form.file_content || "",
           matrix_spec: inputMode.value === "matrix" ? matrixSpec.value : null,
           matrix_mode: inputMode.value === "matrix",
-          num_part1: form.num_part1,
-          num_part2: form.num_part2,
-          num_part3: form.num_part3,
-          num_essay: form.num_essay || 0,
+          num_part1: parseNum(form.num_part1, 12),
+          num_part2: parseNum(form.num_part2, 4),
+          num_part3: parseNum(form.num_part3, 6),
+          num_essay: parseNum(form.num_essay, 0),
           api_provider: apiProvider.value,
           api_key: keysList[0] || null,
           api_keys: keysList,
@@ -782,8 +816,9 @@ createApp({
         showToast("Tạo đề kiểm tra thành công! Đang tiến hành trộn đề...");
         await startShuffle();
       } catch (err) {
-        generateError.value = err.message;
-        const shortMsg = err.message.length > 80 ? err.message.slice(0, 80) + "..." : err.message;
+        const errMsg = formatErrorMessage(err, "Không thể tạo đề thi từ AI.");
+        generateError.value = errMsg;
+        const shortMsg = errMsg.length > 80 ? errMsg.slice(0, 80) + "..." : errMsg;
         showToast(shortMsg, "error");
       } finally {
         isGenerating.value = false;
@@ -828,7 +863,7 @@ createApp({
         showToast(`Đã trộn thành công ${data.variants.length} mã đề!`);
         nextTick(triggerKaTeX);
       } catch (err) {
-        showToast(err.message, "error");
+        showToast(formatErrorMessage(err, "Lỗi trộn đề thi"), "error");
       } finally {
         isShuffling.value = false;
       }

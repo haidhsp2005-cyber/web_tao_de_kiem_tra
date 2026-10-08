@@ -7,7 +7,8 @@ import urllib.parse
 import traceback
 from typing import Optional, List
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse, JSONResponse
+from fastapi.exceptions import RequestValidationError
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -20,7 +21,8 @@ from .services.extractor import extract_file_content, extract_file_content_async
 from .services.matrix_analyzer import analyze_matrix_document
 from .services.ai_generator import (
     generate_exam, get_mock_math_exam, get_mock_physics_exam, get_mock_chemistry_exam, get_mock_gdqp_exam,
-    get_mock_english_exam, get_mock_informatics_exam, get_env_api_keys, mask_key
+    get_mock_english_exam, get_mock_informatics_exam, get_mock_art_exam, get_mock_music_exam,
+    get_env_api_keys, mask_key
 )
 from .services.shuffler import shuffle_exam
 from .services.docx_exporter import create_exam_document
@@ -48,6 +50,19 @@ async def add_no_cache_headers(request: Request, call_next):
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
     return response
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    error_messages = []
+    for error in exc.errors():
+        loc = " -> ".join(str(l) for l in error.get("loc", []) if l != "body")
+        msg = error.get("msg", "Dữ liệu không hợp lệ")
+        error_messages.append(f"{loc}: {msg}" if loc else msg)
+    detail_str = " | ".join(error_messages)
+    return JSONResponse(
+        status_code=422,
+        content={"detail": detail_str, "errors": exc.errors()}
+    )
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
@@ -231,6 +246,10 @@ async def api_sample(subject: str):
         return get_mock_physics_exam()
     elif "hoa" in sub:
         return get_mock_chemistry_exam()
+    elif "mỹ thuật" in sub or "my thuat" in sub or "hội họa" in sub or "art" in sub:
+        return get_mock_art_exam()
+    elif "âm nhạc" in sub or "am nhac" in sub or "music" in sub or "nhạc" in sub:
+        return get_mock_music_exam()
     else:
         return get_mock_math_exam()
 

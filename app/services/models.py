@@ -1,6 +1,6 @@
 import re
 from typing import List, Optional, Dict, Any
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 class Option(BaseModel):
     label: str  # A, B, C, D
@@ -386,6 +386,39 @@ class GenerateRequest(BaseModel):
     api_key: Optional[str] = None
     api_keys: Optional[List[str]] = Field(default_factory=list)
     model_name: Optional[str] = None
+
+    @field_validator('num_part1', 'num_part2', 'num_part3', 'num_essay', mode='before')
+    @classmethod
+    def coerce_int_counts(cls, v: Any, info: Any) -> int:
+        if v is None or v == '' or v == 'null':
+            defaults = {'num_part1': 12, 'num_part2': 4, 'num_part3': 6, 'num_essay': 0}
+            return defaults.get(info.field_name, 0)
+        try:
+            return max(0, int(float(str(v).strip())))
+        except (ValueError, TypeError):
+            defaults = {'num_part1': 12, 'num_part2': 4, 'num_part3': 6, 'num_essay': 0}
+            return defaults.get(info.field_name, 0)
+
+    @field_validator('grade', mode='before')
+    @classmethod
+    def coerce_grade(cls, v: Any) -> str:
+        if v is None or v == '' or v == 'null':
+            return '12'
+        return str(v).strip() or '12'
+
+    @field_validator('subject', mode='before')
+    @classmethod
+    def coerce_subject(cls, v: Any) -> str:
+        if v is None or v == '' or v == 'null':
+            return 'Toán học'
+        return str(v).strip() or 'Toán học'
+
+    @field_validator('mode', mode='before')
+    @classmethod
+    def coerce_mode(cls, v: Any) -> str:
+        if v is None or v == '' or v == 'null':
+            return 'prompt'
+        return str(v).strip() or 'prompt'
 
 class ExportDocxRequest(BaseModel):
     exam: ExamStructure
