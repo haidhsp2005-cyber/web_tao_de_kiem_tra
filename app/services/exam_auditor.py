@@ -1834,6 +1834,8 @@ def heal_mcq_offline(q: Part1Question, subject: str, index: int = 0, grade: str 
     existing_valid_opts = [o.text for o in q.options if not is_option_garbage(o.text)]
     
     default_distractors = {
+        "khoa học tự nhiên": ["Chất khí và dung dịch", "Phản ứng tỏa nhiệt", "Cân bằng sinh thái", "Chuyển động thẳng đều"],
+        "khoa học xã hội": ["Đồng bằng châu thổ", "Chiến thắng lịch sử", "Chuyển dịch cơ cấu kinh tế", "Bảo tồn di sản văn hóa"],
         "mỹ thuật": ["Tượng tròn và phù điêu", "Tranh khắc gỗ và sơn mài", "Kiến trúc đình làng", "Đồ gốm mỹ nghệ"],
         "âm nhạc": ["Nhịp 2/4 và nhịp 4/4", "Gam Đô trưởng và La thứ", "Nhạc cụ dây và gõ dân tộc", "Hát bè và hòa thanh"],
         "gdqp": ["Quân đội nhân dân", "Công an nhân dân", "Dân quân tự vệ", "Lực lượng dự bị động viên"],
@@ -2114,6 +2116,30 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
                     {"label": "d", "statement": "Việc bảo vệ quyền lợi người tiêu dùng trong giao dịch trực tuyến là trách nhiệm của các cơ quan quản lý nhà nước, Hội Bảo vệ quyền lợi người tiêu dùng và Tòa án khi có tranh chấp.", "is_correct": True, "explanation": "Đúng theo cơ chế thực thi pháp luật và giải quyết khiếu nại bảo vệ người tiêu dùng."}
                 ],
                 "explanation": "Quy định pháp luật về giao dịch thương mại điện tử, hợp đồng dân sự và quyền lợi người tiêu dùng."
+            }
+        ],
+        "khoa học tự nhiên": [
+            {
+                "question": "Một nhóm học sinh tiến hành thí nghiệm khảo sát tốc độ thoát hơi nước và quang hợp ở cây xanh. Các em chọn hai chậu cây cùng loại, đặt chậu 1 dưới ánh sáng mặt trời tự nhiên với độ ẩm đất vừa phải, chậu 2 đặt trong bóng râm. Sau 4 giờ theo dõi bằng thiết bị cảm biến đo lượng $CO_2$ và độ ẩm, nhóm ghi nhận chậu 1 có lượng chất hữu cơ tích lũy cao hơn rõ rệt so với chậu 2.",
+                "sub_items": [
+                    {"label": "a", "statement": "Ánh sáng là nhân tố môi trường thiết yếu cung cấp năng lượng cho phản ứng pha sáng của quá trình quang hợp.", "is_correct": True, "explanation": "Diệp lục hấp thụ năng lượng photon ánh sáng để quang phân ly nước và tổng hợp ATP, NADPH."},
+                    {"label": "b", "statement": "Ở chậu 2 trong bóng râm, tốc độ quang hợp bị giới hạn bởi cường độ ánh sáng yếu dẫn đến lượng chất hữu cơ tạo ra thấp hơn.", "is_correct": True, "explanation": "Cường độ ánh sáng dưới điểm bão hòa ánh sáng tỉ lệ thuận với tốc độ quang hợp."},
+                    {"label": "c", "statement": "Nếu tăng nhiệt độ môi trường lên $60^{\\circ}\\text{C}$, tốc độ quang hợp ở chậu 1 sẽ tăng vọt liên tục không ngừng.", "is_correct": False, "explanation": "Nhiệt độ quá cao (trên $45^{\\circ}\\text{C}-50^{\\circ}\\text{C}$) làm biến tính protein enzyme quang hợp và làm khí khổng đóng lại."},
+                    {"label": "d", "statement": "Trồng nhiều cây xanh trong trường học và khu dân cư giúp điều hòa vi khí hậu, hấp thụ $CO_2$ và cung cấp $O_2$ cho sự hô hấp của con người.", "is_correct": True, "explanation": "Đây là vai trò sinh thái to lớn của thảm thực vật trong việc bảo vệ môi trường sống."}
+                ],
+                "explanation": "Quá trình quang hợp ở thực vật và ý nghĩa môi trường sinh thái."
+            }
+        ],
+        "khoa học xã hội": [
+            {
+                "question": "Vùng Đồng bằng sông Cửu Long là vựa lúa và thủy sản trọng điểm lớn nhất cả nước, đóng góp quyết định vào an ninh lương thực quốc gia và xuất khẩu gạo của Việt Nam. Tuy nhiên, trước tác động của biến đổi khí hậu toàn cầu, nước biển dâng và các công trình thủy điện ở thượng nguồn sông Mê Kông, hiện tượng hạn hán và xâm nhập mặn trong mùa khô ngày càng diễn biến phức tạp.",
+                "sub_items": [
+                    {"label": "a", "statement": "Hệ thống sông Tiền và sông Hậu bồi đắp lượng phù sa màu mỡ dồi dào là điều kiện tự nhiên thuận lợi hàng đầu để ĐBSCL phát triển nông nghiệp.", "is_correct": True, "explanation": "Đồng bằng sông Cửu Long được hình thành chủ yếu do phù sa châu thổ của hệ thống sông Mê Kông bồi đắp."},
+                    {"label": "b", "statement": "Biến đổi khí hậu kết hợp suy giảm lưu lượng nước từ thượng nguồn sông Mê Kông là nguyên nhân chính gia tăng xâm nhập mặn trong mùa khô.", "is_correct": True, "explanation": "Lưu lượng dòng chảy ngọt mùa kiệt suy giảm khiến nước mặn từ biển theo các cửa sông lấn sâu vào nội đồng."},
+                    {"label": "c", "statement": "Giải pháp ứng phó 'thuận thiên' (chuyển đổi mùa vụ, luân canh tôm - lúa vùng mặn lợ) giúp người dân thích ứng linh hoạt và bền vững.", "is_correct": True, "explanation": "Nghị quyết 120 của Chính phủ khuyến khích mô hình phát triển bền vững thích ứng với biến đổi khí hậu theo quy luật tự nhiên."},
+                    {"label": "d", "statement": "Để giải quyết dứt điểm hạn mặn, chính quyền cần phá bỏ toàn bộ các khu rừng ngập mặn ven biển để xây dựng khu nghỉ dưỡng bê tông hóa.", "is_correct": False, "explanation": "Rừng ngập mặn là lá chắn sinh thái phòng hộ bờ biển; phá hủy rừng ngập mặn sẽ làm xói lở và nhiễm mặn nghiêm trọng hơn."}
+                ],
+                "explanation": "Đặc điểm địa lý Đồng bằng sông Cửu Long và chiến lược thích ứng biến đổi khí hậu."
             }
         ],
         "mỹ thuật": [

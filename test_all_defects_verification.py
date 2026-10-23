@@ -1028,6 +1028,59 @@ class TestAllUserDefectsVerification(unittest.TestCase):
 
         print("[PASS] Defect 26: Fine Arts (My thuat) and Music (Am nhac) curriculum & mock exams verified successfully.")
 
+    def test_defect_27_khtn_and_khxh_curriculum(self):
+        """
+        Kiem tra ho tro day du mon Khoa hoc tu nhien (KHTN) va Khoa hoc xa hoi (KHXH):
+        - get_mock_khtn_exam va get_mock_khxh_exam chuan cau truc, thang diem 10.0.
+        - get_base_mock_exam dieu huong chinh xac cho KHTN va KHXH.
+        - Kiem tra heal_tf_offline cho KHTN va KHXH.
+        """
+        from app.services.ai_generator import (
+            get_mock_khtn_exam, get_mock_khxh_exam, get_base_mock_exam
+        )
+        from app.services.exam_auditor import heal_tf_offline, Part2Question
+
+        # 1. De thi mau mon Khoa hoc tu nhien
+        khtn_exam = get_mock_khtn_exam()
+        self.assertEqual(khtn_exam.subject, "Khoa học tự nhiên")
+        self.assertGreaterEqual(len(khtn_exam.part1_mcq), 12)
+        self.assertGreaterEqual(len(khtn_exam.part2_tf), 4)
+        self.assertGreaterEqual(len(khtn_exam.part3_short), 6)
+        self.assertGreaterEqual(len(khtn_exam.part4_essay), 1)
+        self.assertAlmostEqual(khtn_exam.scoring.total_points, 10.0, places=2)
+        all_khtn_text = " ".join([q.question for q in khtn_exam.part1_mcq] + [q.question for q in khtn_exam.part2_tf])
+        self.assertTrue(any(k in all_khtn_text for k in ["oxygen", "quang hợp", "acid", "đòn bẩy"]))
+
+        # 2. De thi mau mon Khoa hoc xa hoi
+        khxh_exam = get_mock_khxh_exam()
+        self.assertEqual(khxh_exam.subject, "Khoa học xã hội")
+        self.assertGreaterEqual(len(khxh_exam.part1_mcq), 12)
+        self.assertGreaterEqual(len(khxh_exam.part2_tf), 4)
+        self.assertGreaterEqual(len(khxh_exam.part3_short), 6)
+        self.assertGreaterEqual(len(khxh_exam.part4_essay), 1)
+        self.assertAlmostEqual(khxh_exam.scoring.total_points, 10.0, places=2)
+        all_khxh_text = " ".join([q.question for q in khxh_exam.part1_mcq] + [q.question for q in khxh_exam.part2_tf])
+        self.assertTrue(any(k in all_khxh_text for k in ["Bạch Đằng", "Điện Biên Phủ", "Tuyên ngôn Độc lập", "Đồng bằng sông Cửu Long"]))
+
+        # 3. get_base_mock_exam dieu huong chinh xac
+        self.assertEqual(get_base_mock_exam("Khoa học tự nhiên").subject, "Khoa học tự nhiên")
+        self.assertEqual(get_base_mock_exam("KHTN").subject, "Khoa học tự nhiên")
+        self.assertEqual(get_base_mock_exam("Khoa học xã hội").subject, "Khoa học xã hội")
+        self.assertEqual(get_base_mock_exam("KHXH").subject, "Khoa học xã hội")
+
+        # 4. Kiem tra heal_tf_offline cho KHTN va KHXH
+        dummy_khtn = Part2Question(id=1, question="", sub_items=[])
+        healed_khtn_tf = heal_tf_offline(dummy_khtn, "Khoa học tự nhiên", index=1, grade="9")
+        self.assertIn("quang hợp", healed_khtn_tf.question.lower())
+        self.assertEqual(len(healed_khtn_tf.sub_items), 4)
+
+        dummy_khxh = Part2Question(id=1, question="", sub_items=[])
+        healed_khxh_tf = heal_tf_offline(dummy_khxh, "Khoa học xã hội", index=1, grade="9")
+        self.assertIn("cửu long", healed_khxh_tf.question.lower())
+        self.assertEqual(len(healed_khxh_tf.sub_items), 4)
+
+        print("[PASS] Defect 27: Natural Sciences (KHTN) and Social Sciences (KHXH) curriculum & mock exams verified successfully.")
+
 if __name__ == "__main__":
     unittest.main()
 

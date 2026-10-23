@@ -44,6 +44,8 @@ CẤU TRÚC ĐỀ THEO SỐ LƯỢNG YÊU CẦU:
   * QUY CHUẨN ĐẶC BIỆT NÂNG CAO ĐỘ HẤP DẪN & Ý NGHĨA THỰC TIỄN CHO PHẦN II:
     + ĐỀ BÀI DẪN ('question'): BẮT BUỘC LÀ MỘT BÀI TOÁN TÌNH HUỐNG THỰC TẾ / NGỮ CẢNH DỰ ÁN / THÍ NGHIỆM / ĐOẠN MÃ NGUỒN / BẢNG SỐ LIỆU / ĐOẠN TRÍCH TƯ LIỆU SỬ LIỆU - PHÁP LÝ (Độ dài từ 40 đến 120 từ).
       - Môn Tin học: Bối cảnh dự án CNTT / tình huống thực tế BÁM SÁT CHÍNH XÁC CHỦ ĐỀ MA TRẬN VÀ TÀI LIỆU ĐÍNH KÈM (ví dụ: Bảng tính điện tử, an toàn số/phòng chống lừa đảo mạng, mạng máy tính, thiết bị số; CHỈ sử dụng CSDL hoặc Python KHI VÀ CHỈ KHI ma trận hoặc tài liệu yêu cầu. TUYỆT ĐỐI KHÔNG tự ý đưa CSDL hoặc Python vào nếu ma trận không có hoặc thuộc HK1 chưa học).
+      - Môn Khoa học tự nhiên (KHTN): Bối cảnh thực nghiệm khoa học, tích hợp liên môn Vật lý - Hóa học - Sinh học (đo lường cảm biến, biến đổi chất và năng lượng, quang hợp và hô hấp tế bào, phản ứng hóa học trong đời sống, dung dịch - nồng độ, acid - base - muối, cân bằng hệ sinh thái, lực và chuyển động, sóng âm và quang học 50-100 từ). 4 ý con: a (Nhận biết hiện tượng/thông số/dụng cụ đo) - b (Hiểu bản chất cơ chế phản ứng/nguyên lý khoa học) - c (Tính toán định lượng: khối lượng, nồng độ %, vận tốc, công suất, tỉ lệ di truyền) - d (Vận dụng giải thích hiện tượng thực tế, an toàn phòng thí nghiệm, bảo vệ sức khỏe và môi trường).
+      - Môn Khoa học xã hội (KHXH / Lịch sử & Địa lí): Bối cảnh tư liệu sự kiện lịch sử, nhân vật, mốc thời gian, chủ quyền biển đảo, số liệu biến đổi khí hậu, phân bố tự nhiên và chuyển dịch cơ cấu kinh tế - xã hội, ứng xử pháp lý và văn hóa công dân (50-100 từ). 4 ý con: a (Nhận biết mốc thời gian/địa danh/chủ thể sự kiện) - b (Hiểu mối quan hệ nhân - quả, đặc điểm tự nhiên - dân cư) - c (Tính toán số liệu địa lý hoặc đối chiếu tư liệu lịch sử) - d (Rút ra bài học lịch sử, bảo tồn di sản văn hóa và trách nhiệm công dân).
       - Môn Toán: BẮT BUỘC 100% các câu Phần II là bài toán mô hình hóa thực tế / ứng dụng đời sống (Toán 9: đo chiều cao ngọn hải đăng/tòa nhà qua góc nâng/góc hạ của giác kế, tính cước điện bậc thang/cước taxi bằng hệ phương trình, chuyển động ca nô trên sông xuôi dòng ngược dòng, thể tích và diện tích vật dụng thực tế hình trụ/hình nón như bồn nước inox; Toán THPT: tối ưu hóa chi phí/doanh thu hàm số, quy hoạch tài chính, quỹ đạo chuyển động, hình học không gian Oxyz trạm radar/định vị GPS, xác suất dịch bệnh/kiểm định). CẤM TUYỆT ĐỐI ra đề cộc lốc lý thuyết suông như 'Cho tam giác ABC...', 'Cho góc nhọn alpha...' hay 'Cho hệ phương trình... Xét các phát biểu sau:'.
       - Môn Vật lý: Thí nghiệm thực nghiệm, thiết bị đo lường/cảm biến công nghệ, sóng âm, quang học, chu trình nhiệt động lực học.
       - Môn Hóa học: Quy trình sản xuất hóa chất công nghiệp, xử lý ô nhiễm môi trường nước/khí thải, phản ứng hữu cơ, hóa dược.
@@ -2172,6 +2174,528 @@ def get_mock_music_exam() -> ExamStructure:
         audit_report=create_default_audit_report("Âm nhạc")
     )
 
+
+def get_mock_khtn_exam() -> ExamStructure:
+    mcqs = [
+        Part1Question(
+            id=1,
+            question="Khí nào sau đây có vai trò duy trì sự cháy và sự hô hấp của con người và hầu hết các sinh vật trên Trái Đất?",
+            options=[
+                Option(label="A", text="Khí oxygen ($O_2$)"),
+                Option(label="B", text="Khí nitrogen ($N_2$)"),
+                Option(label="C", text="Khí carbon dioxide ($CO_2$)"),
+                Option(label="D", text="Khí hydrogen ($H_2$)")
+            ],
+            answer="A",
+            explanation="Khí oxygen ($O_2$) duy trì sự sống và sự cháy, chiếm khoảng 21% thể tích không khí."
+        ),
+        Part1Question(
+            id=2,
+            question="Trong hệ đo lường quốc tế SI, đơn vị đo lực là",
+            options=[
+                Option(label="A", text="Newton (N)"),
+                Option(label="B", text="Joule (J)"),
+                Option(label="C", text="Pascal (Pa)"),
+                Option(label="D", text="Watt (W)")
+            ],
+            answer="A",
+            explanation="Lực được đo bằng đơn vị Newton, kí hiệu là N (đặt theo tên nhà bác học Isaac Newton)."
+        ),
+        Part1Question(
+            id=3,
+            question="Bào quan nào sau đây trong tế bào thực vật và động vật được coi là 'nhà máy năng lượng' thực hiện quá trình hô hấp tế bào?",
+            options=[
+                Option(label="A", text="Ti thể"),
+                Option(label="B", text="Lục lạp"),
+                Option(label="C", text="Không bào"),
+                Option(label="D", text="Ribosome")
+            ],
+            answer="A",
+            explanation="Ti thể là nơi diễn ra quá trình hô hấp tế bào, phân giải chất hữu cơ giải phóng năng lượng ATP cung cấp cho mọi hoạt động sống."
+        ),
+        Part1Question(
+            id=4,
+            question="Khi cho kim loại kẽm ($Zn$) tác dụng với dung dịch acid clohiđric ($HCl$), hiện tượng quan sát được là",
+            options=[
+                Option(label="A", text="Kim loại kẽm tan dần, có bọt khí không màu thoát ra ($H_2$)"),
+                Option(label="B", text="Xuất hiện kết tủa trắng không tan"),
+                Option(label="C", text="Dung dịch chuyển sang màu xanh lam"),
+                Option(label="D", text="Không có hiện tượng gì xảy ra")
+            ],
+            answer="A",
+            explanation="Phương trình phản ứng: $Zn + 2HCl \\rightarrow ZnCl_2 + H_2 \\uparrow$. Kẽm tan và sủi bọt khí hydrogen."
+        ),
+        Part1Question(
+            id=5,
+            question="Nguồn năng lượng nào sau đây là nguồn năng lượng tái tạo và thân thiện với môi trường?",
+            options=[
+                Option(label="A", text="Năng lượng mặt trời và năng lượng gió"),
+                Option(label="B", text="Nhiên liệu than đá"),
+                Option(label="C", text="Khí đốt tự nhiên"),
+                Option(label="D", text="Dầu mỏ thô")
+            ],
+            answer="A",
+            explanation="Năng lượng mặt trời và gió là các nguồn năng lượng sạch, có thể tái sinh liên tục, không gây phát thải khí nhà kính."
+        ),
+        Part1Question(
+            id=6,
+            question="Quá trình quang hợp ở thực vật xanh diễn ra chủ yếu ở bào quan nào sau đây?",
+            options=[
+                Option(label="A", text="Lục lạp (chứa chất diệp lục)"),
+                Option(label="B", text="Ti thể"),
+                Option(label="C", text="Nhân tế bào"),
+                Option(label="D", text="Thành tế bào")
+            ],
+            answer="A",
+            explanation="Quang hợp diễn ra tại lục lạp của tế bào lá nhờ có sắc tố diệp lục hấp thụ năng lượng ánh sáng mặt trời."
+        ),
+        Part1Question(
+            id=7,
+            question="Nồng độ phần trăm ($C\\%$) của một dung dịch cho biết",
+            options=[
+                Option(label="A", text="Số gam chất tan có trong 100 gam dung dịch"),
+                Option(label="B", text="Số mol chất tan có trong 1 lít dung dịch"),
+                Option(label="C", text="Số gam chất tan hòa tan trong 100 gam nước"),
+                Option(label="D", text="Khối lượng riêng của dung dịch")
+            ],
+            answer="A",
+            explanation="Công thức $C\\% = \\frac{m_{ct}}{m_{dd}} \\times 100\\%$, biểu thị số gam chất tan có trong 100 gam dung dịch."
+        ),
+        Part1Question(
+            id=8,
+            question="Hiện tượng tia sáng bị gãy khúc khi truyền xiên góc qua mặt phân cách giữa hai môi trường trong suốt gọi là",
+            options=[
+                Option(label="A", text="Hiện tượng khúc xạ ánh sáng"),
+                Option(label="B", text="Hiện tượng phản xạ toàn phần"),
+                Option(label="C", text="Hiện tượng tán sắc ánh sáng"),
+                Option(label="D", text="Hiện tượng giao thoa ánh sáng")
+            ],
+            answer="A",
+            explanation="Khúc xạ ánh sáng là hiện tượng tia sáng đổi hướng truyền (bị gãy khúc) tại mặt phân cách giữa hai môi trường trong suốt có chiết suất khác nhau."
+        ),
+        Part1Question(
+            id=9,
+            question="Ở sinh vật nhân thực, cấu trúc mang thông tin di truyền được cấu tạo từ ADN và protein nằm trong nhân tế bào là",
+            options=[
+                Option(label="A", text="Nhiễm sắc thể"),
+                Option(label="B", text="Lưới nội chất"),
+                Option(label="C", text="Bộ máy Golgi"),
+                Option(label="D", text="Màng sinh chất")
+            ],
+            answer="A",
+            explanation="Nhiễm sắc thể là cấu trúc chứa vật chất di truyền (ADN) quy định các tính trạng của sinh vật."
+        ),
+        Part1Question(
+            id=10,
+            question="Dung dịch nào sau đây làm đổi màu giấy quỳ tím sang màu đỏ?",
+            options=[
+                Option(label="A", text="Dung dịch acid sunfuric ($H_2SO_4$)"),
+                Option(label="B", text="Dung dịch natri hiđroxit ($NaOH$)"),
+                Option(label="C", text="Dung dịch muối ăn ($NaCl$)"),
+                Option(label="D", text="Nước cất tinh khiết")
+            ],
+            answer="A",
+            explanation="Dung dịch acid làm quỳ tím hóa đỏ, dung dịch base làm quỳ tím hóa xanh, dung dịch muối trung tính không làm đổi màu quỳ."
+        ),
+        Part1Question(
+            id=11,
+            question="Quá trình chất chuyển từ thể lỏng sang thể hơi (thể khí) diễn ra trên bề mặt chất lỏng ở mọi nhiệt độ gọi là",
+            options=[
+                Option(label="A", text="Sự bay hơi"),
+                Option(label="B", text="Sự ngưng tụ"),
+                Option(label="C", text="Sự nóng chảy"),
+                Option(label="D", text="Sự đông đặc")
+            ],
+            answer="A",
+            explanation="Sự bay hơi là quá trình chất lỏng biến thành hơi xảy ra trên bề mặt chất lỏng ở bất kỳ nhiệt độ nào."
+        ),
+        Part1Question(
+            id=12,
+            question="Nhóm sinh vật nào sau đây đóng vai trò phân giải xác động vật, thực vật chết thành các chất vô cơ trả lại cho môi trường đất?",
+            options=[
+                Option(label="A", text="Vi sinh vật và nấm hoại sinh"),
+                Option(label="B", text="Động vật ăn cỏ"),
+                Option(label="C", text="Thực vật bậc cao"),
+                Option(label="D", text="Động vật ăn thịt đầu bảng")
+            ],
+            answer="A",
+            explanation="Sinh vật phân giải (vi khuẩn, nấm hoại sinh) khép kín chu trình tuần hoàn vật chất trong hệ sinh thái."
+        )
+    ]
+
+    tf_questions = [
+        Part2Question(
+            id=1,
+            question="Một nhóm học sinh tiến hành thí nghiệm chuẩn độ kiểm tra nồng độ dung dịch acid clohiđric ($HCl$) trong phòng thí nghiệm. Các em lấy đúng $10\\text{ mL}$ dung dịch $HCl$ chưa biết nồng độ vào bình tam giác, nhỏ thêm 2 giọt dung dịch chất chỉ thị màu phenolphtalein, sau đó dùng buret chuẩn độ từ từ dung dịch natri hiđroxit ($NaOH$) nồng độ $0{,}1\\text{ M}$ vào bình cho đến khi dung dịch chuyển sang màu hồng nhạt bền vững thì hết $12{,}5\\text{ mL}$ dung dịch $NaOH$.",
+            sub_items=[
+                SubItem(label="a", statement="Dung dịch chất chỉ thị phenolphtalein không đổi màu trong môi trường acid và chuyển sang màu hồng trong môi trường kiềm (base).", is_correct=True, explanation="Phenolphtalein không màu trong dung dịch acid/trung tính và có màu hồng trong dung dịch base."),
+                SubItem(label="b", statement="Phương trình hóa học của phản ứng trung hòa diễn ra trong thí nghiệm là: $HCl + NaOH \\rightarrow NaCl + H_2O$.", is_correct=True, explanation="Đây là phản ứng trao đổi trung hòa giữa acid mạnh và base mạnh tạo muối và nước."),
+                SubItem(label="c", statement="Số mol $NaOH$ đã phản ứng là $0{,}125\\text{ mol}$.", is_correct=False, explanation="Số mol $NaOH = 0{,}0125\\text{ L} \\times 0{,}1\\text{ M} = 0{,}00125\\text{ mol}$ (tức $1{,}25 \\times 10^{-3}\\text{ mol}$)."),
+                SubItem(label="d", statement="Nồng độ mol của dung dịch acid $HCl$ ban đầu được xác định chính xác là $0{,}125\\text{ M}$.", is_correct=True, explanation="Vì tỉ lệ phản ứng là $1:1$, số mol $HCl = 0{,}00125\\text{ mol} \\Rightarrow C_M = 0{,}00125 / 0{,}01 = 0{,}125\\text{ M}$.")
+            ],
+            explanation="Thí nghiệm chuẩn độ acid - base và tính toán nồng độ mol dung dịch."
+        ),
+        Part2Question(
+            id=2,
+            question="Một mô hình trồng rau thủy canh công nghệ cao trong nhà màng sử dụng hệ thống đèn LED chuyên dụng và hệ thống cảm biến tự động theo dõi nồng độ $CO_2$, nhiệt độ và độ ẩm không khí. Kỹ sư nông nghiệp duy trì nồng độ $CO_2$ ở mức $800\\text{ ppm}$ (cao hơn nồng độ trong khí quyển tự nhiên khoảng $400\\text{ ppm}$) và nhiệt độ ban ngày ổn định ở mức $26^\\circ\\text{C}$ để tối ưu hóa năng suất quang hợp.",
+            sub_items=[
+                SubItem(label="a", statement="Khí carbon dioxide ($CO_2$) và nước ($H_2O$) là hai nguyên liệu đầu vào thiết yếu của quá trình quang hợp ở thực vật xanh.", is_correct=True, explanation="Quang hợp chuyển hóa $CO_2$ và nước thành chất hữu cơ và khí oxygen dưới tác dụng của ánh sáng."),
+                SubItem(label="b", statement="Việc chủ động tăng nồng độ $CO_2$ trong ngưỡng tối ưu giúp tăng tốc độ quang hợp, từ đó nâng cao tích lũy sinh khối và năng suất cây trồng.", is_correct=True, explanation="Nồng độ $CO_2$ cao hơn mức khí quyển (đến điểm bão hòa) sẽ thúc đẩy chu trình Canvin diễn ra nhanh hơn."),
+                SubItem(label="c", statement="Nếu tiếp tục tăng nhiệt độ nhà màng lên trên $55^\\circ\\text{C}$, tốc độ quang hợp của rau sẽ tiếp tục tăng vọt vô hạn.", is_correct=False, explanation="Ở nhiệt độ trên $45^\\circ\\text{C}-50^\\circ\\text{C}$, các enzyme quang hợp bị biến tính phá hủy cấu trúc, tế bào lá bị mất nước làm quang hợp ngừng trệ."),
+                SubItem(label="d", statement="Mô hình nông nghiệp nhà màng khép kín giúp hạn chế sâu bệnh, giảm thiểu sử dụng thuốc bảo vệ thực vật hóa học, góp phần bảo vệ sức khỏe người tiêu dùng và hệ sinh thái.", is_correct=True, explanation="Đây là lợi thế cốt lõi của nông nghiệp công nghệ cao thân thiện môi trường.")
+            ],
+            explanation="Quá trình quang hợp ở thực vật và ứng dụng công nghệ sinh học nông nghiệp cao."
+        ),
+        Part2Question(
+            id=3,
+            question="Người thợ cơ khí sử dụng một chiếc đòn bẩy kim loại có chiều dài $1{,}5\\text{ m}$ để nâng một tảng đá có trọng lượng $P = 1200\\text{ N}$. Điểm tựa $O$ được đặt cách tảng đá một khoảng cách $d_1 = 0{,}3\\text{ m}$, lực tác dụng của tay người đặt vuông góc tại đầu tự do của đòn bẩy cách điểm tựa $d_2 = 1{,}2\\text{ m}$.",
+            sub_items=[
+                SubItem(label="a", statement="Đòn bẩy là một máy cơ đơn giản giúp con người thay đổi hướng và độ lớn của lực tác dụng.", is_correct=True, explanation="Đòn bẩy biến đổi lực tác dụng dựa trên nguyên tắc đòn bẩy và quy tắc mômen lực."),
+                SubItem(label="b", statement="Cánh tay đòn của lực nâng do tay người tác dụng dài gấp 4 lần cánh tay đòn của trọng lực tảng đá.", is_correct=True, explanation="Tỉ số $d_2 / d_1 = 1{,}2 / 0{,}3 = 4$ lần."),
+                SubItem(label="c", statement="Để nâng được tảng đá lên, người thợ cơ khí phải tác dụng một lực tối thiểu lớn hơn $1200\\text{ N}$.", is_correct=False, explanation="Áp dụng quy tắc cân bằng đòn bẩy: $F \\times d_2 = P \\times d_1 \\Rightarrow F = 1200 \\times 0{,}3 / 1{,}2 = 300\\text{ N}$. Lực cần tác dụng nhỏ hơn trọng lượng 4 lần."),
+                SubItem(label="d", statement="Đòn bẩy loại này cho ta lợi 4 lần về lực nhưng lại thiệt 4 lần về quãng đường dịch chuyển của điểm đặt lực theo định luật về công.", is_correct=True, explanation="Không một máy cơ đơn giản nào cho ta lợi về công, lợi bao nhiêu lần về lực thì thiệt bấy nhiêu lần về đường đi.")
+            ],
+            explanation="Máy cơ đơn giản đòn bẩy và định luật về công trong cơ học."
+        ),
+        Part2Question(
+            id=4,
+            question="Một nhà máy xử lý nước sinh hoạt lấy nước mặt từ một con sông phù sa. Nước thô sau khi bơm lên được bổ sung chất keo tụ phèn nhôm ($Al_2(SO_4)_3$) để lắng cặn phù sa, sau đó cho qua bể lọc cát - than hoạt tính để loại bỏ chất bẩn lơ lửng và chất hữu cơ gây mùi, cuối cùng sục một lượng nhỏ khí clo ($Cl_2$) để khử trùng diệt khuẩn trước khi cấp vào mạng lưới đường ống sinh hoạt.",
+            sub_items=[
+                SubItem(label="a", statement="Quá trình tạo bông cặn lắng phù sa nhờ phèn nhôm là phương pháp xử lý cơ học kết hợp hóa học loại bỏ hạt keo lơ lửng.", is_correct=True, explanation="Ion nhôm thủy phân tạo kết tủa keo $Al(OH)_3$ lôi kéo các hạt cặn lắng xuống."),
+                SubItem(label="b", statement="Lớp than hoạt tính trong bể lọc có cấu trúc xốp rỗng với diện tích bề mặt cực lớn giúp hấp phụ mùi hôi và các hợp chất hữu cơ hòa tan.", is_correct=True, explanation="Than hoạt tính có khả năng hấp phụ vượt trội các phân tử khí độc và hợp chất màu, mùi."),
+                SubItem(label="c", statement="Khí clo được đưa vào nguồn nước với mục đích chính là tăng nồng độ đường cho nước có vị ngọt thanh dễ uống.", is_correct=False, explanation="Khí clo phản ứng với nước tạo acid $HClO$ có tính oxy hóa cực mạnh giúp tiêu diệt vi khuẩn, vi sinh vật gây bệnh."),
+                SubItem(label="d", statement="Nước sau khử trùng bằng clo nếu dùng nuôi cá cảnh trong bể thủy sinh cần để hả hơi clo tự nhiên ngoài không khí hoặc sục khí trước khi thả cá để tránh ngộ độc clo cho cá.", is_correct=True, explanation="Clo hòa tan trong nước máy gây tổn thương mang cá, cần phơi nước để clo bay hơi hết trước khi nuôi cá.")
+            ],
+            explanation="Quy trình công nghệ lọc nước sinh hoạt và an toàn hóa chất môi trường."
+        )
+    ]
+
+    short_questions = [
+        Part3Question(
+            id=1,
+            question="Khối lượng mol nguyên tử của nguyên tố Oxygen (O) bằng bao nhiêu gam/mol (chỉ ghi số nguyên)?",
+            answer="16",
+            explanation="Khối lượng nguyên tử của Oxygen xấp xỉ bằng 16 g/mol."
+        ),
+        Part3Question(
+            id=2,
+            question="Một xe đạp chuyển động thẳng đều đi hết quãng đường 180 mét trong thời gian 36 giây. Tốc độ chuyển động của xe bằng bao nhiêu m/s (chỉ ghi số nguyên)?",
+            answer="5",
+            explanation="Vận tốc $v = s / t = 180 / 36 = 5\\text{ m/s}$."
+        ),
+        Part3Question(
+            id=3,
+            question="Ở điều kiện chuẩn ($25^\\circ\\text{C}$, 1 bar), thể tích của 1 mol chất khí bất kì bằng bao nhiêu lít (ghi số thập phân dùng dấu chấm, ví dụ 24.79)?",
+            answer="24.79",
+            explanation="Theo chương trình KHTN mới (chuẩn IUPAC mới), 1 mol khí ở điều kiện chuẩn có thể tích là 24.79 lít."
+        ),
+        Part3Question(
+            id=4,
+            question="Từ 1 tế bào mẹ ban đầu, sau 3 lần phân bào nguyên phân liên tiếp sẽ tạo ra tổng cộng bao nhiêu tế bào con (chỉ ghi số nguyên)?",
+            answer="8",
+            explanation="Số tế bào con tạo thành $= 2^3 = 8$ tế bào."
+        ),
+        Part3Question(
+            id=5,
+            question="Độ pH của nước cất tinh khiết ở nhiệt độ phòng $25^\\circ\\text{C}$ bằng bao nhiêu (chỉ ghi số nguyên)?",
+            answer="7",
+            explanation="Môi trường trung tính có pH = 7."
+        ),
+        Part3Question(
+            id=6,
+            question="Một bóng đèn điện tiêu thụ công suất 44W khi mắc vào hiệu điện thế 220V. Cường độ dòng điện qua bóng đèn bằng bao nhiêu Ampe (ghi số thập phân, ví dụ 0.2)?",
+            answer="0.2",
+            explanation="Cường độ dòng điện $I = P / U = 44 / 220 = 0{,}2\\text{ A}$."
+        )
+    ]
+
+    essay_questions = [
+        Part4EssayQuestion(
+            id=1,
+            question="Trình bày các nguồn nguyên nhân chính gây ô nhiễm nguồn nước ngọt (nước ngầm và nước mặt) hiện nay. Dựa vào kiến thức môn Khoa học tự nhiên, em hãy giải thích tại sao pin cũ và ắc quy đã qua sử dụng không được vứt chung vào thùng rác sinh hoạt thông thường mà phải thu gom xử lý riêng.",
+            points=1.0,
+            answer="Nêu nguồn gây ô nhiễm nước (sinh hoạt, công nghiệp, nông nghiệp) và giải thích tác hại của kim loại nặng độc hại trong pin cũ (chì, thủy ngân, cadimi).",
+            explanation="- Nêu được 3 nguồn gây ô nhiễm nước chủ yếu: nước thải sinh hoạt chưa qua xử lý, nước thải công nghiệp chứa hóa chất độc hại, dư lượng phân bón hóa học và thuốc trừ sâu trong nông nghiệp.\n- Giải thích được cấu tạo của pin chứa các kim loại nặng cực độc như Thủy ngân (Hg), Chì (Pb), Cadimi (Cd), Niken (Ni).\n- Phân tích hậu quả: Khi chôn lấp chung với rác sinh hoạt, vỏ pin bị rỉ sét làm rò rỉ kim loại nặng ngấm sâu vào đất và mạch nước ngầm.\n- Đề xuất hành động: Thu gom pin cũ đưa đến các điểm thu gom rác thải nguy hại chuyên trách, tuyên truyền phân loại rác tại nguồn."
+        )
+    ]
+
+    return ExamStructure(
+        title="ĐỀ KIỂM TRA ĐỊNH KỲ MÔN KHOA HỌC TỰ NHIÊN 9",
+        subject="Khoa học tự nhiên",
+        grade="9",
+        duration_minutes=45,
+        school_name="SỞ GD&ĐT ... - TRƯỜNG THCS ...",
+        academic_year="NĂM HỌC 2026 - 2027",
+        code="101",
+        part1_mcq=mcqs,
+        part2_tf=tf_questions,
+        part3_short=short_questions,
+        part4_essay=essay_questions,
+        scoring=calculate_exam_scoring(num_p1=len(mcqs), num_p2=len(tf_questions), num_p3=len(short_questions), num_p4=len(essay_questions)),
+        audit_report=create_default_audit_report("Khoa học tự nhiên")
+    )
+
+
+def get_mock_khxh_exam() -> ExamStructure:
+    mcqs = [
+        Part1Question(
+            id=1,
+            question="Chiến thắng lịch sử nào trên sông Bạch Đằng đã chấm dứt hoàn toàn hơn một nghìn năm Bắc thuộc, mở ra kỷ nguyên độc lập tự chủ lâu dài cho dân tộc Việt Nam?",
+            options=[
+                Option(label="A", text="Chiến thắng Bạch Đằng năm 938 của Ngô Quyền"),
+                Option(label="B", text="Chiến thắng Bạch Đằng năm 981 của Lê Hoàn"),
+                Option(label="C", text="Chiến thắng Bạch Đằng năm 1288 của Trần Quốc Tuấn"),
+                Option(label="D", text="Chiến thắng Ngọc Hồi - Đống Đa năm 1789")
+            ],
+            answer="A",
+            explanation="Chiến thắng Bạch Đằng năm 938 do Ngô Quyền lãnh đạo đánh tan quân Nam Hán đã chấm dứt hơn 1000 năm Bắc thuộc."
+        ),
+        Part1Question(
+            id=2,
+            question="Lãnh thổ nước Cộng hòa Xã hội Chủ nghĩa Việt Nam nằm hoàn toàn trong khu vực địa lý nào của châu Á?",
+            options=[
+                Option(label="A", text="Khu vực Đông Nam Á"),
+                Option(label="B", text="Khu vực Nam Á"),
+                Option(label="C", text="Khu vực Đông Á"),
+                Option(label="D", text="Khu vực Trung Á")
+            ],
+            answer="A",
+            explanation="Việt Nam nằm ở rìa phía đông của bán đảo Đông Dương, thuộc khu vực Đông Nam Á."
+        ),
+        Part1Question(
+            id=3,
+            question="Chiến dịch quân sự nào trong kháng chiến chống thực dân Pháp được coi là mốc son chói lọi 'lừng lẫy năm châu, chấn động địa cầu' năm 1954?",
+            options=[
+                Option(label="A", text="Chiến dịch Điện Biên Phủ"),
+                Option(label="B", text="Chiến dịch Biên giới thu - đông 1950"),
+                Option(label="C", text="Chiến dịch Việt Bắc thu - đông 1947"),
+                Option(label="D", text="Chiến dịch Tây Bắc 1952")
+            ],
+            answer="A",
+            explanation="Chiến thắng lịch sử Điện Biên Phủ ngày 07/5/1954 đập tan tập đoàn cứ điểm mạnh nhất của thực dân Pháp tại Đông Dương."
+        ),
+        Part1Question(
+            id=4,
+            question="Dạng địa hình nào sau đây chiếm phần lớn diện tích (khoảng 3/4 diện tích lãnh thổ) phần đất liền của nước ta?",
+            options=[
+                Option(label="A", text="Địa hình đồi núi"),
+                Option(label="B", text="Địa hình đồng bằng châu thổ"),
+                Option(label="C", text="Địa hình bờ biển và bãi triều"),
+                Option(label="D", text="Địa hình cao nguyên bazan")
+            ],
+            answer="A",
+            explanation="Đồi núi chiếm 3/4 diện tích đất liền của nước ta, nhưng chủ yếu là đồi núi thấp dưới 1000m (chiếm 85%)."
+        ),
+        Part1Question(
+            id=5,
+            question="Tác phẩm văn học - sử liệu bất hủ nào được coi là bản 'Tuyên ngôn Độc lập thứ hai' của dân tộc do Nguyễn Trãi soạn thảo năm 1428?",
+            options=[
+                Option(label="A", text="Bình Ngô đại cáo"),
+                Option(label="B", text="Nam quốc sơn hà"),
+                Option(label="C", text="Hịch tướng sĩ"),
+                Option(label="D", text="Chiếu dời đô")
+            ],
+            answer="A",
+            explanation="'Bình Ngô đại cáo' được Nguyễn Trãi viết sau khi cuộc khởi nghĩa Lam Sơn đánh tan quân Minh toàn thắng."
+        ),
+        Part1Question(
+            id=6,
+            question="Gió mùa mùa hạ hoạt động ở nước ta trong khoảng thời gian từ tháng 5 đến tháng 10 chủ yếu thổi theo hướng chính nào?",
+            options=[
+                Option(label="A", text="Hướng Tây Nam"),
+                Option(label="B", text="Hướng Đông Bắc"),
+                Option(label="C", text="Hướng Đông Nam"),
+                Option(label="D", text="Hướng Tây Bắc")
+            ],
+            answer="A",
+            explanation="Gió mùa mùa hạ xuất phát từ áp cao Nam Ấn Độ Dương và áp cao cận chí tuyến Nam bán cầu thổi theo hướng Tây Nam vào nước ta mang lại lượng mưa lớn."
+        ),
+        Part1Question(
+            id=7,
+            question="Văn kiện lịch sử trọng đại nào được Chủ tịch Hồ Chí Minh đọc tại Quảng trường Ba Đình ngày 02/9/1945 khai sinh nước Việt Nam Dân chủ Cộng hòa?",
+            options=[
+                Option(label="A", text="Tuyên ngôn Độc lập"),
+                Option(label="B", text="Lời kêu gọi toàn quốc kháng chiến"),
+                Option(label="C", text="Đường Kách mệnh"),
+                Option(label="D", text="Bản án chế độ thực dân Pháp")
+            ],
+            answer="A",
+            explanation="Ngày 02/9/1945, Bác Hồ đọc Tuyên ngôn Độc lập tuyên bố trước quốc dân và thế giới sự ra đời của nước Việt Nam mới."
+        ),
+        Part1Question(
+            id=8,
+            question="Vùng kinh tế trọng điểm nào của nước ta có quy mô công nghiệp lớn nhất và đóng góp giá trị kim ngạch xuất khẩu hàng đầu cả nước?",
+            options=[
+                Option(label="A", text="Vùng Đông Nam Bộ"),
+                Option(label="B", text="Vùng Đồng bằng sông Hồng"),
+                Option(label="C", text="Vùng Duyên hải Nam Trung Bộ"),
+                Option(label="D", text="Vùng Trung du và miền núi Bắc Bộ")
+            ],
+            answer="A",
+            explanation="Vùng Đông Nam Bộ với hạt nhân là TP. Hồ Chí Minh dẫn đầu cả nước về GDP, giá trị sản xuất công nghiệp và thu hút vốn FDI."
+        ),
+        Part1Question(
+            id=9,
+            question="Chiến dịch Hồ Chí Minh lịch sử giải phóng hoàn toàn miền Nam, thống nhất non sông đất nước toàn thắng vào mốc thời gian nào?",
+            options=[
+                Option(label="A", text="Trưa ngày 30 tháng 4 năm 1975"),
+                Option(label="B", text="Ngày 26 tháng 3 năm 1975"),
+                Option(label="C", text="Ngày 01 tháng 5 năm 1975"),
+                Option(label="D", text="Ngày 19 tháng 5 năm 1975")
+            ],
+            answer="A",
+            explanation="Lúc 11h30 ngày 30/4/1975, lá cờ cách mạng tung bay trên nóc Dinh Độc Lập, Chiến dịch Hồ Chí Minh toàn thắng."
+        ),
+        Part1Question(
+            id=10,
+            question="Hai đồng bằng châu thổ có diện tích lớn nhất, đóng vai trò là hai vựa lúa trọng điểm hàng đầu của nước ta là",
+            options=[
+                Option(label="A", text="Đồng bằng sông Cửu Long và Đồng bằng sông Hồng"),
+                Option(label="B", text="Đồng bằng Thanh Nghệ Tĩnh và Đồng bằng sông Hồng"),
+                Option(label="C", text="Đồng bằng duyên hải miền Trung và Đồng bằng sông Cửu Long"),
+                Option(label="D", text="Đồng bằng sông Ba và Đồng bằng sông Cửu Long")
+            ],
+            answer="A",
+            explanation="Đồng bằng sông Cửu Long (khoảng 40.000 km2) và Đồng bằng sông Hồng (khoảng 15.000 km2) là 2 vùng trọng điểm lương thực lớn nhất nước."
+        ),
+        Part1Question(
+            id=11,
+            question="Vị vua nào của triều Lý đã ban 'Chiếu dời đô' chuyển kinh đô từ Hoa Lư (Ninh Bình) về Đại La và đổi tên thành Thăng Long vào năm 1010?",
+            options=[
+                Option(label="A", text="Lý Thái Tổ (Lý Công Uẩn)"),
+                Option(label="B", text="Lý Thánh Tông"),
+                Option(label="C", text="Lý Nhân Tông"),
+                Option(label="D", text="Đinh Tiên Hoàng")
+            ],
+            answer="A",
+            explanation="Mùa thu năm 1010, vua Lý Thái Tổ dời đô về Thăng Long, mở ra giai đoạn phát triển thịnh vượng rực rỡ của kinh thành Thăng Long ngàn năm văn hiến."
+        ),
+        Part1Question(
+            id=12,
+            question="Tài nguyên khoáng sản nhiên liệu có trữ lượng lớn và giá trị kinh tế chiến lược hàng đầu tại vùng thềm lục địa phía Nam nước ta là",
+            options=[
+                Option(label="A", text="Dầu mỏ và khí tự nhiên"),
+                Option(label="B", text="Than đá và than nâu"),
+                Option(label="C", text="Quặng bô-xít và titan"),
+                Option(label="D", text="Đá vôi và cát trắng")
+            ],
+            answer="A",
+            explanation="Các bể trầm tích Cửu Long, Nam Côn Sơn ở thềm lục địa phía Nam có trữ lượng dầu khí dồi dào, là nền tảng của ngành công nghiệp dầu khí Việt Nam."
+        )
+    ]
+
+    tf_questions = [
+        Part2Question(
+            id=1,
+            question="Chiến dịch Điện Biên Phủ năm 1954 là đỉnh cao của cuộc kháng chiến toàn dân, toàn diện chống thực dân Pháp. Trước tình hình địch tăng cường phòng ngự kiên cố thành tập đoàn cứ điểm với 49 phân khu liên hoàn có sân bay và pháo binh hạng nặng, Đại tướng Võ Nguyên Giáp đã có quyết định lịch sử thay đổi phương châm tác chiến từ 'Đánh nhanh, thắng nhanh' sang 'Đánh chắc, tiến chắc'. Quân dân ta đã kéo pháo vào, kéo pháo ra, đào hệ thống giao thông hào bao vây siết chặt căn cứ địch suốt 56 ngày đêm khói lửa.",
+            sub_items=[
+                SubItem(label="a", statement="Việc chuyển phương châm tác chiến sang 'Đánh chắc, tiến chắc' phản ánh tư duy quân sự sắc sảo, tôn trọng thực tế chiến trường và giảm thiểu tối đa thương vong cho bộ đội.", is_correct=True, explanation="Đây là quyết định khó khăn nhất nhưng sáng suốt nhất trong sự nghiệp chỉ huy quân sự của Đại tướng Võ Nguyên Giáp."),
+                SubItem(label="b", statement="Quân đội nhân dân Việt Nam đã sử dụng hoàn toàn máy bay phản lực siêu thanh tối tân để ném bom san phẳng Điện Biên Phủ trong 2 ngày đầu.", is_correct=False, explanation="Trong chiến dịch Điện Biên Phủ quân ta chưa có máy bay phản lực, chủ yếu sử dụng pháo binh kéo bộ và bộ binh tiến công kiên cường qua hệ thống chiến hào."),
+                SubItem(label="c", statement="Hệ thống chiến hào liên hoàn dài hàng trăm kilômét đã bóp nghẹt nguồn tiếp tế đường không duy nhất của thực dân Pháp tại thung lũng Mường Thanh.", is_correct=True, explanation="Chiến thuật bao vây đánh lấn từng bước cắt đứt hoàn toàn sân bay và dù tiếp tế của quân Pháp."),
+                SubItem(label="d", statement="Thắng lợi của chiến dịch Điện Biên Phủ đã buộc chính phủ Pháp phải ký kết Hiệp định Giơ-ne-vơ năm 1954, công nhận độc lập, chủ quyền, thống nhất và toàn vẹn lãnh thổ của 3 nước Đông Dương.", is_correct=True, explanation="Chiến thắng Điện Biên Phủ có ý nghĩa quyết định trực tiếp đến thắng lợi trên bàn đàm phán ngoại giao Giơ-ne-vơ.")
+            ],
+            explanation="Chiến dịch Điện Biên Phủ năm 1954 và nghệ thuật quân sự chiến tranh nhân dân."
+        ),
+        Part2Question(
+            id=2,
+            question="Vùng Đồng bằng sông Cửu Long (ĐBSCL) gồm 13 tỉnh thành, là vựa nông thủy sản chủ lực đóng góp trên 50% sản lượng lúa và 70% sản lượng thủy sản của cả nước. Tuy nhiên, trước tác động kép của biến đổi khí hậu toàn cầu, nước biển dâng và các công trình thủy điện ở thượng nguồn sông Mê Kông, hiện tượng xâm nhập mặn và khô hạn trong mùa khô diễn ra ngày càng gay gắt, đe dọa trực tiếp đời sống và sinh kế của hàng triệu người dân.",
+            sub_items=[
+                SubItem(label="a", statement="ĐBSCL có mạng lưới sông ngòi, kênh rạch chằng chịt và đất phù sa màu mỡ rất thuận lợi cho canh tác nông nghiệp và nuôi trồng thủy sản.", is_correct=True, explanation="Hệ thống sông Tiền và sông Hậu bồi đắp lượng phù sa khổng lồ hàng năm cho vùng đồng bằng châu thổ."),
+                SubItem(label="b", statement="Nguyên nhân duy nhất gây ra hạn mặn ở ĐBSCL là do lượng mưa tại chỗ giảm nhẹ trong vài tuần.", is_correct=False, explanation="Hạn mặn là hệ quả tổ hợp của biến đổi khí hậu, nước biển dâng cao kết hợp việc giữ nước từ các đập thủy điện thượng lưu Mê Kông làm sụt giảm lưu lượng dòng chảy mùa kiệt."),
+                SubItem(label="c", statement="Chiến lược thích ứng 'thuận thiên' bằng cách chuyển đổi cơ cấu mùa vụ (trồng lúa vùng ngọt, luân canh tôm - lúa vùng mặn lợ) là giải pháp phát triển bền vững cho vùng.", is_correct=True, explanation="Nghị quyết 120/NQ-CP của Chính phủ định hướng ĐBSCL phát triển bền vững thích ứng với biến đổi khí hậu theo hướng tôn trọng quy luật tự nhiên."),
+                SubItem(label="d", statement="Bảo vệ và phục hồi các dải rừng ngập mặn phòng hộ ven biển giúp chắn sóng, chống sạt lở bờ biển và giảm tác động xâm nhập mặn sâu vào nội đồng.", is_correct=True, explanation="Rừng ngập mặn là lá chắn sinh thái tự nhiên vô cùng quan trọng đối với vùng ven biển Tây Nam Bộ.")
+            ],
+            explanation="Vùng kinh tế Đồng bằng sông Cửu Long và giải pháp ứng phó biến đổi khí hậu."
+        ),
+        Part2Question(
+            id=3,
+            question="Trong bản 'Tuyên ngôn Độc lập' ngày 02 tháng 9 năm 1945, Chủ tịch Hồ Chí Minh đã mở đầu bằng việc trích dẫn bản Tuyên ngôn Độc lập năm 1776 của nước Mỹ và bản Tuyên ngôn Nhân quyền và Dân quyền năm 1789 của Cách mạng Pháp để khẳng định những quyền tự nhiên không ai có thể xâm phạm của con người và mở rộng ra quyền tự quyết, độc lập tự do thiêng liêng của mọi dân tộc trên thế giới.",
+            sub_items=[
+                SubItem(label="a", statement="Chủ tịch Hồ Chí Minh đã khéo léo dùng chính những luận điểm tiến bộ về quyền con người của phương Tây để khẳng định tính chính nghĩa của cuộc đấu tranh giải phóng dân tộc Việt Nam.", is_correct=True, explanation="Đây là nghệ thuật lập luận sắc sảo, bác bỏ luận điệu 'bảo hộ' và 'khai hóa' xảo trá của chủ nghĩa thực dân."),
+                SubItem(label="b", statement="Từ quyền bình đẳng của cá nhân con người, Người đã nâng lên và phát triển thành quyền độc lập, tự do và bình đẳng giữa các dân tộc.", is_correct=True, explanation="Đây là cống hiến lý luận vĩ đại của Bác Hồ cho phong trào giải phóng dân tộc bị áp bức trên toàn thế giới."),
+                SubItem(label="c", statement="Bản Tuyên ngôn Độc lập chỉ có giá trị lưu hành nội bộ tạm thời trong vài ngày và không có giá trị pháp lý quốc tế.", is_correct=False, explanation="Tuyên ngôn Độc lập là văn kiện pháp lý nhà nước thiêng liêng đặt nền tảng cho thể chế Việt Nam Dân chủ Cộng hòa và có giá trị lịch sử trường tồn."),
+                SubItem(label="d", statement="Toàn thể dân tộc Việt Nam quyết đem tất cả tinh thần và lực lượng, tính mạng và của cải để giữ vững quyền tự do, độc lập ấy.", is_correct=True, explanation="Đây là lời thề sắt son đanh thép kết thúc bản Tuyên ngôn Độc lập thể hiện ý chí quật cường của nhân dân ta.")
+            ],
+            explanation="Tuyên ngôn Độc lập ngày 02/9/1945 và giá trị tư tưởng Hồ Chí Minh."
+        ),
+        Part2Question(
+            id=4,
+            question="Xét cơ cấu kinh tế theo ngành của nước ta trong thời kỳ Đổi mới và hội nhập quốc tế:",
+            sub_items=[
+                SubItem(label="a", statement="Cơ cấu GDP nước ta đang chuyển dịch tích cực theo hướng giảm tỉ trọng ngành Nông - Lâm - Thủy sản, tăng tỉ trọng ngành Công nghiệp - Xây dựng và Dịch vụ.", is_correct=True, explanation="Đây là quy luật chuyển dịch cơ cấu ngành tất yếu của quá trình công nghiệp hóa, hiện đại hóa đất nước."),
+                SubItem(label="b", statement="Quá trình đô thị hóa gắn liền với công nghiệp hóa giúp hình thành các chuỗi đô thị hiện đại và nâng cao chất lượng cuộc sống người dân.", is_correct=True, explanation="Đô thị hóa tạo động lực kinh tế mạnh mẽ, phát triển kết cấu hạ tầng giao thông và dịch vụ xã hội."),
+                SubItem(label="c", statement="Để phát triển kinh tế nhanh chóng, chúng ta nên chấp nhận tàn phá kiệt quệ tài nguyên rừng, biển và xả chất thải chưa qua xử lý ra môi trường.", is_correct=False, explanation="Phát triển bền vững đòi hỏi phải tăng trưởng kinh tế hài hòa với bảo vệ môi trường và tiến bộ công bằng xã hội, không đánh đổi môi trường lấy tăng trưởng đơn thuần."),
+                SubItem(label="d", statement="Học sinh hôm nay có trách nhiệm tích cực học tập, trau dồi kỹ năng số và ý thức chấp hành pháp luật để trở thành nguồn nhân lực chất lượng cao đóng góp cho quê hương.", is_correct=True, explanation="Giáo dục và bồi dưỡng thanh niên là nhân tố then chốt đưa đất nước phát triển nhanh và bền vững.")
+            ],
+            explanation="Chuyển dịch cơ cấu kinh tế ngành và định hướng phát triển bền vững ở Việt Nam."
+        )
+    ]
+
+    short_questions = [
+        Part3Question(
+            id=1,
+            question="Chiến thắng Bạch Đằng vang dội của Ngô Quyền diễn ra vào năm nào (ghi số năm gồm 3 hoặc 4 chữ số)?",
+            answer="938",
+            explanation="Chiến thắng Bạch Đằng năm 938 kết thúc hơn 1000 năm Bắc thuộc."
+        ),
+        Part3Question(
+            id=2,
+            question="Vua Lý Thái Tổ ban Chiếu dời đô từ Hoa Lư về Thăng Long vào năm nào (ghi số năm gồm 4 chữ số)?",
+            answer="1010",
+            explanation="Vua Lý Thái Tổ dời đô về Thăng Long vào mùa thu năm 1010."
+        ),
+        Part3Question(
+            id=3,
+            question="Chiến dịch Điện Biên Phủ toàn thắng vào ngày tháng nào trong năm 1954 (ghi theo định dạng ngày/tháng, ví dụ 07/5)?",
+            answer="07/5",
+            explanation="Chiến dịch Điện Biên Phủ toàn thắng ngày 07/5/1954."
+        ),
+        Part3Question(
+            id=4,
+            question="Nước ta có đường bờ biển dài khoảng bao nhiêu kilômét (chỉ ghi số nguyên, ví dụ 3260)?",
+            answer="3260",
+            explanation="Bờ biển Việt Nam uốn lượn hình chữ S dài khoảng 3260 km từ Móng Cái đến Hà Tiên."
+        ),
+        Part3Question(
+            id=5,
+            question="Đỉnh núi Phan-xi-păng (Phan Xi Păng) - đỉnh núi cao nhất Việt Nam và Đông Dương có độ cao bao nhiêu mét (chỉ ghi số nguyên)?",
+            answer="3143",
+            explanation="Đỉnh Phan-xi-păng cao 3143m trên dãy Hoàng Liên Sơn."
+        ),
+        Part3Question(
+            id=6,
+            question="Chiến dịch Hồ Chí Minh lịch sử giải phóng hoàn toàn miền Nam thống nhất đất nước toàn thắng vào ngày tháng nào trong năm 1975 (ghi ngày/tháng, ví dụ 30/4)?",
+            answer="30/4",
+            explanation="Ngày Giải phóng miền Nam, thống nhất đất nước là ngày 30/4/1975."
+        )
+    ]
+
+    essay_questions = [
+        Part4EssayQuestion(
+            id=1,
+            question="Phân tích ý nghĩa lịch sử sâu sắc của bản Tuyên ngôn Độc lập ngày 02 tháng 9 năm 1945 do Chủ tịch Hồ Chí Minh đọc tại Quảng trường Ba Đình. Từ đó, em hãy nêu trách nhiệm của bản thân trong việc giữ gìn chủ quyền độc lập thiêng liêng và phát huy các giá trị văn hóa truyền thống của dân tộc.",
+            points=1.0,
+            answer="Phân tích ý nghĩa lịch sử của Tuyên ngôn Độc lập (khai sinh nước Việt Nam mới, đập tan ách thống trị thực dân phong kiến) và nêu trách nhiệm của thế hệ trẻ.",
+            explanation="- Ý nghĩa lịch sử: Là văn kiện pháp lý khẳng định quyền độc lập tự do thiêng liêng của dân tộc Việt Nam trước toàn thế giới; chấm dứt chế độ thực dân và phong kiến hàng nghìn năm; khai sinh nước Việt Nam Dân chủ Cộng hòa.\n- Cổ vũ tinh thần đấu tranh: Là nguồn cổ vũ mạnh mẽ cho phong trào giải phóng dân tộc của các nước thuộc địa trên thế giới.\n- Trách nhiệm của học sinh: Tích cực học tập, rèn luyện phẩm chất đạo đức, nâng cao ý thức chấp hành pháp luật; gìn giữ và lan tỏa truyền thống uống nước nhớ nguồn, bảo vệ chủ quyền biên giới, hải đảo thiêng liêng của Tổ quốc."
+        )
+    ]
+
+    return ExamStructure(
+        title="ĐỀ KIỂM TRA ĐỊNH KỲ MÔN KHOA HỌC XÃ HỘI 9",
+        subject="Khoa học xã hội",
+        grade="9",
+        duration_minutes=45,
+        school_name="SỞ GD&ĐT ... - TRƯỜNG THCS ...",
+        academic_year="NĂM HỌC 2026 - 2027",
+        code="101",
+        part1_mcq=mcqs,
+        part2_tf=tf_questions,
+        part3_short=short_questions,
+        part4_essay=essay_questions,
+        scoring=calculate_exam_scoring(num_p1=len(mcqs), num_p2=len(tf_questions), num_p3=len(short_questions), num_p4=len(essay_questions)),
+        audit_report=create_default_audit_report("Khoa học xã hội")
+    )
+
 _key_rotation_counter = 0
 
 
@@ -2701,7 +3225,11 @@ def normalize_exam_data(raw_data: Dict[str, Any], default_subject: str = "Toán 
 
 def get_base_mock_exam(subject: str) -> ExamStructure:
     sub_lower = subject.lower()
-    if "tin" in sub_lower or "informatics" in sub_lower:
+    if "khoa học tự nhiên" in sub_lower or "khtn" in sub_lower:
+        return get_mock_khtn_exam()
+    elif "khoa học xã hội" in sub_lower or "khxh" in sub_lower:
+        return get_mock_khxh_exam()
+    elif "tin" in sub_lower or "informatics" in sub_lower:
         return get_mock_informatics_exam()
     elif "lý" in sub_lower or "vật lí" in sub_lower:
         return get_mock_physics_exam()
@@ -3172,6 +3700,18 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN GIÁO DỤC QUỐC PHÒNG VÀ AN NINH (GDQP&AN):\n"
             f"- BẮT BUỘC xây dựng tình huống thực tế hoặc tình huống giả định (50-100 từ) về bảo vệ chủ quyền biên giới hải đảo, an ninh mạng/an ninh phi truyền thống, phòng chống tội phạm học đường, phòng cháy chữa cháy, kỹ năng cứu nạn cứu hộ và sơ cấp cứu ban đầu.\n"
             f"- 4 ý con a, b, c, d phân hóa từ nhận biết quy định pháp luật -> hiểu nguyên tắc tác chiến/phòng thủ -> vận dụng kỹ năng xử lý tình huống -> đánh giá ý thức trách nhiệm bảo vệ Tổ quốc của học sinh."
+        )
+    if any(s in request.subject.lower() for s in ["khoa học tự nhiên", "khtn", "tự nhiên"]):
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN KHOA HỌC TỰ NHIÊN (KHTN):\n"
+            f"- BẮT BUỘC xây dựng tình huống thực nghiệm khoa học hoặc hiện tượng đời sống thực tế (50-100 từ) tích hợp Vật lý, Hóa học hoặc Sinh học (ví dụ: thí nghiệm điều chế khí, đo tốc độ chuyển động, quang hợp trong nhà kính, xử lý nước thải sinh hoạt, cân bằng sinh thái).\n"
+            f"- 4 ý con a, b, c, d phân hóa: nhận biết hiện tượng/thông số -> hiểu nguyên lý cơ chế phản ứng -> tính toán định lượng (nồng độ, công suất, vận tốc) -> vận dụng giải thích hiện tượng và an toàn môi trường."
+        )
+    if any(s in request.subject.lower() for s in ["khoa học xã hội", "khxh", "lịch sử và địa lý", "lịch sử & địa lí"]):
+        user_prompt += (
+            f"\n\nLƯU Ý ĐẶC THÙ PHẦN II (ĐÚNG/SAI) MÔN KHOA HỌC XÃ HỘI (KHXH):\n"
+            f"- BẮT BUỘC trích dẫn đoạn tư liệu lịch sử, bảng số liệu địa lý hoặc tình huống đời sống văn hóa xã hội thực tế (50-100 từ) gắn liền với chủ quyền biển đảo, phát triển kinh tế bền vững, bảo vệ môi trường hoặc các mốc son lịch sử dân tộc.\n"
+            f"- 4 ý con a, b, c, d phân hóa: nhận biết nhân vật/mốc thời gian/địa danh -> hiểu nguyên nhân bản chất -> tính toán số liệu địa lý hoặc đối chiếu tư liệu -> đánh giá bài học lịch sử và trách nhiệm công dân."
         )
     if any(s in request.subject.lower() for s in ["mỹ thuật", "nghệ thuật", "hội họa"]):
         user_prompt += (

@@ -21,7 +21,7 @@ from .services.extractor import extract_file_content, extract_file_content_async
 from .services.matrix_analyzer import analyze_matrix_document
 from .services.ai_generator import (
     generate_exam, get_mock_math_exam, get_mock_physics_exam, get_mock_chemistry_exam, get_mock_gdqp_exam,
-    get_mock_english_exam, get_mock_informatics_exam, get_mock_art_exam, get_mock_music_exam,
+    get_mock_english_exam, get_mock_informatics_exam, get_mock_art_exam, get_mock_music_exam, get_mock_khtn_exam, get_mock_khxh_exam,
     get_env_api_keys, mask_key
 )
 from .services.shuffler import shuffle_exam
@@ -236,7 +236,11 @@ async def api_generate(req: GenerateRequest):
 @app.get("/api/samples/{subject}", response_model=ExamStructure)
 async def api_sample(subject: str):
     sub = subject.lower()
-    if "gdqp" in sub or "quoc_phong" in sub or "quốc phòng" in sub:
+    if "khoa học tự nhiên" in sub or "khtn" in sub:
+        return get_mock_khtn_exam()
+    elif "khoa học xã hội" in sub or "khxh" in sub:
+        return get_mock_khxh_exam()
+    elif "gdqp" in sub or "quoc_phong" in sub or "quốc phòng" in sub:
         return get_mock_gdqp_exam()
     elif "tin" in sub or "informatics" in sub:
         return get_mock_informatics_exam()

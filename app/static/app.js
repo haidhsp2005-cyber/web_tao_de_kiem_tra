@@ -602,7 +602,7 @@ createApp({
         if (data.matrix.subject) {
           form.subject = data.matrix.subject;
           const standardList = [
-            "Toán học", "Vật lý", "Hóa học", "Sinh học", "Tiếng Anh", "Lịch sử", "Địa lý",
+            "Toán học", "Khoa học tự nhiên", "Khoa học xã hội", "Vật lý", "Hóa học", "Sinh học", "Tiếng Anh", "Lịch sử", "Địa lý",
             "Giáo dục kinh tế & Pháp luật", "Tin học", "Giáo dục Quốc phòng & An ninh", "Công nghệ", "Ngữ văn",
             "Mỹ thuật", "Âm nhạc"
           ];
