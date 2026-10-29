@@ -18,7 +18,11 @@ def shuffle_exam(
     variants: List[ExamVariant] = []
     
     for i in range(num_variants):
-        code = str(start_code + i)
+        try:
+            base_code = int(start_code)
+        except (ValueError, TypeError):
+            base_code = 101
+        code = str(base_code + i)
         rng = random.Random(f"{exam.title}_{code}_{i}")
         
         # Deep copy to ensure independence
