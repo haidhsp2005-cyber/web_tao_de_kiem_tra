@@ -1,6 +1,8 @@
+from __future__ import annotations
 import os
 import json
 import re
+from typing import List, Dict, Any, Optional, Tuple, Union
 import httpx
 import json_repair
 try:

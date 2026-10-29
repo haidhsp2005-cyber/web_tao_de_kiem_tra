@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "api/index.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "includeFiles": ["app/**"]
+      }
     }
   ],
   "routes": [
@@ -11,5 +14,8 @@
       "src": "/(.*)",
       "dest": "api/index.py"
     }
-  ]
+  ],
+  "env": {
+    "MPLCONFIGDIR": "/tmp/.matplotlib"
+  }
 }
