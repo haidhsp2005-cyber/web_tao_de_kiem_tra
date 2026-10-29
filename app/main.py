@@ -2,6 +2,7 @@ import os
 import io
 import re
 import zipfile
+import tempfile
 import unicodedata
 import urllib.parse
 import traceback
@@ -66,8 +67,12 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_DIR = os.path.join(BASE_DIR, "static")
-EXPORTS_DIR = os.path.join(os.path.dirname(BASE_DIR), "exports")
-os.makedirs(EXPORTS_DIR, exist_ok=True)
+try:
+    EXPORTS_DIR = os.path.join(os.path.dirname(BASE_DIR), "exports")
+    os.makedirs(EXPORTS_DIR, exist_ok=True)
+except OSError:
+    EXPORTS_DIR = os.path.join(tempfile.gettempdir(), "exports")
+    os.makedirs(EXPORTS_DIR, exist_ok=True)
 
 def make_ascii_filename(name: str) -> str:
     nfkd = unicodedata.normalize("NFKD", name)
@@ -143,16 +148,32 @@ async def api_save_env(req: SaveEnvRequest):
         content_lines.append("")
         new_env_content = "\n".join(content_lines)
         
-        with open(env_path, "w", encoding="utf-8") as f:
-            f.write(new_env_content)
-            
         # Clean out old keys from environment
         prefix = "GEMINI_API_KEY" if req.provider != "openai" else "OPENAI_API_KEY"
         for i in range(1, 35):
             if f"{prefix}_{i}" in os.environ:
                 del os.environ[f"{prefix}_{i}"]
+        if f"{prefix}S" in os.environ:
+            del os.environ[f"{prefix}S"]
+
+        # Directly update os.environ in memory
+        for i, k in enumerate(clean_keys, start=1):
+            os.environ[f"{prefix}_{i}"] = k
+
+        try:
+            with open(env_path, "w", encoding="utf-8") as f:
+                f.write(new_env_content)
+            load_dotenv(env_path, override=True)
+        except OSError:
+            # Serverless / read-only filesystem fallback
+            fallback_env = os.path.join(tempfile.gettempdir(), ".env")
+            try:
+                with open(fallback_env, "w", encoding="utf-8") as f:
+                    f.write(new_env_content)
+                load_dotenv(fallback_env, override=True)
+            except Exception:
+                pass
                 
-        load_dotenv(env_path, override=True)
         return await api_get_config()
     except Exception as e:
         traceback.print_exc()
