@@ -48,7 +48,7 @@ CẤU TRÚC ĐỀ THEO SỐ LƯỢNG YÊU CẦU:
       - Môn Tin học: Bối cảnh dự án CNTT / tình huống thực tế BÁM SÁT CHÍNH XÁC CHỦ ĐỀ MA TRẬN VÀ TÀI LIỆU ĐÍNH KÈM (ví dụ: Bảng tính điện tử, an toàn số/phòng chống lừa đảo mạng, mạng máy tính, thiết bị số; CHỈ sử dụng CSDL hoặc Python KHI VÀ CHỈ KHI ma trận hoặc tài liệu yêu cầu. TUYỆT ĐỐI KHÔNG tự ý đưa CSDL hoặc Python vào nếu ma trận không có hoặc thuộc HK1 chưa học).
       - Môn Khoa học tự nhiên (KHTN): Bối cảnh thực nghiệm khoa học, tích hợp liên môn Vật lý - Hóa học - Sinh học (đo lường cảm biến, biến đổi chất và năng lượng, quang hợp và hô hấp tế bào, phản ứng hóa học trong đời sống, dung dịch - nồng độ, acid - base - muối, cân bằng hệ sinh thái, lực và chuyển động, sóng âm và quang học 50-100 từ). 4 ý con: a (Nhận biết hiện tượng/thông số/dụng cụ đo) - b (Hiểu bản chất cơ chế phản ứng/nguyên lý khoa học) - c (Tính toán định lượng: khối lượng, nồng độ %, vận tốc, công suất, tỉ lệ di truyền) - d (Vận dụng giải thích hiện tượng thực tế, an toàn phòng thí nghiệm, bảo vệ sức khỏe và môi trường).
       - Môn Khoa học xã hội (KHXH / Lịch sử & Địa lí): Bối cảnh tư liệu sự kiện lịch sử, nhân vật, mốc thời gian, chủ quyền biển đảo, số liệu biến đổi khí hậu, phân bố tự nhiên và chuyển dịch cơ cấu kinh tế - xã hội, ứng xử pháp lý và văn hóa công dân (50-100 từ). 4 ý con: a (Nhận biết mốc thời gian/địa danh/chủ thể sự kiện) - b (Hiểu mối quan hệ nhân - quả, đặc điểm tự nhiên - dân cư) - c (Tính toán số liệu địa lý hoặc đối chiếu tư liệu lịch sử) - d (Rút ra bài học lịch sử, bảo tồn di sản văn hóa và trách nhiệm công dân).
-      - Môn Toán: BẮT BUỘC 100% các câu Phần II là bài toán mô hình hóa thực tế / ứng dụng đời sống (Toán 9: đo chiều cao ngọn hải đăng/tòa nhà qua góc nâng/góc hạ của giác kế, tính cước điện bậc thang/cước taxi bằng hệ phương trình, chuyển động ca nô trên sông xuôi dòng ngược dòng, thể tích và diện tích vật dụng thực tế hình trụ/hình nón như bồn nước inox; Toán THPT: tối ưu hóa chi phí/doanh thu hàm số, quy hoạch tài chính, quỹ đạo chuyển động, hình học không gian Oxyz trạm radar/định vị GPS, xác suất dịch bệnh/kiểm định). CẤM TUYỆT ĐỐI ra đề cộc lốc lý thuyết suông như 'Cho tam giác ABC...', 'Cho góc nhọn alpha...' hay 'Cho hệ phương trình... Xét các phát biểu sau:'.
+      - Môn Toán: BẮT BUỘC 100% các câu Phần II là bài toán mô hình hóa thực tế / ứng dụng đời sống (Toán 9: đo chiều cao ngọn hải đăng/tòa nhà qua góc nâng/góc hạ của giác kế, tính cước điện bậc thang/cước taxi bằng hệ phương trình, chuyển động ca nô trên sông xuôi dòng ngược dòng, thể tích và diện tích vật dụng thực tế hình trụ/hình nón như bồn nước inox; Toán THPT: tối ưu hóa chi phí/doanh thu hàm số bằng đạo hàm, quy hoạch tài chính lãi kép, quỹ đạo chuyển động parabol, thiết kế vỏ hộp tối ưu vật liệu, hình học không gian Oxyz trạm radar hàng không/định vị GPS, xác suất dịch bệnh kiểm định y tế theo định lý Bayes). CẤM TUYỆT ĐỐI ra đề cộc lốc lý thuyết suông như 'Cho tam giác ABC...', 'Cho góc nhọn alpha...' hay 'Cho hệ phương trình... Xét các phát biểu sau:'. ĐẶC BIỆT CẤM TUYỆT ĐỐI RA ĐỀ DẠNG TIỂU HỌC/THCS CHO KHỐI THPT LỚP 10, 11, 12 (như 'Một bác nông dân có mảnh vườn hình chữ nhật...', 'bác An mua...', 'chi phí cố định là 20.000đ', '5.000đ', 'mở rộng chiều dài thêm 2m...'). Đối với THPT, đề bài Phần II bắt buộc dài 50-120 từ, mang tính mô hình hóa chuyên nghiệp, có bối cảnh kinh tế, kỹ thuật công nghiệp hoặc khoa học xác thực.
       - Môn Vật lý: Thí nghiệm thực nghiệm, thiết bị đo lường/cảm biến công nghệ, sóng âm, quang học, chu trình nhiệt động lực học.
       - Môn Hóa học: Quy trình sản xuất hóa chất công nghiệp, xử lý ô nhiễm môi trường nước/khí thải, phản ứng hữu cơ, hóa dược.
       - Môn Sinh học: Nghiên cứu di truyền người (phả hệ, đột biến), công nghệ sinh học y tế, cân bằng sinh thái môi trường.
@@ -3657,10 +3657,22 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"- Phần III (Trả lời ngắn): Yêu cầu tính toán kết quả số cụ thể theo đúng chủ đề (ví dụ: công thức bảng tính, đơn vị đo dung lượng thông tin Byte, KB, MB, GB, bit, địa chỉ IP hoặc kết quả thuật toán nếu có trong ma trận)."
         )
     if "toán" in request.subject.lower():
+        g_check = str(request.grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
+        is_thpt_grade = g_check in ("10", "11", "12", "thpt")
+        thpt_extra = ""
+        if is_thpt_grade:
+            thpt_extra = (
+                f"\n  * ĐẶC BIỆT BẮT BUỘC CHO KHỐI THPT (LỚP {request.grade}):\n"
+                f"    - BẮT BUỘC 100% các câu Phần II là BÀI TOÁN TÌNH HUỐNG THỰC TẾ / MÔ HÌNH HÓA CHUYÊN NGHIỆP ĐẠT CHUẨN THPT (độ dài 50-120 từ), có số liệu thực, thông số kỹ thuật, tài chính hoặc khoa học xác thực.\n"
+                f"    - TUYỆT ĐỐI CẤM các bài toán tiểu học/THCS đơn giản như 'Một bác nông dân có mảnh vườn hình chữ nhật...', 'bác An mua...', 'chi phí cố định 20.000 đồng', '5.000 đồng', 'mở rộng chiều dài thêm 2m'!\n"
+                f"    - Gợi ý chủ đề đúng chuẩn:\n"
+                f"      + Lớp 10: Tối ưu miền nghiệm hệ BPT sản xuất hai loại sản phẩm, quỹ đạo bay parabol tên lửa/bóng bay, đo khoảng cách ngọn núi định lý sin/cos.\n"
+                f"      + Lớp 11: Cấp số nhân tăng trưởng dân số / lãi kép ngân hàng, dao động điều hòa li độ/vận tốc bằng đạo hàm, kiểm định y tế xác suất độc lập.\n"
+                f"      + Lớp 12: Tối ưu hóa lợi nhuận kinh doanh bằng đạo hàm P(x) = R(x) - C(x), thiết kế vỏ lon/bồn chứa tối ưu chi phí vật liệu, trạm radar cảnh giới hàng không/định vị vệ tinh trong không gian Oxyz, đánh giá xét nghiệm y tế theo công thức xác suất toàn phần và định lý Bayes.\n"
+            )
         user_prompt += (
             f"\n\nLƯU Ý ĐẶC THÙ MÔN TOÁN HỌC (LỚP {request.grade}):\n"
-            f"- Đối với Phần II (Đúng/Sai): BẮT BUỘC 100% CÁC CÂU LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ / MÔ HÌNH HÓA ĐỜI SỐNG PHÙ HỢP VỚI LỚP {request.grade}.\n"
-            f"- 4 ý con a, b, c, d phân hóa từ Nhận biết thông số đề bài -> Hiểu bản chất mô hình -> Vận dụng tính toán đại lượng cụ thể -> Vận dụng cao đánh giá tối ưu hóa/kết luận thực tiễn.\n"
+            f"- Đối với Phần II (Đúng/Sai): BẮT BUỘC 100% CÁC CÂU LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ / MÔ HÌNH HÓA ĐỜI SỐNG PHÙ HỢP VỚI LỚP {request.grade} (4 ý con phân hóa theo Biết -> Hiểu -> Vận dụng -> Vận dụng cao).{thpt_extra}"
             f"- MỌI CÔNG THỨC TOÁN, BIẾN SỐ, ĐƠN VỊ KÈM CÔNG THỨC BẮT BUỘC ĐƯỢC BỌC TRONG $...$ (ví dụ: $3\\sqrt{3}$ cm, $\\alpha$, $m \\neq 1$, $\\sin B$, $\\begin{{cases}} 2x - y = 3 \\\\ x + 2y = 4 \\end{{cases}}$). CẤM viết tiếng Việt ('căn 2', 'm khác 1') hoặc LaTeX trần không có $."
         )
     if any(s in request.subject.lower() for s in ["vật lý", "vật lí", "hóa học", "sinh học"]):

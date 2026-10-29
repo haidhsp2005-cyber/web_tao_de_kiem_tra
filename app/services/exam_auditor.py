@@ -140,17 +140,47 @@ DRY_TF_PATTERNS = [
     r"cho hình chóp|cho hình trụ|cho hình nón\s+[A-Za-z0-9\s,\.=\\-_/\{\}]+(?:xét|phát biểu|đúng hay sai)"
 ]
 
-def is_dry_or_simple_tf_stem(text: str) -> bool:
+SIMPLISTIC_THPT_TF_PATTERNS = [
+    r"bác nông dân",
+    r"mảnh vườn",
+    r"mở rộng chiều dài",
+    r"giữ nguyên chiều rộng",
+    r"chi phí cố định là\s*\d+",
+    r"chi phí sản xuất mỗi sản phẩm là\s*\d+",
+    r"mua rau",
+    r"chia kẹo",
+    r"mua cam",
+    r"mua táo",
+    r"mua sách vở",
+    r"bác an mua",
+    r"chiều dài là x.*chiều rộng là y",
+    r"chu vi mảnh vườn",
+    r"diện tích mảnh vườn sau khi mở rộng",
+]
+
+def is_dry_or_simple_tf_stem(text: str, grade: str = "12") -> bool:
     if not text:
         return True
     clean = text.strip()
     words = clean.split()
-    if len(words) < 28:
+    g = str(grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
+    is_thpt = g in ("10", "11", "12", "thpt")
+
+    # Đối với THPT, đề bài dẫn Phần II bắt buộc là case study thực tế sâu sắc (ít nhất 45 từ)
+    min_words = 45 if is_thpt else 28
+    if len(words) < min_words:
         return True
+
     clean_lower = clean.lower()
     for pat in DRY_TF_PATTERNS:
         if re.search(pat, clean_lower):
             return True
+
+    if is_thpt:
+        for pat in SIMPLISTIC_THPT_TF_PATTERNS:
+            if re.search(pat, clean_lower):
+                return True
+
     return False
 
 def is_tf_context_mismatched(stem: str, sub_items: List[Any]) -> Tuple[bool, str]:
@@ -397,13 +427,11 @@ def is_tf_defective(q: Part2Question, grade: str = "12") -> Tuple[bool, str]:
     if ctx_bad:
         return True, f"Lệch pha ngữ cảnh Phần II: {ctx_reason}"
 
-    # Bắt buộc ngữ cảnh tình huống thực tế cho Phần II (không cộc lốc lý thuyết suông)
-    clean_stem = q.question.strip()
-    words_count = len(clean_stem.split())
-    if words_count < 20 or any(pat in clean_stem.lower() for pat in [
-        "xét các phát biểu sau", "xét tính đúng sai", "cho các khẳng định sau", 
-        "khẳng định nào sau đây", "về khái niệm và đặc trưng", "xét các mệnh đề sau"
-    ]):
+    # Bắt buộc ngữ cảnh tình huống thực tế cho Phần II (không cộc lốc lý thuyết suông hoặc quá đơn giản/tiểu học cho THPT)
+    if is_dry_or_simple_tf_stem(q.question, grade=grade):
+        g = str(grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
+        if g in ("10", "11", "12", "thpt"):
+            return True, f"Đề bài Phần II THPT (Lớp {grade}) quá đơn giản, cộc lốc hoặc dùng ngữ cảnh tiểu học/THCS (dưới 45 từ hoặc dạng 'mảnh vườn', 'bác nông dân', 'chi phí 20.000đ'), không đạt chuẩn tình huống thực tế GDPT 2018"
         return True, "Đề bài Phần II cộc lốc lý thuyết suông, thiếu ngữ cảnh/tình huống thực tế hấp dẫn đạt chuẩn GDPT 2018"
 
     for s in q.sub_items:
@@ -2021,14 +2049,34 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
                 "explanation": "Mô hình hóa toán học bài toán tối ưu hóa lợi nhuận trong kinh doanh ứng dụng đạo hàm."
             },
             {
-                "question": "Trong không gian $Oxyz$ (đơn vị đo trên các trục là kilômét), một trạm radar cảnh giới hàng không đặt tại đỉnh núi có tọa độ $A(2; 3; 1)$. Một máy bay không người lái (drone) cứu hộ đang bay thẳng đều theo đường thẳng $d: \\frac{x-1}{2} = \\frac{y+1}{1} = \\frac{z-2}{-2}$. Phạm vi quét phát hiện mục tiêu của trạm radar là khối cầu tâm $A$ bán kính $R = 5\\text{ km}$.",
+                "question": "Trong không gian tọa độ $Oxyz$ (đơn vị đo trên các trục là kilômét), một trạm radar kiểm soát không lưu đặt tại vị trí $A(3; 4; 0)$. Một máy bay cứu hộ đang bay thẳng đều theo đường bay dọc trục $Ox$ có phương trình tham số $d: \\begin{cases} x = t \\\\ y = 0 \\\\ z = 0 \\end{cases}$ ($t \\in \\mathbb{R}$). Vùng phủ sóng của trạm radar là khối cầu tâm $A$ bán kính $R = 6\\text{ km}$.",
                 "sub_items": [
-                    {"label": "a", "statement": "Đường thẳng quỹ đạo bay $d$ đi qua điểm $M(1; -1; 2)$ và có một vectơ chỉ phương là $\\vec{u} = (2; 1; -2)$.", "is_correct": True, "explanation": "Đúng theo phương trình chính tắc của đường thẳng $d$."},
-                    {"label": "b", "statement": "Khoảng cách ngắn nhất từ trạm radar $A$ đến đường bay $d$ của máy bay drone là $3\\text{ km}$.", "is_correct": True, "explanation": "$\\vec{AM} = (-1; -4; 1)$, $[\\vec{AM}, \\vec{u}] = (7; 0; 7) \\Rightarrow |[\\vec{AM}, \\vec{u}]| = \\sqrt{49+49} = 7\\sqrt{2}$; $|\\vec{u}| = 3 \\Rightarrow d(A, d) = 7\\sqrt{2}/3 \\approx 3{,}3\\text{ km}$... Chờ đã: để khoảng cách tròn 3 km, ta chọn số liệu chuẩn: $|[\\vec{AM}, \\vec{u}]| = 9 \\Rightarrow d = 3$."},
-                    {"label": "c", "statement": "Vì khoảng cách từ trạm radar đến đường bay nhỏ hơn bán kính quét ($d < R$), máy bay drone sẽ bay xuyên qua vùng phủ sóng của radar.", "is_correct": True, "explanation": "Đường thẳng cắt mặt cầu khi và chỉ khi khoảng cách từ tâm đến đường thẳng nhỏ hơn bán kính."},
-                    {"label": "d", "statement": "Phương trình mặt cầu ranh giới phủ sóng của radar là $(x-2)^2 + (y-3)^2 + (z-1)^2 = 5$.", "is_correct": False, "explanation": "Vế phải phải là $R^2 = 5^2 = 25$, không phải 5."}
+                    {"label": "a", "statement": "Hình chiếu vuông góc của vị trí đặt trạm radar $A$ lên đường bay $d$ là điểm $H(3; 0; 0)$.", "is_correct": True, "explanation": "Hình chiếu của $A(3; 4; 0)$ lên trục $Ox$ là $H(3; 0; 0)$."},
+                    {"label": "b", "statement": "Khoảng cách ngắn nhất từ trạm radar $A$ đến đường bay của máy bay là $4\\text{ km}$.", "is_correct": True, "explanation": "$d(A, d) = AH = \\sqrt{(3-3)^2 + (0-4)^2 + (0-0)^2} = 4\\text{ km}$."},
+                    {"label": "c", "statement": "Vì khoảng cách từ trạm radar đến đường bay lớn hơn bán kính vùng phủ sóng ($d > R$), máy bay không bao giờ bay vào vùng phát hiện của radar.", "is_correct": False, "explanation": "Khoảng cách $d = 4\\text{ km} < R = 6\\text{ km}$, do đó máy bay sẽ bay xuyên qua vùng phủ sóng của radar."},
+                    {"label": "d", "statement": "Phương trình mặt cầu ranh giới phủ sóng của trạm radar là $(x - 3)^2 + (y - 4)^2 + z^2 = 36$.", "is_correct": True, "explanation": "Mặt cầu tâm $A(3; 4; 0)$, bán kính $R = 6$ có phương trình $(x-3)^2 + (y-4)^2 + z^2 = 6^2 = 36$."}
                 ],
                 "explanation": "Ứng dụng hình học không gian tọa độ Oxyz vào bài toán giám sát không phận thực tế."
+            },
+            {
+                "question": "Một nhà máy sản xuất lon nước giải khát bằng nhôm hình trụ có thể tích cố định là $V = 54\\pi\\text{ cm}^3$. Chi phí sản xuất vỏ lon phụ thuộc vào diện tích toàn phần $S_{tp} = 2\\pi R^2 + 2\\pi R h$, trong đó $R$ là bán kính đáy và $h$ là chiều cao của lon ($R, h > 0$ tính bằng cm). Nhà máy cần xác định kích thước lon sao cho diện tích tôn nhôm sử dụng là ít nhất để tối ưu chi phí.",
+                "sub_items": [
+                    {"label": "a", "statement": "Chiều cao của lon nước biểu diễn theo bán kính đáy $R$ là $h = \\frac{54}{R^2}\\text{ (cm)}$.", "is_correct": True, "explanation": "Từ $V = \\pi R^2 h = 54\\pi \\Rightarrow h = 54/R^2$."},
+                    {"label": "b", "statement": "Hàm diện tích toàn phần theo bán kính $R$ có đạo hàm là $S'(R) = 2\\pi\\left(2R - \\frac{54}{R^2}\\right)$.", "is_correct": True, "explanation": "$S(R) = 2\\pi(R^2 + 54/R) \\Rightarrow S'(R) = 2\\pi(2R - 54/R^2)$."},
+                    {"label": "c", "statement": "Để tiết kiệm nguyên liệu nhôm nhất, kích thước lon phải thỏa mãn bán kính đáy $R = 3\\text{ cm}$ và chiều cao $h = 6\\text{ cm}$.", "is_correct": True, "explanation": "$S'(R) = 0 \\Leftrightarrow 2R = 54/R^2 \\Leftrightarrow R^3 = 27 \\Leftrightarrow R = 3\\text{ cm} \\Rightarrow h = 54/9 = 6\\text{ cm}$."},
+                    {"label": "d", "statement": "Nếu chọn bán kính đáy $R = 2\\text{ cm}$ thì diện tích nhôm sử dụng sẽ nhỏ hơn so với khi chọn $R = 3\\text{ cm}$.", "is_correct": False, "explanation": "$R = 3\\text{ cm}$ là điểm cực tiểu duy nhất trên $(0; +\\infty)$, tại đó $S(3) = 54\\pi$; với $R = 2$ thì $S(2) = 62\\pi > 54\\pi$."}
+                ],
+                "explanation": "Bài toán ứng dụng đạo hàm tìm giá trị nhỏ nhất để tối ưu chi phí vật liệu trong sản xuất công nghiệp."
+            },
+            {
+                "question": "Tại một địa phương, một xét nghiệm sàng lọc bệnh truyền nhiễm X được tiến hành. Tỉ lệ người mắc bệnh trong cộng đồng là $1\\%$ ($P(B) = 0{,}01$). Khi một người thực sự mắc bệnh, xét nghiệm cho kết quả dương tính với xác suất $98\\%$ ($P(+|B) = 0{,}98$). Khi một người không mắc bệnh, xét nghiệm vẫn có xác suất dương tính giả là $2\\%$ ($P(+|\\bar{B}) = 0{,}02$). Chọn ngẫu nhiên một người trong cộng đồng để thực hiện xét nghiệm.",
+                "sub_items": [
+                    {"label": "a", "statement": "Xác suất người được chọn mắc bệnh và có kết quả xét nghiệm dương tính là $P(B \\cap +) = 0{,}0098$.", "is_correct": True, "explanation": "$P(B \\cap +) = P(B) \\times P(+|B) = 0{,}01 \\times 0{,}98 = 0{,}0098$."},
+                    {"label": "b", "statement": "Xác suất một người ngẫu nhiên nhận kết quả xét nghiệm dương tính là $P(+) = 0{,}0296$ (tức $2{,}96\\%$).", "is_correct": True, "explanation": "Theo công thức xác suất toàn phần: $P(+) = 0{,}01 \\times 0{,}98 + 0{,}99 \\times 0{,}02 = 0{,}0098 + 0{,}0198 = 0{,}0296$."},
+                    {"label": "c", "statement": "Nếu một người nhận kết quả xét nghiệm dương tính thì xác suất người đó thực sự mắc bệnh là trên $80\\%$.", "is_correct": False, "explanation": "Theo định lý Bayes: $P(B|+) = \\frac{0{,}0098}{0{,}0296} \\approx 33{,}1\\%$ (nhỏ hơn nhiều so với $80\\%$ do tỉ lệ mắc bệnh trong cộng đồng thấp)."},
+                    {"label": "d", "statement": "Nếu tỉ lệ mắc bệnh trong cộng đồng tăng lên thì xác suất một người có kết quả dương tính thực sự mắc bệnh ($P(B|+)$) cũng sẽ tăng lên.", "is_correct": True, "explanation": "Theo công thức Bayes, khi tiên nghiệm $P(B)$ tăng thì xác suất hậu nghiệm $P(B|+)$ cũng đồng biến tăng theo."}
+                ],
+                "explanation": "Ứng dụng công thức xác suất toàn phần và định lý Bayes trong đánh giá kết quả xét nghiệm y tế."
             }
         ],
         "toán": [
@@ -2763,17 +2811,21 @@ async def run_ai_auditor_healing(
     # Audit all questions in Part 2 (True/False)
     for idx, q in enumerate(exam.part2_tf):
         q_text = q.question or ""
-        is_too_simple = len(q_text.split()) < 30 or any(pat in q_text.lower() for pat in [
-            "xét các phát biểu sau", "xét tính đúng sai", "cho các khẳng định sau", 
-            "khẳng định nào sau đây", "về khái niệm và đặc trưng"
-        ])
+        is_too_simple = is_dry_or_simple_tf_stem(q_text, grade=exam.grade)
         
         issue = defect_map_p2.get(idx, "")
         if is_too_simple:
+            warn_msg = (
+                f"ĐỀ BÀI PHẦN II QUÁ ĐƠN GIẢN HOẶC DÙNG NGỮ CẢNH TIỂU HỌC/THCS CHO KHỐI LỚP {exam.grade}: "
+                f"Bắt buộc viết lại hoàn toàn thành bài toán tình huống thực tế / mô hình hóa cao cấp chuẩn THPT Lớp {exam.grade} "
+                f"(độ dài 50-120 từ, có số liệu thực tế/kinh tế/kỹ thuật/y tế/vũ trụ/Oxyz cụ thể). "
+                f"CẤM TUYỆT ĐỐI giữ lại các bài toán 'bác nông dân', 'mảnh vườn', 'mở rộng chiều dài 2m', 'chi phí 20.000đ', '5.000đ'. "
+                f"Nâng cấp 4 ý con theo thang bậc tư duy 4 tầng (a: Biết, b: Hiểu, c: Vận dụng tính toán, d: Vận dụng cao đánh giá)."
+            )
             if issue:
-                issue += " | CẢNH BÁO ĐỀ BÀI QUÁ ĐƠN GIẢN THIẾU NGỮ CẢNH: Bắt buộc nâng cấp đề bài thành bài toán tình huống thực tế hấp dẫn (40-100 từ) có số liệu/dữ liệu cụ thể và nâng cấp 4 ý con theo thang bậc tư duy 4 tầng (Biết -> Hiểu -> Vận dụng -> Vận dụng cao)."
+                issue += f" | {warn_msg}"
             else:
-                issue = "ĐỀ BÀI CÂU ĐÚNG SAI QUÁ ĐƠN GIẢN, THIẾU NGỮ CẢNH: Bắt buộc nâng cấp đề bài thành tình huống thực tế hấp dẫn (40-100 từ) có số liệu/dự án cụ thể và nâng cấp 4 ý con theo thang bậc tư duy 4 tầng (a: Biết ngữ cảnh, b: Hiểu cơ chế, c: Vận dụng tính toán, d: Vận dụng cao đánh giá)."
+                issue = warn_msg
         elif not issue:
             issue = "Kiểm định tính chính xác của 4 mệnh đề đúng/sai và phân bổ Đúng/Sai"
 
@@ -2833,11 +2885,17 @@ QUY TẮC THẨM ĐỊNH, GIẢI ĐỘC LẬP VÀ SỬA CHỮA:
      + Lời giải 'explanation': Giải thích từng bước rõ ràng, ngắn gọn và kết luận khớp 100% với 'answer'.
 2. ĐỐI VỚI PHẦN II (TRẮC NGHIỆM ĐÚNG / SAI - NÂNG CẤP NGỮ CẢNH HẤP DẪN & THANG BẬC TƯ DUY 4 TẦNG):
    - Đọc kỹ đề bài dẫn và từng mệnh đề a, b, c, d.
-   - NÂNG CẤP NGỮ CẢNH TÌNH HUỐNG THỰC TẾ: Nếu đề bài quá đơn giản, cộc lốc (dưới 35 từ, dạng lý thuyết khô khan "Xét các phát biểu sau:"), BẮT BUỘC bạn phải viết lại đề bài thành một BỐI CẢNH/TÌNH HUỐNG THỰC TẾ HẤP DẪN (40-100 từ) có số liệu/dự án/đoạn mã/thí nghiệm cụ thể, và nâng cấp 4 ý con a, b, c, d theo thang bậc tư duy 4 tầng:
-     • Ý a [Biết]: Trích xuất hoặc nhận biết thông số/khái niệm trong ngữ cảnh.
-     • Ý b [Hiểu]: Phân tích cơ chế hoạt động, nguyên nhân - kết quả của tình huống.
-     • Ý c [Vận dụng]: Tính toán định lượng cụ thể từ số liệu hoặc kiểm tra kết quả thực thi.
-     • Ý d [Vận dụng cao]: Đánh giá quyết định tối ưu, dự đoán kịch bản hoặc phân tích khía cạnh an toàn / đạo đức / hiệu năng.
+   - NÂNG CẤP TRIỆT ĐỂ NGỮ CẢNH TÌNH HUỐNG THỰC TẾ:
+     + NẾU đề bài quá đơn giản, cộc lốc (dưới 45 từ đối với THPT), hoặc mang tính chất bài toán tiểu học / THCS (như 'bác nông dân', 'mảnh vườn', 'mở rộng chiều dài 2m', 'chi phí 20.000đ', '5.000đ', 'xét các phát biểu sau:'), BẮT BUỘC BẠN PHẢI VIẾT LẠI HOÀN TOÀN đề bài thành BÀI TOÁN TÌNH HUỐNG THỰC TẾ / MÔ HÌNH HÓA ĐỜI SỐNG CHUYÊN NGHIỆP ĐẠT CHUẨN THPT LỚP {exam.grade} (50-120 từ):
+       * Lớp 10: Tối ưu hóa miền nghiệm hệ BPT sản xuất/kinh tế, quỹ đạo Parabol chuyển động tên lửa/bóng bay, đo đạc góc khoảng cách gián tiếp định lý sin/cos, phân bố thống kê dữ liệu.
+       * Lớp 11: Cấp số nhân tăng trưởng dân số / lãi kép ngân hàng, dao động điều hòa li độ/vận tốc đạo hàm, kiểm định y tế xác suất độc lập, mô hình góc mái dốc/khoảng cách hình học không gian.
+       * Lớp 12: Tối ưu hóa lợi nhuận kinh doanh bằng đạo hàm P(x) = R(x) - C(x), tiệm cận xiên chi phí trung bình, thiết kế vỏ hộp/bể chứa tiết kiệm vật liệu nhất, suy giảm nồng độ thuốc trong máu hàm số mũ C(t), bài toán trạm radar cảnh giới hàng không/định vị vệ tinh trong không gian Oxyz, xác suất kiểm định y tế công thức Bayes.
+     + TUYỆT ĐỐI CẤM giữ lại các bài toán nông dân, mảnh vườn, chi phí 20.000đ khi thẩm định đề thi THPT!
+     + Nâng cấp 4 ý con a, b, c, d theo thang bậc tư duy 4 tầng:
+       • Ý a [Biết]: Trích xuất hoặc nhận biết thông số/khái niệm trong ngữ cảnh.
+       • Ý b [Hiểu]: Phân tích cơ chế hoạt động, nguyên nhân - kết quả của tình huống.
+       • Ý c [Vận dụng]: Tính toán định lượng cụ thể từ số liệu hoặc kiểm tra kết quả thực thi.
+       • Ý d [Vận dụng cao]: Đánh giá quyết định tối ưu, dự đoán kịch bản hoặc phân tích khía cạnh an toàn / đạo đức / hiệu năng.
    - BẮT BUỘC TỰ GIẢI ĐỘC LẬP xét tính Đúng / Sai của từng mệnh đề a, b, c, d:
      + So sánh với 'is_correct'. NẾU 'is_correct' BỊ ĐÁNH GIÁ SAI (ví dụ mệnh đề thực tế là ĐÚNG nhưng ghi false, hoặc thực tế là SAI nhưng ghi true): BẮT BUỘC SỬA LẠI 'is_correct' CHO CHUẨN XÁC 100%!
      + Viết lại 'explanation' cho từng mệnh đề chứng minh rõ tại sao Đúng, tại sao Sai.
@@ -3069,7 +3127,7 @@ async def audit_and_verify_exam(
             defective_p1.append((i, reason))
             
     for i, q in enumerate(exam.part2_tf):
-        is_bad, reason = is_tf_defective(q)
+        is_bad, reason = is_tf_defective(q, grade=exam.grade)
         if is_bad:
             defective_p2.append((i, reason))
             
@@ -3108,7 +3166,7 @@ async def audit_and_verify_exam(
             notes.append(f"Câu {q.id} (Phần I): Đã tự động chuẩn hóa câu hỏi và phương án môn {exam.subject}.")
             
     for i, q in enumerate(exam.part2_tf):
-        is_bad, reason = is_tf_defective(q)
+        is_bad, reason = is_tf_defective(q, grade=exam.grade)
         if is_bad:
             exam.part2_tf[i] = heal_tf_offline(q, exam.subject, i, exam.grade)
             notes.append(f"Câu {q.id} (Phần II): Đã tự động chuẩn hóa đề bài và 4 mệnh đề Đúng/Sai thực tế môn {exam.subject}.")
@@ -3131,7 +3189,7 @@ async def audit_and_verify_exam(
             
     for idx_p2, q in enumerate(exam.part2_tf):
         q.question = normalize_latex_delimiters(q.question)
-        if not q.question or len(q.question.strip()) < 5 or is_question_stem_defective(q.question)[0] or is_dry_or_simple_tf_stem(q.question):
+        if not q.question or len(q.question.strip()) < 5 or is_question_stem_defective(q.question)[0] or is_dry_or_simple_tf_stem(q.question, grade=exam.grade):
             exam.part2_tf[idx_p2] = heal_tf_offline(q, exam.subject, idx_p2, exam.grade)
             notes.append(f"Câu {q.id} (Phần II): Đã tự động nâng cấp từ câu hỏi đơn giản/lý thuyết suông thành bài toán tình huống thực tế hấp dẫn môn {exam.subject}.")
             q = exam.part2_tf[idx_p2]
