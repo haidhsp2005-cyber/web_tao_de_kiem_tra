@@ -416,11 +416,11 @@ async def generate_with_gemini(prompt: str, api_key: str, model: str = "auto") -
             
         # Priority: active high-speed reasoning models on Google AI Studio
         for pref in [
-            "gemini-2.0-flash",
-            "gemini-2.5-flash",
-            "gemini-1.5-flash",
-            "gemini-2.0-flash-lite",
-            "gemini-1.5-pro"
+            "gemini-3.1-flash-lite",
+            "gemini-3-flash-preview",
+            "gemini-3.5-flash",
+            "gemini-3.8-flash",
+            "gemini-flash-latest"
         ]:
             if pref not in candidate_models:
                 candidate_models.append(pref)
@@ -462,7 +462,7 @@ async def generate_with_gemini(prompt: str, api_key: str, model: str = "auto") -
                     tried_discovery = True
                     discovered = await discover_gemini_models(client, api_key)
                     for d_model in discovered:
-                        if d_model not in candidate_models and "2.5-flash" not in d_model:
+                        if d_model not in candidate_models:
                             candidate_models.append(d_model)
                 continue
             elif response.status_code == 429:
