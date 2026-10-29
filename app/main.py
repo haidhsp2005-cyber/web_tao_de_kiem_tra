@@ -26,8 +26,6 @@ from .services.ai_generator import (
     get_env_api_keys, mask_key
 )
 from .services.shuffler import shuffle_exam
-from .services.docx_exporter import create_exam_document
-from .services.diagram_generator import auto_attach_diagrams_to_exam
 
 app = FastAPI(
     title="EduExam AI 2026 - Hệ Thống Biên Soạn & Trộn Đề Kiểm Tra Chuẩn Bộ GD&ĐT 2026 - 2027",
@@ -46,10 +44,12 @@ app.add_middleware(
 @app.middleware("http")
 async def add_no_cache_headers(request: Request, call_next):
     response = await call_next(request)
-    if request.url.path == "/" or any(request.url.path.endswith(ext) for ext in [".html", ".js", ".css"]):
+    if request.url.path == "/" or request.url.path.endswith(".html"):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
         response.headers["Pragma"] = "no-cache"
         response.headers["Expires"] = "0"
+    elif any(request.url.path.endswith(ext) for ext in [".js", ".css", ".png", ".jpg", ".svg", ".woff2", ".woff"]):
+        response.headers["Cache-Control"] = "public, max-age=3600, stale-while-revalidate=86400"
     return response
 
 @app.exception_handler(RequestValidationError)
@@ -282,6 +282,7 @@ async def api_sample(subject: str):
 @app.post("/api/shuffle", response_model=ShuffleResponse)
 async def api_shuffle(req: ShuffleRequest):
     try:
+        from .services.diagram_generator import auto_attach_diagrams_to_exam
         req.exam = auto_attach_diagrams_to_exam(req.exam)
         res = shuffle_exam(
             exam=req.exam,
@@ -301,6 +302,8 @@ async def api_shuffle(req: ShuffleRequest):
 @app.post("/api/export-docx")
 async def api_export_docx(req: ExportDocxRequest):
     try:
+        from .services.diagram_generator import auto_attach_diagrams_to_exam
+        from .services.docx_exporter import create_exam_document
         req.exam = auto_attach_diagrams_to_exam(req.exam)
         if req.all_variants:
             for v in req.all_variants:
@@ -339,6 +342,7 @@ class ZipExportRequest(BaseModel):
 @app.post("/api/export-zip")
 async def api_export_zip(req: ZipExportRequest):
     try:
+        from .services.docx_exporter import create_exam_document
         zip_buffer = io.BytesIO()
         sub_ascii = make_ascii_filename(req.exam.subject)
         with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zf:

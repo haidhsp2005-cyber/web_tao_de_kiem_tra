@@ -5,8 +5,6 @@ import base64
 import asyncio
 from typing import List, Tuple, Dict, Any, Optional
 import httpx
-import docx
-import fitz  # PyMuPDF
 
 def format_file_size(size_bytes: int) -> str:
     if size_bytes < 1024:
@@ -17,6 +15,7 @@ def format_file_size(size_bytes: int) -> str:
         return f"{size_bytes / (1024 * 1024):.1f} MB"
 
 def extract_text_from_docx(file_bytes: bytes) -> str:
+    import docx
     doc = docx.Document(io.BytesIO(file_bytes))
     full_text = []
     
@@ -49,6 +48,7 @@ def extract_text_from_docx(file_bytes: bytes) -> str:
     return '\n'.join(full_text)
 
 def extract_text_from_pdf(file_bytes: bytes) -> str:
+    import fitz
     doc = fitz.open(stream=file_bytes, filetype='pdf')
     full_text = []
     for page_idx, page in enumerate(doc, 1):
@@ -160,6 +160,7 @@ async def extract_text_from_pdf_async(file_bytes: bytes, api_keys: Optional[List
     Trích xuất PDF: Ưu tiên trích xuất text và bảng trực tiếp. Nếu phát hiện trang scan (ít chữ),
     tự động chuyển trang thành ảnh và gọi Gemini Vision OCR để đọc toàn văn.
     """
+    import fitz
     doc = fitz.open(stream=file_bytes, filetype='pdf')
     full_text = []
     

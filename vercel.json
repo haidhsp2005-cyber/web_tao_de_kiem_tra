@@ -1,11 +1,18 @@
 {
   "version": 2,
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 60,
+      "includeFiles": "app/**"
+    }
+  },
   "builds": [
     {
       "src": "api/index.py",
       "use": "@vercel/python",
       "config": {
-        "includeFiles": ["app/**"]
+        "includeFiles": ["app/**"],
+        "maxDuration": 60
       }
     }
   ],
@@ -13,6 +20,17 @@
     {
       "src": "/(.*)",
       "dest": "api/index.py"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)\\.(css|js|woff2|woff|ttf|png|jpg|ico|svg)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, stale-while-revalidate=604800"
+        }
+      ]
     }
   ],
   "env": {

@@ -2,7 +2,6 @@ import re
 import math
 from fractions import Fraction
 from typing import Tuple, Optional, List, Dict, Any, Union
-import sympy as sp
 
 from .models import ExamStructure, Part1Question, Part2Question, Part3Question, Option, SubItem
 from .explanation_sync import extract_concluded_letter, synchronize_mcq_explanation_with_answer
@@ -90,6 +89,7 @@ class UniversalMathEngine:
                     "prod_roots": Fraction(c, a)
                 }
                 if delta >= 0:
+                    import sympy as sp
                     sqrt_delta = sp.sqrt(delta)
                     res["x1"] = (-b + sqrt_delta) / (2 * a)
                     res["x2"] = (-b - sqrt_delta) / (2 * a)

@@ -414,16 +414,13 @@ async def generate_with_gemini(prompt: str, api_key: str, model: str = "auto") -
         if model and model not in ("auto", "default", ""):
             candidate_models.append(model)
             
-        # Priority: active high-quality reasoning models on Google AI Studio
+        # Priority: active high-speed reasoning models on Google AI Studio
         for pref in [
-            "gemini-flash-latest",
-            "gemini-3.8-flash",
-            "gemini-3.5-flash",
-            "gemini-3.1-flash-lite",
-            "gemini-flash-lite-latest",
-            "gemini-2.5-flash",
             "gemini-2.0-flash",
-            "gemini-1.5-flash"
+            "gemini-2.5-flash",
+            "gemini-1.5-flash",
+            "gemini-2.0-flash-lite",
+            "gemini-1.5-pro"
         ]:
             if pref not in candidate_models:
                 candidate_models.append(pref)

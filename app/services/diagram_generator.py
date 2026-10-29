@@ -1,13 +1,26 @@
 import io
 import re
+import os
+import tempfile
 import base64
 from typing import Dict, Any, Optional, Tuple, List
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
-import numpy as np
 
-def fig_to_base64(fig: plt.Figure) -> str:
+def __getattr__(name: str):
+    if name == "plt":
+        import matplotlib
+        if "MPLCONFIGDIR" not in os.environ:
+            os.environ["MPLCONFIGDIR"] = "/tmp/.matplotlib" if os.name != "nt" else os.path.join(tempfile.gettempdir(), ".matplotlib")
+        matplotlib.use('Agg')
+        import matplotlib.pyplot as plt
+        globals()["plt"] = plt
+        return plt
+    elif name == "np":
+        import numpy as np
+        globals()["np"] = np
+        return np
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+def fig_to_base64(fig: Any) -> str:
     """Chuyển đổi đối tượng Matplotlib Figure sang chuỗi data URI PNG base64."""
     buf = io.BytesIO()
     plt.tight_layout()
