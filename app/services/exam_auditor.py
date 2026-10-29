@@ -397,6 +397,15 @@ def is_tf_defective(q: Part2Question, grade: str = "12") -> Tuple[bool, str]:
     if ctx_bad:
         return True, f"Lệch pha ngữ cảnh Phần II: {ctx_reason}"
 
+    # Bắt buộc ngữ cảnh tình huống thực tế cho Phần II (không cộc lốc lý thuyết suông)
+    clean_stem = q.question.strip()
+    words_count = len(clean_stem.split())
+    if words_count < 20 or any(pat in clean_stem.lower() for pat in [
+        "xét các phát biểu sau", "xét tính đúng sai", "cho các khẳng định sau", 
+        "khẳng định nào sau đây", "về khái niệm và đặc trưng", "xét các mệnh đề sau"
+    ]):
+        return True, "Đề bài Phần II cộc lốc lý thuyết suông, thiếu ngữ cảnh/tình huống thực tế hấp dẫn đạt chuẩn GDPT 2018"
+
     for s in q.sub_items:
         s.statement = normalize_latex_delimiters(s.statement)
         clean_stmt = (s.statement or "").strip()
