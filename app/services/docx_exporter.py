@@ -234,13 +234,27 @@ def setup_exam_footer(section, code: str):
     fld_numpages = parse_xml(r'<w:fldSimple xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:instr="NUMPAGES"><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="19"/><w:color w:val="646464"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>')
     p._p.append(fld_numpages)
 
+def format_level_badge(q, include_levels: bool = False) -> str:
+    if not include_levels:
+        return ""
+    lvl = getattr(q, 'cognitive_level', None)
+    top = getattr(q, 'matrix_topic', None)
+    if lvl and top:
+        return f"[{lvl} - {top}] "
+    elif lvl:
+        return f"[{lvl}] "
+    elif top:
+        return f"[{top}] "
+    return ""
+
 def create_exam_document(
     exam: ExamStructure,
     variant_code: Optional[str] = None,
     include_answers: bool = True,
     include_explanations: bool = True,
     all_variants: Optional[List[ExamVariant]] = None,
-    red_answers: bool = False
+    red_answers: bool = False,
+    include_cognitive_levels: bool = False
 ) -> docx.Document:
     """
     Generates a beautifully formatted Vietnamese curriculum exam paper (.docx).
@@ -386,7 +400,8 @@ def create_exam_document(
             p_q.paragraph_format.line_spacing = 1.15
             
             # Question number
-            run_num = p_q.add_run(f"Câu {idx}: ")
+            badge = format_level_badge(q, include_cognitive_levels)
+            run_num = p_q.add_run(f"Câu {idx} {badge}: " if badge else f"Câu {idx}: ")
             run_num.bold = True
             run_num.font.name = "Times New Roman"
             run_num.font.size = Pt(11)
@@ -495,7 +510,8 @@ def create_exam_document(
             p_q.paragraph_format.space_after = Pt(3)
             p_q.paragraph_format.line_spacing = 1.15
             
-            run_num = p_q.add_run(f"Câu {idx}: ")
+            badge = format_level_badge(q, include_cognitive_levels)
+            run_num = p_q.add_run(f"Câu {idx} {badge}: " if badge else f"Câu {idx}: ")
             run_num.bold = True
             run_num.font.name = "Times New Roman"
             run_num.font.size = Pt(11)
@@ -514,7 +530,8 @@ def create_exam_document(
                 sub_bold = False
                 sub_italic = False
                 
-                run_lbl = p_sub.add_run(f"{sub.label}) ")
+                sub_lvl_tag = f"[{sub.cognitive_level}] " if (include_cognitive_levels and getattr(sub, 'cognitive_level', None)) else ""
+                run_lbl = p_sub.add_run(f"{sub.label}) {sub_lvl_tag}")
                 run_lbl.bold = False if red_answers else True
                 run_lbl.italic = False
                 run_lbl.font.name = "Times New Roman"
@@ -542,7 +559,8 @@ def create_exam_document(
             p_q.paragraph_format.space_after = Pt(2 if red_answers else 4)
             p_q.paragraph_format.line_spacing = 1.15
             
-            run_num = p_q.add_run(f"Câu {idx}: ")
+            badge = format_level_badge(q, include_cognitive_levels)
+            run_num = p_q.add_run(f"Câu {idx} {badge}: " if badge else f"Câu {idx}: ")
             run_num.bold = True
             run_num.font.name = "Times New Roman"
             run_num.font.size = Pt(11)
@@ -582,7 +600,8 @@ def create_exam_document(
             p_q.paragraph_format.line_spacing = 1.15
             
             pts_str = f" ({format_points(q.points)} điểm)" if q.points else ""
-            run_num = p_q.add_run(f"Câu {idx}{pts_str}: ")
+            badge = format_level_badge(q, include_cognitive_levels)
+            run_num = p_q.add_run(f"Câu {idx}{pts_str} {badge}: " if badge else f"Câu {idx}{pts_str}: ")
             run_num.bold = True
             run_num.font.name = "Times New Roman"
             run_num.font.size = Pt(11)
@@ -643,6 +662,77 @@ def create_exam_document(
         r_subhead.bold = True
         r_subhead.font.name = "Times New Roman"
         r_subhead.font.size = Pt(11)
+        
+        if include_cognitive_levels:
+            p_cog = doc.add_paragraph()
+            p_cog.paragraph_format.space_before = Pt(8)
+            p_cog.paragraph_format.space_after = Pt(4)
+            r_cog = p_cog.add_run("BẢNG ĐỐI SOÁT CÂU HỎI THEO MA TRẬN & MỨC ĐỘ NHẬN THỨC (CÔNG VĂN 7991)")
+            r_cog.bold = True
+            r_cog.font.name = "Times New Roman"
+            r_cog.font.size = Pt(11)
+            r_cog.font.color.rgb = RGBColor(0, 51, 102)
+
+            rows_data = []
+            stt = 1
+            for idx, q in enumerate(exam.part1_mcq, start=1):
+                lvl = getattr(q, 'cognitive_level', '') or 'Nhận biết'
+                top = getattr(q, 'matrix_topic', '') or 'Theo ma trận'
+                rows_data.append((str(stt), "Phần I (Nhiều LC)", f"Câu {idx}", lvl, top, q.answer))
+                stt += 1
+            for idx, q in enumerate(exam.part2_tf, start=1):
+                lvl = getattr(q, 'cognitive_level', '') or 'Thông hiểu'
+                top = getattr(q, 'matrix_topic', '') or 'Theo ma trận'
+                ans_str = ", ".join([f"{s.label}:{('Đ' if s.is_correct else 'S')}" for s in q.sub_items])
+                rows_data.append((str(stt), "Phần II (Đúng - Sai)", f"Câu {idx}", lvl, top, ans_str))
+                stt += 1
+            for idx, q in enumerate(exam.part3_short, start=1):
+                lvl = getattr(q, 'cognitive_level', '') or 'Vận dụng'
+                top = getattr(q, 'matrix_topic', '') or 'Theo ma trận'
+                rows_data.append((str(stt), "Phần III (Trả lời ngắn)", f"Câu {idx}", lvl, top, str(q.answer)))
+                stt += 1
+            for idx, q in enumerate(exam.part4_essay, start=1):
+                lvl = getattr(q, 'cognitive_level', '') or 'Vận dụng'
+                top = getattr(q, 'matrix_topic', '') or 'Theo ma trận'
+                rows_data.append((str(stt), "Phần IV (Tự luận)", f"Câu {idx}", lvl, top, f"{format_points(q.points)} điểm"))
+                stt += 1
+
+            if rows_data:
+                t_cog = doc.add_table(rows=len(rows_data) + 1, cols=6)
+                t_cog.alignment = WD_TABLE_ALIGNMENT.CENTER
+                headers = ["TT", "Phần thi", "Câu số", "Mức độ nhận thức", "Chủ đề / Đơn vị kiến thức", "Đáp án / Ghi chú"]
+                col_widths = [Inches(0.4), Inches(1.3), Inches(0.7), Inches(1.3), Inches(2.4), Inches(1.3)]
+                for col_idx, h in enumerate(headers):
+                    cell = t_cog.cell(0, col_idx)
+                    cell.paragraphs[0].text = h
+                    cell.paragraphs[0].runs[0].font.bold = True
+                    cell.paragraphs[0].runs[0].font.name = "Times New Roman"
+                    cell.paragraphs[0].runs[0].font.size = Pt(9.5)
+                    cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    cell.width = col_widths[col_idx]
+                    set_cell_margins(cell)
+                for r_i, r_data in enumerate(rows_data, start=1):
+                    for c_i, val in enumerate(r_data):
+                        cell = t_cog.cell(r_i, c_i)
+                        cell.paragraphs[0].text = str(val)
+                        if cell.paragraphs[0].runs:
+                            cell.paragraphs[0].runs[0].font.name = "Times New Roman"
+                            cell.paragraphs[0].runs[0].font.size = Pt(9.5)
+                            if c_i in (2, 3):
+                                cell.paragraphs[0].runs[0].font.bold = True
+                        if c_i in (0, 1, 2, 3):
+                            cell.paragraphs[0].alignment = WD_ALIGN_PARAGRAPH.CENTER
+                        cell.width = col_widths[c_i]
+                        set_cell_margins(cell)
+                for row in t_cog.rows:
+                    for cell in row.cells:
+                        set_cell_border(cell,
+                            top={'val': 'single', 'sz': '4', 'color': '888888'},
+                            bottom={'val': 'single', 'sz': '4', 'color': '888888'},
+                            left={'val': 'single', 'sz': '4', 'color': '888888'},
+                            right={'val': 'single', 'sz': '4', 'color': '888888'}
+                        )
+                doc.add_paragraph().paragraph_format.space_after = Pt(8)
         
         # 1. Part 1 Answer Table (20 MCQs)
         if exam.part1_mcq:
@@ -836,7 +926,8 @@ def create_exam_document(
                 p_item.paragraph_format.space_before = Pt(4)
                 p_item.paragraph_format.space_after = Pt(2)
                 pts_str = f" ({format_points(q.points)} điểm)" if q.points else ""
-                r_qnum = p_item.add_run(f"Câu {idx}{pts_str}: ")
+                badge = format_level_badge(q, include_cognitive_levels)
+                r_qnum = p_item.add_run(f"Câu {idx}{pts_str} {badge}: " if badge else f"Câu {idx}{pts_str}: ")
                 r_qnum.bold = True
                 r_qnum.font.name = "Times New Roman"
                 r_qnum.font.size = Pt(11)
@@ -1121,7 +1212,8 @@ def create_exam_document(
                 p_item.paragraph_format.space_before = Pt(6)
                 p_item.paragraph_format.space_after = Pt(2)
                 
-                r_qnum = p_item.add_run(f"Câu {idx} (Chọn {q.answer}): ")
+                badge = format_level_badge(q, include_cognitive_levels)
+                r_qnum = p_item.add_run(f"Câu {idx} (Chọn {q.answer}) {badge}: " if badge else f"Câu {idx} (Chọn {q.answer}): ")
                 r_qnum.bold = True
                 r_qnum.font.name = "Times New Roman"
                 r_qnum.font.size = Pt(11)
@@ -1151,7 +1243,8 @@ def create_exam_document(
                 p_item.paragraph_format.space_before = Pt(6)
                 p_item.paragraph_format.space_after = Pt(2)
                 
-                r_qnum = p_item.add_run(f"Câu {idx}: ")
+                badge = format_level_badge(q, include_cognitive_levels)
+                r_qnum = p_item.add_run(f"Câu {idx} {badge}: " if badge else f"Câu {idx}: ")
                 r_qnum.bold = True
                 r_qnum.font.name = "Times New Roman"
                 r_qnum.font.size = Pt(11)
@@ -1163,7 +1256,8 @@ def create_exam_document(
                     p_sub.paragraph_format.space_after = Pt(2)
                     
                     status_text = "ĐÚNG" if sub.is_correct else "SAI"
-                    r_lbl = p_sub.add_run(f"Ý {sub.label}) [{status_text}]: ")
+                    sub_lvl_tag = f" - [{sub.cognitive_level}]" if (include_cognitive_levels and getattr(sub, 'cognitive_level', None)) else ""
+                    r_lbl = p_sub.add_run(f"Ý {sub.label}) [{status_text}]{sub_lvl_tag}: ")
                     r_lbl.bold = True
                     r_lbl.font.name = "Times New Roman"
                     r_lbl.font.size = Pt(10.5)
@@ -1188,7 +1282,8 @@ def create_exam_document(
                 p_item.paragraph_format.space_before = Pt(6)
                 p_item.paragraph_format.space_after = Pt(2)
                 
-                r_qnum = p_item.add_run(f"Câu {idx} (Đáp số: {q.answer}): ")
+                badge = format_level_badge(q, include_cognitive_levels)
+                r_qnum = p_item.add_run(f"Câu {idx} (Đáp số: {q.answer}) {badge}: " if badge else f"Câu {idx} (Đáp số: {q.answer}): ")
                 r_qnum.bold = True
                 r_qnum.font.name = "Times New Roman"
                 r_qnum.font.size = Pt(11)
@@ -1219,7 +1314,8 @@ def create_exam_document(
                 p_item.paragraph_format.space_after = Pt(2)
                 
                 pts_str = f" ({format_points(q.points)} điểm)" if q.points else ""
-                r_qnum = p_item.add_run(f"Câu {idx}{pts_str}: ")
+                badge = format_level_badge(q, include_cognitive_levels)
+                r_qnum = p_item.add_run(f"Câu {idx}{pts_str} {badge}: " if badge else f"Câu {idx}{pts_str}: ")
                 r_qnum.bold = True
                 r_qnum.font.name = "Times New Roman"
                 r_qnum.font.size = Pt(11)

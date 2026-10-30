@@ -14,12 +14,15 @@ class Part1Question(BaseModel):
     explanation: Optional[str] = ''
     image_base64: Optional[str] = None
     image_caption: Optional[str] = None
+    cognitive_level: Optional[str] = None  # 'Nhận biết' | 'Thông hiểu' | 'Vận dụng' | 'Vận dụng cao'
+    matrix_topic: Optional[str] = None     # Tên chủ đề / mạch kiến thức từ ma trận
 
 class SubItem(BaseModel):
     label: str  # a, b, c, d
     statement: str
     is_correct: bool  # True: Dung, False: Sai
     explanation: Optional[str] = ''
+    cognitive_level: Optional[str] = None  # 'Nhận biết' | 'Thông hiểu' | 'Vận dụng'
 
 class Part2Question(BaseModel):
     id: int
@@ -28,6 +31,8 @@ class Part2Question(BaseModel):
     explanation: Optional[str] = ''
     image_base64: Optional[str] = None
     image_caption: Optional[str] = None
+    cognitive_level: Optional[str] = None  # 'Nhận biết' | 'Thông hiểu' | 'Vận dụng' | 'Vận dụng cao'
+    matrix_topic: Optional[str] = None
 
 class Part3Question(BaseModel):
     id: int
@@ -36,6 +41,8 @@ class Part3Question(BaseModel):
     explanation: Optional[str] = ''
     image_base64: Optional[str] = None
     image_caption: Optional[str] = None
+    cognitive_level: Optional[str] = None  # 'Nhận biết' | 'Thông hiểu' | 'Vận dụng' | 'Vận dụng cao'
+    matrix_topic: Optional[str] = None
 
 class Part4EssayQuestion(BaseModel):
     id: int
@@ -45,6 +52,8 @@ class Part4EssayQuestion(BaseModel):
     explanation: Optional[str] = '' # Hướng dẫn chấm chi tiết & biểu điểm
     image_base64: Optional[str] = None
     image_caption: Optional[str] = None
+    cognitive_level: Optional[str] = None  # 'Vận dụng' | 'Vận dụng cao'
+    matrix_topic: Optional[str] = None
 
 class AuditReport(BaseModel):
     passed: bool = True
@@ -427,4 +436,5 @@ class ExportDocxRequest(BaseModel):
     include_answers: bool = True
     include_explanations: bool = True
     red_answers: bool = False
+    include_cognitive_levels: bool = False
 

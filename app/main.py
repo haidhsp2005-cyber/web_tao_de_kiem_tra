@@ -304,9 +304,14 @@ async def api_export_docx(req: ExportDocxRequest):
     try:
         from .services.diagram_generator import auto_attach_diagrams_to_exam
         from .services.docx_exporter import create_exam_document
+        if req.include_cognitive_levels:
+            from .services.ai_generator import ensure_exam_cognitive_levels
+            req.exam = ensure_exam_cognitive_levels(req.exam)
         req.exam = auto_attach_diagrams_to_exam(req.exam)
         if req.all_variants:
             for v in req.all_variants:
+                if req.include_cognitive_levels:
+                    v.exam = ensure_exam_cognitive_levels(v.exam)
                 v.exam = auto_attach_diagrams_to_exam(v.exam)
         doc = create_exam_document(
             exam=req.exam,
@@ -314,14 +319,15 @@ async def api_export_docx(req: ExportDocxRequest):
             include_answers=req.include_answers,
             include_explanations=req.include_explanations,
             all_variants=req.all_variants,
-            red_answers=req.red_answers
+            red_answers=req.red_answers,
+            include_cognitive_levels=req.include_cognitive_levels
         )
         buffer = io.BytesIO()
         doc.save(buffer)
         buffer.seek(0)
         code = req.variant_code or req.exam.code or "101"
         sub_ascii = make_ascii_filename(req.exam.subject)
-        suffix = "_Dap_an_in_do" if req.red_answers else ""
+        suffix = "_Kem_Muc_Do" if req.include_cognitive_levels else ("_Dap_an_in_do" if req.red_answers else "")
         safe_filename = f"De_thi_{sub_ascii}_Ma_{code}{suffix}.docx"
         return StreamingResponse(
             buffer,
@@ -337,6 +343,7 @@ class ZipExportRequest(BaseModel):
     variants: List[ExamVariant]
     include_answers: bool = True
     include_explanations: bool = True
+    include_cognitive_levels: bool = False
 
 # 6. Xuất trọn bộ ZIP gồm từng mã đề riêng biệt
 @app.post("/api/export-zip")
@@ -351,7 +358,8 @@ async def api_export_zip(req: ZipExportRequest):
                     exam=v.exam,
                     variant_code=v.code,
                     include_answers=req.include_answers,
-                    include_explanations=req.include_explanations
+                    include_explanations=req.include_explanations,
+                    include_cognitive_levels=req.include_cognitive_levels
                 )
                 v_buf = io.BytesIO()
                 doc_v.save(v_buf)

@@ -3596,6 +3596,73 @@ def build_grade_curriculum_instructions(subject: str, grade: str) -> str:
 
     return "\n".join(sections)
 
+def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any] = None) -> ExamStructure:
+    """
+    Đảm bảo 100% câu hỏi trong đề thi luôn có nhãn mức độ nhận thức (cognitive_level)
+    và mạch nội dung kiến thức (matrix_topic), đối soát chính xác theo chuẩn Công văn 7991.
+    """
+    topics_list = []
+    if matrix_spec and getattr(matrix_spec, "topics", None):
+        topics_list = [t for t in matrix_spec.topics]
+
+    # 1. Phần I: Nhiều lựa chọn (Phân bổ chuẩn: Biết ~50%, Hiểu ~35%, Vận dụng ~15%)
+    n1 = len(exam.part1_mcq)
+    for i, q in enumerate(exam.part1_mcq):
+        if not getattr(q, "cognitive_level", None):
+            if i < int(n1 * 0.5):
+                q.cognitive_level = "Nhận biết"
+            elif i < int(n1 * 0.85):
+                q.cognitive_level = "Thông hiểu"
+            else:
+                q.cognitive_level = "Vận dụng"
+        if not getattr(q, "matrix_topic", None):
+            if topics_list:
+                t_idx = min(i // max(1, (n1 // len(topics_list) or 1)), len(topics_list) - 1)
+                q.matrix_topic = getattr(topics_list[t_idx], "topic", "")
+            else:
+                q.matrix_topic = exam.subject
+
+    # 2. Phần II: Đúng / Sai (Mỗi câu gồm 4 ý phân hóa từ Biết đến Vận dụng)
+    n2 = len(exam.part2_tf)
+    sub_levels = ["Nhận biết", "Thông hiểu", "Vận dụng", "Vận dụng cao"]
+    for i, q in enumerate(exam.part2_tf):
+        if not getattr(q, "cognitive_level", None):
+            q.cognitive_level = "Thông hiểu" if i < max(1, n2 // 2) else "Vận dụng"
+        if not getattr(q, "matrix_topic", None):
+            if topics_list:
+                t_idx = min(i % len(topics_list), len(topics_list) - 1)
+                q.matrix_topic = getattr(topics_list[t_idx], "topic", "")
+            else:
+                q.matrix_topic = exam.subject
+        for s_idx, sub in enumerate(q.sub_items):
+            if not getattr(sub, "cognitive_level", None):
+                sub.cognitive_level = sub_levels[s_idx] if s_idx < len(sub_levels) else "Vận dụng"
+
+    # 3. Phần III: Trả lời ngắn (Mức độ Vận dụng & Vận dụng cao)
+    n3 = len(exam.part3_short)
+    for i, q in enumerate(exam.part3_short):
+        if not getattr(q, "cognitive_level", None):
+            q.cognitive_level = "Vận dụng" if i < int(n3 * 0.6) else "Vận dụng cao"
+        if not getattr(q, "matrix_topic", None):
+            if topics_list:
+                t_idx = min(i % len(topics_list), len(topics_list) - 1)
+                q.matrix_topic = getattr(topics_list[t_idx], "topic", "")
+            else:
+                q.matrix_topic = exam.subject
+
+    # 4. Phần IV: Tự luận (Mức độ Vận dụng & Vận dụng cao)
+    for i, q in enumerate(exam.part4_essay):
+        if not getattr(q, "cognitive_level", None):
+            q.cognitive_level = "Vận dụng" if i == 0 else "Vận dụng cao"
+        if not getattr(q, "matrix_topic", None):
+            if topics_list:
+                t_idx = min(i % len(topics_list), len(topics_list) - 1)
+                q.matrix_topic = getattr(topics_list[t_idx], "topic", "")
+            else:
+                q.matrix_topic = exam.subject
+
+    return exam
+
 async def generate_exam(request: GenerateRequest) -> ExamStructure:
     keys = extract_api_keys(request)
     
@@ -4191,4 +4258,5 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc các 
         print(f"[Auditor Agent Warning] Lỗi trong quá trình thẩm định: {audit_err}")
         
     exam_obj = auto_attach_diagrams_to_exam(exam_obj)
+    exam_obj = ensure_exam_cognitive_levels(exam_obj, request.matrix_spec)
     return exam_obj

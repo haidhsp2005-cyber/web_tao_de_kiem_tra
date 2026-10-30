@@ -308,6 +308,73 @@ createApp({
       return formScoring.value;
     });
 
+    const matrixQuestionBreakdown = computed(() => {
+      if (!matrixSpec.value) return [];
+      const list = [];
+      const ms = matrixSpec.value;
+      const topics = ms.topics || [];
+      
+      // Part 1
+      const p1Count = form.num_part1 !== undefined ? form.num_part1 : (ms.num_part1 || 12);
+      for (let i = 1; i <= p1Count; i++) {
+        const t = topics.length ? topics[(i - 1) % topics.length] : null;
+        let level = "Nhận biết";
+        if (i > p1Count * 0.85) level = "Vận dụng";
+        else if (i > p1Count * 0.5) level = "Thông hiểu";
+        list.push({
+          num: i,
+          part: "Phần I (Nhiều LC)",
+          level,
+          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Toán học"),
+          requirement: t && t.requirements ? (level === "Nhận biết" ? t.requirements.recognition : (level === "Thông hiểu" ? t.requirements.comprehension : t.requirements.application)) : ""
+        });
+      }
+      
+      // Part 2
+      const p2Count = form.num_part2 !== undefined ? form.num_part2 : (ms.num_part2 || 4);
+      for (let i = 1; i <= p2Count; i++) {
+        const t = topics.length ? topics[(i - 1) % topics.length] : null;
+        const level = i <= Math.ceil(p2Count / 2) ? "Thông hiểu" : "Vận dụng";
+        list.push({
+          num: i,
+          part: "Phần II (Đúng - Sai)",
+          level,
+          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Toán học"),
+          requirement: "Phân hóa 4 lệnh: a) Nhận biết - b) Thông hiểu - c) Vận dụng - d) Vận dụng cao"
+        });
+      }
+      
+      // Part 3
+      const p3Count = form.num_part3 !== undefined ? form.num_part3 : (ms.num_part3 || 6);
+      for (let i = 1; i <= p3Count; i++) {
+        const t = topics.length ? topics[(i - 1) % topics.length] : null;
+        const level = i <= Math.ceil(p3Count * 0.6) ? "Vận dụng" : "Vận dụng cao";
+        list.push({
+          num: i,
+          part: "Phần III (Trả lời ngắn)",
+          level,
+          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Toán học"),
+          requirement: t && t.requirements ? (t.requirements.application || t.requirements.comprehension) : "Giải quyết vấn đề thực tiễn"
+        });
+      }
+
+      // Part 4
+      const p4Count = form.num_essay !== undefined ? form.num_essay : (ms.num_essay || 0);
+      for (let i = 1; i <= p4Count; i++) {
+        const t = topics.length ? topics[(i - 1) % topics.length] : null;
+        const level = i === 1 ? "Vận dụng" : "Vận dụng cao";
+        list.push({
+          num: i,
+          part: "Phần IV (Tự luận)",
+          level,
+          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Toán học"),
+          requirement: t && t.requirements ? (t.requirements.application || "Trình bày giải toán tự luận") : "Vận dụng tổng hợp"
+        });
+      }
+      
+      return list;
+    });
+
     const formatPoints = (val) => {
       if (val === undefined || val === null) return "0";
       const num = typeof val === "number" ? val : parseFloat(String(val).replace(",", "."));
@@ -692,7 +759,10 @@ createApp({
       generateError.value = "";
       try {
         const res = await fetch(`/api/samples/${subjectKey}`);
-        if (!res.ok) throw new Error("Không thể tải mẫu đề");
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || `Không thể tải mẫu đề (${res.status})`);
+        }
         const data = await res.json();
         
         // Preserve user's custom school name / year if explicitly modified
@@ -978,6 +1048,45 @@ createApp({
       }
     };
 
+    // Export Word with Cognitive Levels (Biết - Hiểu - Vận dụng)
+    const isExportingLevels = ref(false);
+    const exportExamWithCognitiveLevels = async () => {
+      if (!exam.value) {
+        showToast("Chưa có đề thi. Đang tự động tạo đề từ ma trận...", "info");
+        await startGenerateFromMatrix();
+        if (!exam.value) return;
+      }
+      isExportingLevels.value = true;
+      showToast("Đang xuất file Word có ghi mức độ nhận thức (Biết - Hiểu - VD)...");
+      try {
+        const res = await fetch("/api/export-docx", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            exam: exam.value,
+            variant_code: exam.value.code || "101",
+            all_variants: variants.value && variants.value.length ? variants.value : null,
+            include_answers: true,
+            include_explanations: true,
+            include_cognitive_levels: true
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || "Lỗi khi xuất file Word có mức độ");
+        }
+        const blob = await res.blob();
+        const subName = exam.value.subject || "Kiem_tra";
+        const cCode = exam.value.code || "101";
+        downloadBlob(blob, `De_thi_${subName}_Ma_${cCode}_Kem_Muc_Do.docx`);
+        showToast("Tải xuống file Word có ghi mức độ (Biết - Hiểu - VD) thành công!", "success");
+      } catch (err) {
+        showToast(err.message, "error");
+      } finally {
+        isExportingLevels.value = false;
+      }
+    };
+
     onMounted(() => {
       fetchServerConfig();
       // Automatically load Math sample on initial visit so the user immediately sees a live exam!
@@ -1050,6 +1159,9 @@ createApp({
       exportRedAnswersDocx,
       exportMasterDocx,
       exportZipAll,
+      isExportingLevels,
+      exportExamWithCognitiveLevels,
+      matrixQuestionBreakdown,
       syncSchoolInfo,
       calculateScoring,
       formScoring,
