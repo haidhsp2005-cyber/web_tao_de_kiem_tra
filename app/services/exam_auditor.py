@@ -2312,34 +2312,34 @@ def heal_tf_offline(q: Part2Question, subject: str, index: int = 0, grade: str =
                 "explanation": "Bài toán ứng dụng Trí tuệ nhân tạo trong đô thị thông minh, xử lý dữ liệu học máy và đạo đức số."
             },
             {
-                "question": "Một trường học triển khai mạng máy tính nội bộ (LAN) kết nối các phòng học thông minh và văn phòng làm việc. Để đảm bảo an toàn thông tin số, nhà trường trang bị tường lửa (Firewall), thiết lập máy chủ xác thực và ban hành quy tắc an toàn thông tin khi truy cập Internet cho giáo viên và học sinh.",
+                "question": "Một doanh nghiệp vừa và nhỏ triển khai hệ thống mạng cục bộ (LAN) cho văn phòng 3 tầng gồm 60 máy tính. Hệ thống sử dụng 3 thiết bị Switch tại mỗi tầng kết nối về một Router trung tâm và Modem cáp quang. Phòng Kế toán cần chia sẻ thư mục 'BaoCao_Quy' trên máy chủ tệp cho ban giám đốc và các kế toán viên truy cập làm việc.",
                 "sub_items": [
-                    {"label": "a", "statement": "Mạng máy tính trong phạm vi khuôn viên trường học nêu trên thuộc loại mạng cục bộ (LAN - Local Area Network).", "is_correct": True, "explanation": "Mạng kết nối các thiết bị trong phạm vi địa lý hẹp như tòa nhà trường học là mạng LAN."},
-                    {"label": "b", "statement": "Học sinh sử dụng mật khẩu đơn giản '123456' để đăng nhập vào cổng thông tin trường học nhằm giúp dễ nhớ là thói quen bảo mật tốt và được khuyến khích.", "is_correct": False, "explanation": "Mật khẩu đơn giản rất dễ bị bẻ khóa hoặc tấn công vét cạn (brute-force); cần dùng mật khẩu mạnh gồm chữ hoa, chữ thường, số và ký tự đặc biệt."},
-                    {"label": "c", "statement": "Hệ thống tường lửa (Firewall) đóng vai trò kiểm soát lưu lượng mạng ra vào dựa trên các quy tắc bảo mật được thiết lập trước.", "is_correct": True, "explanation": "Firewall giám sát và lọc các gói tin mạng để ngăn chặn truy cập trái phép."},
-                    {"label": "d", "statement": "Khi nhận được email lạ kèm đường link yêu cầu đăng nhập tài khoản để nhận học bổng, việc bấm ngay vào link và nhập thông tin cá nhân là hoàn toàn an toàn.", "is_correct": False, "explanation": "Đây là dấu hiệu điển hình của hình thức tấn công lừa đảo (Phishing); tuyệt đối không cung cấp thông tin tài khoản."}
+                    {"label": "a", "statement": "Thiết bị Switch tại mỗi tầng hoạt động dựa vào địa chỉ MAC để chuyển tiếp khung dữ liệu (Frame) đến đúng cổng kết nối của thiết bị đích.", "is_correct": True, "explanation": "Switch là thiết bị lớp liên kết dữ liệu, quản lý bảng địa chỉ MAC để tạo kênh truyền riêng tránh xung đột tín hiệu."},
+                    {"label": "b", "statement": "Router có vai trò định tuyến các gói tin (Packet) giữa mạng LAN nội bộ của doanh nghiệp với mạng Internet toàn cầu dựa trên địa chỉ IP.", "is_correct": True, "explanation": "Router hoạt động ở tầng mạng, sử dụng bảng định tuyến và địa chỉ IP để chọn đường đi tối ưu cho gói tin."},
+                    {"label": "c", "statement": "Để chia sẻ thư mục 'BaoCao_Quy' một cách bảo mật, quản trị viên nên thiết lập quyền chia sẻ dạng Read (chỉ đọc) cho tất cả nhân viên khác và chỉ cấp quyền Write (ghi/sửa) cho các tài khoản kế toán được phân quyền.", "is_correct": True, "explanation": "Phân quyền chi tiết (Read vs Read/Write) theo danh tính người dùng giúp bảo vệ tính toàn vẹn dữ liệu kế toán quan trọng."},
+                    {"label": "d", "statement": "Chỉ cần cắm cáp mạng vào cổng RJ45 của máy tính thì máy tính sẽ lập tức truy cập được Internet mà không cần Router cấp phát địa chỉ IP hay dịch vụ DNS phân giải tên miền.", "is_correct": False, "explanation": "Kết nối cáp vật lý mới chỉ hoàn thành tầng vật lý; máy tính bắt buộc phải được cấu hình thông số mạng (IP, Subnet Mask, Gateway, DNS) mới giao tiếp được qua Internet."}
                 ],
-                "explanation": "Kiến thức về mạng máy tính cục bộ, thiết bị mạng và an toàn thông tin trên môi trường số."
+                "explanation": "Triển khai mạng LAN doanh nghiệp, vai trò thiết bị mạng Switch/Router và phân quyền chia sẻ tài nguyên mạng."
             },
             {
-                "question": "Giáo viên chủ nhiệm sử dụng phần mềm bảng tính điện tử để quản lý điểm kiểm tra định kỳ của lớp học gồm 40 học sinh. Bảng tính gồm các cột: STT, Họ và tên, Điểm Toán, Điểm Văn, Điểm Tin học, Điểm Trung bình (ĐTB). Giáo viên sử dụng hàm `=AVERAGE(C2:E2)` tại ô F2 để tính ĐTB cho học sinh đầu tiên.",
+                "question": "Nhóm học sinh xây dựng trang web giới thiệu câu lạc bộ Tin học của trường bằng ngôn ngữ HTML. Trang web gồm một bảng giới thiệu ban chủ nhiệm (thẻ `<table>`) và danh sách các hoạt động thường niên (thẻ `<ol>` và `<ul>`). Để giao diện chuyên nghiệp, nhóm sử dụng thuộc tính `style` trực tiếp trong thẻ để định dạng màu nền và phông chữ.",
                 "sub_items": [
-                    {"label": "a", "statement": "Hàm `=AVERAGE(C2:E2)` được dùng để tính trung bình cộng giá trị số trong khối ô từ C2 đến E2.", "is_correct": True, "explanation": "Hàm AVERAGE là hàm chuẩn trong bảng tính để tính giá trị trung bình cộng."},
-                    {"label": "b", "statement": "Khi sao chép công thức từ ô F2 xuống ô F3, địa chỉ tương đối trong công thức tự động đổi thành `=AVERAGE(C3:E3)`.", "is_correct": True, "explanation": "Địa chỉ tương đối tự động thay đổi theo hàng/cột tương ứng khi sao chép công thức."},
-                    {"label": "c", "statement": "Để lọc danh sách các học sinh có ĐTB từ 8.0 trở lên, giáo viên có thể sử dụng công cụ Tự động lọc (AutoFilter) với điều kiện '>= 8.0'.", "is_correct": True, "explanation": "Công cụ Filter cho phép lọc dữ liệu theo điều kiện giá trị số cụ thể."},
-                    {"label": "d", "statement": "Phần mềm bảng tính chỉ cho phép tính toán số học đơn giản và không thể biểu diễn dữ liệu bằng các dạng biểu đồ trực quan (hình cột, hình tròn).", "is_correct": False, "explanation": "Bảng tính hỗ trợ tạo rất nhiều dạng biểu đồ trực quan phong phú như Column, Bar, Line, Pie."}
+                    {"label": "a", "statement": "Cặp thẻ `<table>...</table>` được dùng để định nghĩa cấu trúc bảng trong HTML, kết hợp thẻ `<tr>` tạo hàng và thẻ `<td>` tạo ô dữ liệu.", "is_correct": True, "explanation": "Đây là cú pháp chuẩn của HTML để khởi tạo bảng biểu."},
+                    {"label": "b", "statement": "Thuộc tính `colspan=\"2\"` trong thẻ `<td>` có tác dụng gộp 2 hàng liền kề trên cùng một cột thành một ô duy nhất.", "is_correct": False, "explanation": "`colspan` là gộp cột (Column Span); gộp 2 hàng liền kề phải dùng thuộc tính `rowspan=\"2\"`."},
+                    {"label": "c", "statement": "Cặp thẻ `<ol>` tạo danh sách có thứ tự (được đánh số 1, 2, 3...), trong khi cặp thẻ `<ul>` tạo danh sách không có thứ tự (được đánh dấu đầu dòng bằng dấu chấm/ký hiệu).", "is_correct": True, "explanation": "Đúng định nghĩa thẻ Ordered List (`<ol>`) và Unordered List (`<ul>`)."},
+                    {"label": "d", "statement": "Đoạn mã `<div style=\"color: blue; font-size: 16px;\">Tin học 12</div>` là cách sử dụng hợp lệ thuộc tính `style` nội dòng để thiết lập màu chữ xanh và kích thước phông 16 pixel.", "is_correct": True, "explanation": "Cú pháp CSS nội dòng (Inline CSS) qua thuộc tính `style` gồm các cặp thuộc tính: giá trị ngăn cách bởi dấu chấm phẩy."}
                 ],
-                "explanation": "Kiến thức về phần mềm bảng tính điện tử, các hàm thống kê cơ bản, sao chép công thức và trực quan hóa dữ liệu."
+                "explanation": "Kiến thức thiết kế web HTML, cấu trúc bảng biểu table, danh sách ol/ul và định dạng giao diện bằng style."
             },
             {
-                "question": "Một nhóm kỹ sư phần mềm thiết kế hệ thống quản lý dữ liệu cho ứng dụng trường học. Nhóm cân nhắc cấu trúc lưu trữ và các giải thuật xử lý dữ liệu phù hợp với yêu cầu bài toán.",
+                "question": "Một trường học số hóa toàn bộ hồ sơ quản lý và triển khai cổng thông tin điện tử phục vụ giáo viên và học sinh. Trong bối cảnh các cuộc tấn công mạng diễn biến phức tạp, nhà trường chú trọng xây dựng quy chế an toàn số, định kỳ sao lưu dữ liệu và tập huấn phòng chống các hình thức lừa đảo trực tuyến.",
                 "sub_items": [
-                    {"label": "a", "statement": "Dữ liệu được tổ chức một cách khoa học giúp việc tìm kiếm, truy xuất và cập nhật thông tin diễn ra nhanh chóng và chính xác.", "is_correct": True, "explanation": "Tổ chức dữ liệu bài bản là cốt lõi của công nghệ thông tin."},
-                    {"label": "b", "statement": "Sao lưu dữ liệu định kỳ (Data Backup) là giải pháp quan trọng để phòng ngừa mất mát dữ liệu do sự cố phần cứng hoặc phần mềm độc hại.", "is_correct": True, "explanation": "Backup định kỳ giúp khôi phục hệ thống khi xảy ra sự cố."},
-                    {"label": "c", "statement": "Việc chia sẻ công khai toàn bộ mã nguồn có chứa mật khẩu kết nối của hệ thống lên mạng công cộng là phương pháp an toàn và bảo mật cao.", "is_correct": False, "explanation": "Để lộ thông tin nhạy cảm (credentials) trong mã nguồn là lỗ hổng an ninh nghiêm trọng."},
-                    {"label": "d", "statement": "Áp dụng các chuẩn mã hóa dữ liệu khi lưu trữ và truyền tải giúp bảo vệ thông tin khỏi các truy cập trái phép.", "is_correct": True, "explanation": "Mã hóa bảo vệ tính bí mật của dữ liệu."}
+                    {"label": "a", "statement": "Sao lưu dữ liệu định kỳ (Data Backup) là giải pháp trọng yếu giúp nhà trường khôi phục nhanh chóng hệ thống khi gặp sự cố phần cứng hoặc bị mã độc tấn công mã hóa tống tiền.", "is_correct": True, "explanation": "Bản sao lưu dự phòng đảm bảo tính sẵn sàng và an toàn dữ liệu số."},
+                    {"label": "b", "statement": "Hình thức tấn công lừa đảo (Phishing) thường sử dụng email hoặc đường link giả mạo cổng thông tin nhà trường nhằm lừa người dùng nhập tên đăng nhập và mật khẩu cá nhân.", "is_correct": True, "explanation": "Đúng phương thức hoạt động của tấn công Phishing qua giao diện giả mạo."},
+                    {"label": "c", "statement": "Khi giao tiếp trên không gian mạng, học sinh có quyền tự do tuyệt đối chia sẻ các video cắt ghép thông tin sai sự thật về thầy cô hoặc nhà trường mà không phải chịu bất kỳ chế tài pháp luật nào.", "is_correct": False, "explanation": "Hành vi vu khống, xúc phạm danh dự hoặc phát tán tin giả trên mạng vi phạm nghiêm trọng Luật An ninh mạng và các quy định pháp luật."},
+                    {"label": "d", "statement": "Kích hoạt xác thực hai yếu tố (2FA) kết hợp mật khẩu có độ phức tạp cao là biện pháp bảo mật hữu hiệu giúp ngăn chặn nguy cơ bị chiếm đoạt tài khoản trực tuyến.", "is_correct": True, "explanation": "Xác thực 2 yếu tố tạo thêm lớp bảo vệ kiên cố ngay cả khi mật khẩu bị lộ."}
                 ],
-                "explanation": "Kiến thức về an toàn thông tin, bảo mật dữ liệu và nguyên lý lưu trữ trong tin học."
+                "explanation": "An toàn thông tin số, phòng chống tấn công lừa đảo và đạo đức văn hóa ứng xử trên không gian mạng."
             }
         ]
     }
@@ -2895,11 +2895,14 @@ QUY TẮC THẨM ĐỊNH, GIẢI ĐỘC LẬP VÀ SỬA CHỮA:
        * Lớp 10: Tối ưu hóa miền nghiệm hệ BPT sản xuất/kinh tế, quỹ đạo Parabol chuyển động tên lửa/bóng bay, đo đạc góc khoảng cách gián tiếp định lý sin/cos, phân bố thống kê dữ liệu.
        * Lớp 11: Cấp số nhân tăng trưởng dân số / lãi kép ngân hàng, dao động điều hòa li độ/vận tốc đạo hàm, kiểm định y tế xác suất độc lập, mô hình góc mái dốc/khoảng cách hình học không gian.
        * Lớp 12: Tối ưu hóa lợi nhuận kinh doanh bằng đạo hàm P(x) = R(x) - C(x), tiệm cận xiên chi phí trung bình, thiết kế vỏ hộp/bể chứa tiết kiệm vật liệu nhất, suy giảm nồng độ thuốc trong máu hàm số mũ C(t), bài toán trạm radar cảnh giới hàng không/định vị vệ tinh trong không gian Oxyz, xác suất kiểm định y tế công thức Bayes.
-     + TUYỆT ĐỐI CẤM giữ lại các bài toán nông dân, mảnh vườn, chi phí 20.000đ khi thẩm định đề thi THPT!
-     + Nâng cấp 4 ý con a, b, c, d theo thang bậc tư duy 4 tầng:
+       * Môn Tin học (Đặc biệt 12): Tình huống ứng dụng AI thị giác/học máy, triển khai mạng LAN phân quyền Read/Write thư mục, thiết kế website trường học HTML table/style/danh sách, an toàn dữ liệu số / phòng chống Phishing / Ransomware.
+     + 🚨 ĐẶC BIỆT: NGUYÊN TẮC LIÊN KẾT CHẶT CHẼ GIỮA NGỮ CẢNH VÀ 4 MỆNH ĐỀ CON:
+       * Cả 4 ý con a, b, c, d BẮT BUỘC phải kế thừa và khai thác trực tiếp dữ liệu, thông số, nhân vật hoặc công nghệ đã giới thiệu ở đề bài dẫn.
+       * CẤM TUYỆT ĐỐI tình trạng 'râu ông nọ cắm cằm bà kia' (ví dụ đề bài nói về mạng máy tính nhưng 4 ý con lại chuyển sang giải tích hoặc hỏi lý thuyết tách rời).
+     + Nâng cấp 4 ý con a, b, c, d theo thang bậc tư duy 4 tầng (Công văn 7991):
        • Ý a [Biết]: Trích xuất hoặc nhận biết thông số/khái niệm trong ngữ cảnh.
        • Ý b [Hiểu]: Phân tích cơ chế hoạt động, nguyên nhân - kết quả của tình huống.
-       • Ý c [Vận dụng]: Tính toán định lượng cụ thể từ số liệu hoặc kiểm tra kết quả thực thi.
+       • Ý c [Vận dụng]: Tính toán định lượng cụ thể từ số liệu hoặc kiểm tra kết quả thực thi thuật toán/kỹ thuật.
        • Ý d [Vận dụng]: Đánh giá quyết định tối ưu, dự đoán kịch bản hoặc phân tích khía cạnh an toàn / đạo đức / hiệu năng (chuẩn CV 7991).
    - BẮT BUỘC TỰ GIẢI ĐỘC LẬP xét tính Đúng / Sai của từng mệnh đề a, b, c, d:
      + So sánh với 'is_correct'. NẾU 'is_correct' BỊ ĐÁNH GIÁ SAI (ví dụ mệnh đề thực tế là ĐÚNG nhưng ghi false, hoặc thực tế là SAI nhưng ghi true): BẮT BUỘC SỬA LẠI 'is_correct' CHO CHUẨN XÁC 100%!

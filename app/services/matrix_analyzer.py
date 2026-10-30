@@ -664,45 +664,54 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
     if not has_tokens:
         return
 
-    lines = text.split("\n")
-    for t_item in topics_list:
-        sub = (t_item.sub_topic or "").strip().lower()
-        top = (t_item.topic or "").strip().lower()
-        if not sub and not top:
-            continue
-            
-        matched_line = ""
-        for l in lines:
-            if "|" not in l:
-                continue
-            l_low = l.lower()
-            if sub and sub in l_low:
-                matched_line = l
-                break
-            if not matched_line and top and top in l_low and not any(k in l_low for k in ["tổng", "cộng", "tỉ lệ"]):
-                matched_line = l
-                
-        if matched_line:
-            # Kiểm tra xem dòng này có TL không
-            has_tl_in_line = bool(re.search(r"\bTL\d*\b", matched_line, re.IGNORECASE) and not re.search(r"\bTLN\b", matched_line, re.IGNORECASE))
-            if has_tl_in_line:
-                t_item.part4_essay.vd = max(t_item.part4_essay.vd, 1)
-            else:
-                t_item.part4_essay.biet = 0
-                t_item.part4_essay.hieu = 0
-                t_item.part4_essay.vd = 0
+    lines = [l for l in text.split("\n") if "|" in l and not any(k in l.lower() for k in ["tổng", "cộng", "tỉ lệ %", "tỉ lệ", "bản đặc tả"])]
+    
+    # 1. Tìm tất cả các dòng có ký hiệu TL (Tự luận) và YN (Đúng/Sai)
+    tl_lines = [l for l in lines if re.search(r"\b(?:1\s*)?TL[1-9]?\b", l, re.IGNORECASE) and not re.search(r"\bTLN\b", l, re.IGNORECASE)]
+    yn_lines = [l for l in lines if re.search(r"\bYN[1-9]?\b", l, re.IGNORECASE)]
+    
+    # Reset toàn bộ về 0 trước khi map chính xác
+    for t in topics_list:
+        t.part4_essay.biet = 0
+        t.part4_essay.hieu = 0
+        t.part4_essay.vd = 0
+        t.part2_tf.biet = 0
+        t.part2_tf.hieu = 0
+        t.part2_tf.vd = 0
 
-            # Kiểm tra xem dòng này có YN không
-            has_yn_in_line = bool(re.search(r"\bYN\d*\b", matched_line, re.IGNORECASE))
-            if not has_yn_in_line:
-                t_item.part2_tf.biet = 0
-                t_item.part2_tf.hieu = 0
-                t_item.part2_tf.vd = 0
-            else:
-                if (t_item.part2_tf.biet + t_item.part2_tf.hieu + t_item.part2_tf.vd) == 0:
-                    t_item.part2_tf.biet = 2
-                    t_item.part2_tf.hieu = 1
-                    t_item.part2_tf.vd = 1
+    # 2. Map TL vào đúng topic (Bài 2, Bài 8)
+    for tl_line in tl_lines:
+        tl_low = tl_line.lower()
+        best_match = None
+        for t in topics_list:
+            sub = (t.sub_topic or "").strip().lower()
+            sub_clean = re.sub(r"^(?:bài\s*\d+[\.\:\-]?\s*|\d+[\.\:\-]\s*)", "", sub).strip()
+            if sub and sub in tl_low:
+                best_match = t
+                break
+            if sub_clean and len(sub_clean) > 4 and sub_clean in tl_low:
+                best_match = t
+                break
+        if best_match:
+            best_match.part4_essay.vd = 1
+
+    # 3. Map YN vào đúng topic (Bài 1, Bài 4, Bài 5, Bài 9)
+    for yn_line in yn_lines:
+        yn_low = yn_line.lower()
+        best_match = None
+        for t in topics_list:
+            sub = (t.sub_topic or "").strip().lower()
+            sub_clean = re.sub(r"^(?:bài\s*\d+[\.\:\-]?\s*|\d+[\.\:\-]\s*)", "", sub).strip()
+            if sub and sub in yn_low:
+                best_match = t
+                break
+            if sub_clean and len(sub_clean) > 4 and sub_clean in yn_low:
+                best_match = t
+                break
+        if best_match:
+            best_match.part2_tf.biet = 2
+            best_match.part2_tf.hieu = 1
+            best_match.part2_tf.vd = 1
 
 async def analyze_matrix_document(
     file_bytes: Optional[bytes] = None,
