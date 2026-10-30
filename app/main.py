@@ -209,6 +209,18 @@ async def api_extract(
         raise HTTPException(status_code=400, detail=f"Lỗi đọc tệp: {str(e)}")
 
 # 1b. Phân tích Ma trận & Bản đặc tả theo chuẩn Công văn 7991/BGDĐT-GDTrH
+@app.get("/api/matrix/sample-download")
+async def api_matrix_sample_download():
+    """Tải xuống tệp Word Ma trận & Bản đặc tả mẫu chuẩn theo Công văn 7991/BGDĐT-GDTrH."""
+    sample_path = os.path.join(STATIC_DIR, "Ma_tran_dac_ta_chuan_CV7991_mau.docx")
+    if not os.path.exists(sample_path):
+        raise HTTPException(status_code=404, detail="Không tìm thấy tệp ma trận mẫu.")
+    return FileResponse(
+        sample_path,
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        filename="Ma_tran_dac_ta_chuan_CV7991_mau.docx"
+    )
+
 @app.post("/api/matrix/analyze", response_model=MatrixAnalyzeResponse)
 async def api_matrix_analyze(
     file: Optional[UploadFile] = File(None),

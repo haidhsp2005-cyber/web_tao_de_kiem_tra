@@ -362,6 +362,23 @@
 
             <!-- Tab Content: Matrix Upload & Preview (Chuẩn Công văn 7991/BGDĐT-GDTrH) -->
             <div v-if="inputMode === 'matrix'" class="pt-4 space-y-5">
+              <!-- Top Actions: Sample Download & Guideline -->
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 p-3.5 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-2xl">
+                <div class="flex items-center space-x-2.5">
+                  <span class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-xs shrink-0">📥</span>
+                  <div>
+                    <h4 class="text-xs sm:text-sm font-black text-indigo-950">Chưa có ma trận hoặc cần mẫu chuẩn?</h4>
+                    <p class="text-[11px] text-indigo-700 mt-0.5">Tải ngay file Word mẫu chuẩn Công văn 7991/BGDĐT-GDTrH (đầy đủ 2 bảng: Ma trận & Bản đặc tả) để soạn thảo và tải lên.</p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-2 shrink-0">
+                  <a href="/api/matrix/sample-download" download="Ma_tran_dac_ta_chuan_CV7991_mau.docx" class="inline-flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-white hover:bg-indigo-600 hover:text-white text-indigo-700 font-bold text-xs border border-indigo-300 shadow-2xs transition active:scale-95 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    <span>Tải ma trận mẫu (.docx)</span>
+                  </a>
+                </div>
+              </div>
+
               <!-- Upload Box -->
               <div class="border-2 border-dashed border-indigo-300 rounded-2xl p-6 text-center hover:border-indigo-500 transition bg-indigo-50/30 relative cursor-pointer" @dragover.prevent @drop.prevent="handleMatrixFileDrop">
                 <input type="file" ref="matrixFileInput" @change="handleMatrixFileSelect" accept=".docx,.doc,.pdf,.txt" class="absolute inset-0 opacity-0 cursor-pointer">
@@ -494,6 +511,10 @@
                     <span class="px-2 py-0.5 rounded bg-white font-bold text-slate-700 border border-slate-200">Môn: {{ matrixSpec.subject }}</span>
                     <span class="px-2 py-0.5 rounded bg-white font-bold text-slate-700 border border-slate-200">Lớp: {{ matrixSpec.grade }}</span>
                     <span class="px-2 py-0.5 rounded bg-white font-bold text-slate-700 border border-slate-200">{{ matrixSpec.duration_minutes }} phút</span>
+                    <a href="/api/matrix/sample-download" download="Ma_tran_dac_ta_chuan_CV7991_mau.docx" class="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-lg bg-indigo-50 hover:bg-indigo-600 hover:text-white text-indigo-700 font-bold border border-indigo-200 transition cursor-pointer" title="Tải tệp ma trận mẫu chuẩn Công văn 7991 (.docx)">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                      <span>Tải ma trận mẫu</span>
+                    </a>
                   </div>
                 </div>
 
@@ -1510,6 +1531,6 @@
 
   </div>
 
-  <script src="app.js?v=20261030_v6"></script>
+  <script src="app.js?v=20261030_v7"></script>
 </body>
 </html>
