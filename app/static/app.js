@@ -973,7 +973,8 @@ createApp({
             exam: current.exam,
             variant_code: code,
             include_answers: true,
-            include_explanations: true
+            include_explanations: true,
+            matrix_spec: inputMode.value === "matrix" ? matrixSpec.value : null
           })
         });
         if (!res.ok) throw new Error("Lỗi tải file Word");
@@ -1022,7 +1023,8 @@ createApp({
             variant_code: "TONG_HOP",
             all_variants: variants.value,
             include_answers: true,
-            include_explanations: true
+            include_explanations: true,
+            matrix_spec: inputMode.value === "matrix" ? matrixSpec.value : null
           })
         });
         if (!res.ok) throw new Error("Lỗi tải file Word tổng hợp");
@@ -1077,7 +1079,8 @@ createApp({
             all_variants: variants.value && variants.value.length ? variants.value : null,
             include_answers: true,
             include_explanations: true,
-            include_cognitive_levels: true
+            include_cognitive_levels: true,
+            matrix_spec: inputMode.value === "matrix" ? matrixSpec.value : null
           })
         });
         if (!res.ok) {

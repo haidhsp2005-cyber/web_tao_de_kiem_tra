@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 import os
 import json
 import re
@@ -3605,73 +3605,91 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
     if matrix_spec and getattr(matrix_spec, "topics", None):
         topics_list = [t for t in matrix_spec.topics]
 
-    # 1. Phần I: Nhiều lựa chọn (Phân bổ chuẩn: Biết ~50%, Hiểu ~35%, Vận dụng ~15%)
+    # Xây dựng blueprint chi tiết cho Phần I từ ma trận
+    p1_spec_items = []
+    if topics_list:
+        nb_list = []
+        th_list = []
+        vd_list = []
+        for t in topics_list:
+            top_label = t.topic + (f" - {t.sub_topic}" if getattr(t, "sub_topic", None) else "")
+            mcq = getattr(t, "part1_mcq", None)
+            if mcq:
+                for _ in range(getattr(mcq, "biet", 0)):
+                    nb_list.append({"level": "Nhận biết", "topic": top_label, "sub_topic": getattr(t, "sub_topic", "")})
+                for _ in range(getattr(mcq, "hieu", 0)):
+                    th_list.append({"level": "Thông hiểu", "topic": top_label, "sub_topic": getattr(t, "sub_topic", "")})
+                for _ in range(getattr(mcq, "vd", 0)):
+                    vd_list.append({"level": "Vận dụng", "topic": top_label, "sub_topic": getattr(t, "sub_topic", "")})
+        p1_spec_items = nb_list + th_list + vd_list
+
+    # 1. Phần I: Nhiều lựa chọn
     n1 = len(exam.part1_mcq)
     for i, q in enumerate(exam.part1_mcq):
-        if not getattr(q, "cognitive_level", None):
-            if i < int(n1 * 0.5):
-                q.cognitive_level = "Nhận biết"
-            elif i < int(n1 * 0.85):
-                q.cognitive_level = "Thông hiểu"
-            else:
-                q.cognitive_level = "Vận dụng"
-        if not getattr(q, "matrix_topic", None):
-            if topics_list:
-                t_idx = min(i // max(1, (n1 // len(topics_list) or 1)), len(topics_list) - 1)
-                q.matrix_topic = getattr(topics_list[t_idx], "topic", "")
-            else:
-                q.matrix_topic = exam.subject
+        if p1_spec_items and i < len(p1_spec_items):
+            # Khớp chính xác 100% theo từng bài và mức độ trong ma trận
+            q.cognitive_level = p1_spec_items[i]["level"]
+            q.matrix_topic = p1_spec_items[i]["topic"]
+        else:
+            # Fallback nếu không có ma trận hoặc số câu vượt quá ma trận
+            if not getattr(q, "cognitive_level", None):
+                if i < int(n1 * 0.5):
+                    q.cognitive_level = "Nhận biết"
+                else:
+                    q.cognitive_level = "Thông hiểu"
+            if not getattr(q, "matrix_topic", None):
+                if topics_list:
+                    t_idx = min(i % len(topics_list), len(topics_list) - 1)
+                    full_t = getattr(topics_list[t_idx], "topic", "")
+                    sub_t = getattr(topics_list[t_idx], "sub_topic", "")
+                    q.matrix_topic = f"{full_t} - {sub_t}" if sub_t else full_t
+                else:
+                    q.matrix_topic = exam.subject
 
-    # 2. Phần II: Đúng / Sai (Chuẩn Công văn 7991: phân hóa 4 lệnh: Biết - Hiểu - Vận dụng, KHÔNG có Vận dụng)
+    # 2. Phần II: Đúng / Sai (Chuẩn Công văn 7991: phân hóa 4 lệnh a,b,c,d)
     n2 = len(exam.part2_tf)
     p2_topics = [t for t in topics_list if (getattr(getattr(t, 'part2_tf', None), 'biet', 0) + getattr(getattr(t, 'part2_tf', None), 'hieu', 0) + getattr(getattr(t, 'part2_tf', None), 'vd', 0)) > 0]
     sub_levels = ["Nhận biết", "Nhận biết", "Thông hiểu", "Vận dụng"]
     for i, q in enumerate(exam.part2_tf):
-        if not getattr(q, "cognitive_level", None):
-            q.cognitive_level = "Vận dụng"
-        if not getattr(q, "matrix_topic", None):
-            src_list = p2_topics if p2_topics else topics_list
-            if src_list:
-                t_idx = min(i % len(src_list), len(src_list) - 1)
-                full_t = getattr(src_list[t_idx], "topic", "")
-                sub_t = getattr(src_list[t_idx], "sub_topic", "")
-                q.matrix_topic = f"{full_t} - {sub_t}" if sub_t else full_t
-            else:
-                q.matrix_topic = exam.subject
+        # Câu hỏi Đúng / Sai là một bài tập tình huống phân hóa 4 lệnh, không ghi nhãn đơn lẻ Vận dụng ở tiêu đề câu
+        q.cognitive_level = "2 Biết, 1 Hiểu, 1 Vận dụng"
+        src_list = p2_topics if p2_topics else topics_list
+        if src_list:
+            t_idx = min(i % len(src_list), len(src_list) - 1)
+            full_t = getattr(src_list[t_idx], "topic", "")
+            sub_t = getattr(src_list[t_idx], "sub_topic", "")
+            q.matrix_topic = f"{full_t} - {sub_t}" if sub_t else full_t
+        else:
+            q.matrix_topic = exam.subject
         for s_idx, sub in enumerate(q.sub_items):
-            if not getattr(sub, "cognitive_level", None):
-                sub.cognitive_level = sub_levels[s_idx] if s_idx < len(sub_levels) else "Vận dụng"
+            sub.cognitive_level = sub_levels[s_idx] if s_idx < len(sub_levels) else "Vận dụng"
 
-    # 3. Phần III: Trả lời ngắn (Chuẩn Công văn 7991: Mức độ Vận dụng, KHÔNG có Vận dụng)
+    # 3. Phần III: Trả lời ngắn (Chuẩn Công văn 7991: Mức độ Vận dụng)
     n3 = len(exam.part3_short)
     p3_topics = [t for t in topics_list if (getattr(getattr(t, 'part3_short', None), 'biet', 0) + getattr(getattr(t, 'part3_short', None), 'hieu', 0) + getattr(getattr(t, 'part3_short', None), 'vd', 0)) > 0]
     for i, q in enumerate(exam.part3_short):
-        if not getattr(q, "cognitive_level", None):
-            q.cognitive_level = "Vận dụng"
-        if not getattr(q, "matrix_topic", None):
-            src_list = p3_topics if p3_topics else topics_list
-            if src_list:
-                t_idx = min(i % len(src_list), len(src_list) - 1)
-                full_t = getattr(src_list[t_idx], "topic", "")
-                sub_t = getattr(src_list[t_idx], "sub_topic", "")
-                q.matrix_topic = f"{full_t} - {sub_t}" if sub_t else full_t
-            else:
-                q.matrix_topic = exam.subject
+        q.cognitive_level = "Vận dụng"
+        src_list = p3_topics if p3_topics else topics_list
+        if src_list:
+            t_idx = min(i % len(src_list), len(src_list) - 1)
+            full_t = getattr(src_list[t_idx], "topic", "")
+            sub_t = getattr(src_list[t_idx], "sub_topic", "")
+            q.matrix_topic = f"{full_t} - {sub_t}" if sub_t else full_t
+        else:
+            q.matrix_topic = exam.subject
 
-    # 4. Phần IV: Tự luận (Chuẩn Công văn 7991: Mức độ Vận dụng, KHÔNG có Vận dụng)
+    # 4. Phần IV: Tự luận (Chuẩn Công văn 7991: Mức độ Vận dụng)
     p4_topics = [t for t in topics_list if (getattr(getattr(t, 'part4_essay', None), 'biet', 0) + getattr(getattr(t, 'part4_essay', None), 'hieu', 0) + getattr(getattr(t, 'part4_essay', None), 'vd', 0)) > 0]
     for i, q in enumerate(exam.part4_essay):
-        if not getattr(q, "cognitive_level", None):
-            q.cognitive_level = "Vận dụng"
-        if not getattr(q, "matrix_topic", None):
-            src_list = p4_topics if p4_topics else topics_list
-            if src_list:
-                t_idx = min(i % len(src_list), len(src_list) - 1)
-                full_t = getattr(src_list[t_idx], "topic", "")
-                sub_t = getattr(src_list[t_idx], "sub_topic", "")
-                q.matrix_topic = f"{full_t} - {sub_t}" if sub_t else full_t
-            else:
-                q.matrix_topic = exam.subject
+        q.cognitive_level = "Vận dụng"
+        src_list = p4_topics if p4_topics else topics_list
+        if src_list:
+            t_idx = min(i % len(src_list), len(src_list) - 1)
+            full_t = getattr(src_list[t_idx], "topic", "")
+            sub_t = getattr(src_list[t_idx], "sub_topic", "")
+            q.matrix_topic = f"{full_t} - {sub_t}" if sub_t else full_t
+        else:
+            q.matrix_topic = exam.subject
 
     return exam
 
@@ -3883,6 +3901,61 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
                 if t.requirements.application:
                     matrix_details.append(f"  + Yêu cầu mức Vận dụng: {t.requirements.application}")
                     
+        # Xây dựng danh sách chi tiết từng câu Phần I bám sát 100% Ma trận
+        p1_blueprint = []
+        c_num = 1
+        for lvl_name, lvl_key in [("Nhận biết", "biet"), ("Thông hiểu", "hieu"), ("Vận dụng", "vd")]:
+            for t in ms.topics:
+                mcq = getattr(t, "part1_mcq", None)
+                cnt = getattr(mcq, lvl_key, 0) if mcq else 0
+                for _ in range(cnt):
+                    top_label = t.topic + (f" - {t.sub_topic}" if t.sub_topic else "")
+                    p1_blueprint.append(f"  + Câu {c_num} [{lvl_name}]: {top_label}")
+                    c_num += 1
+
+        if p1_blueprint:
+            matrix_details.append(
+                f"\n⭐ PHÂN BỔ BẮT BUỘC TỪNG CÂU PHẦN I (TRẮC NGHIỆM NHIỀU LỰA CHỌN) - TUÂN THỦ 100% MA TRẬN:\n"
+                + "\n".join(p1_blueprint)
+                + "\n🚨 QUY TẮC PHẦN I: TUYỆT ĐỐI KHÔNG TẠO CÂU HỎI VẬN DỤNG NẾU MA TRẬN KHÔNG CÓ! Phân bổ đều các bài theo đúng bảng trên (không để một chủ đề chiếm quá nhiều câu và bỏ quên các bài khác)."
+            )
+
+        # Xây dựng danh sách bài của Phần II
+        p2_blueprint = []
+        c_num = 1
+        for t in ms.topics:
+            tf = getattr(t, "part2_tf", None)
+            tot_tf = (getattr(tf, "biet", 0) + getattr(tf, "hieu", 0) + getattr(tf, "vd", 0)) if tf else 0
+            if tot_tf > 0:
+                top_label = t.topic + (f" - {t.sub_topic}" if t.sub_topic else "")
+                p2_blueprint.append(f"  + Câu {c_num} (Phần II): {top_label}. Mỗi câu gồm 4 ý: a, b (Nhận biết) - c (Thông hiểu) - d (Vận dụng).")
+                c_num += 1
+
+        if p2_blueprint:
+            matrix_details.append(
+                f"\n⭐ PHÂN BỔ BẮT BUỘC CỦA PHẦN II (ĐÚNG - SAI) - CHỈ BIÊN SOẠN VÀO ĐÚNG CÁC CHỦ ĐỀ SAU:\n"
+                + "\n".join(p2_blueprint)
+                + "\n🚨 QUY TẮC PHẦN II: Tuyệt đối không đưa câu hỏi Đúng - Sai vào các bài không có trong danh sách trên!"
+            )
+
+        # Xây dựng danh sách bài của Phần IV (Tự luận)
+        p4_blueprint = []
+        c_num = 1
+        for t in ms.topics:
+            essay = getattr(t, "part4_essay", None)
+            tot_essay = (getattr(essay, "biet", 0) + getattr(essay, "hieu", 0) + getattr(essay, "vd", 0)) if essay else 0
+            if tot_essay > 0:
+                top_label = t.topic + (f" - {t.sub_topic}" if t.sub_topic else "")
+                p4_blueprint.append(f"  + Câu {c_num} (Tự luận - Mức Vận dụng): {top_label}")
+                c_num += 1
+
+        if p4_blueprint:
+            matrix_details.append(
+                f"\n⭐ PHÂN BỔ BẮT BUỘC CỦA PHẦN IV (TỰ LUẬN) - MỨC VẬN DỤNG:\n"
+                + "\n".join(p4_blueprint)
+                + "\n🚨 QUY TẮC TỰ LUẬN: Chỉ biên soạn câu tự luận vào đúng các bài trên (ví dụ: Bài 2 và Bài 8). Tuyệt đối không đưa tự luận vào Bài 1 hay các bài khác!"
+            )
+
         custom_rules = []
         if is_custom_counts:
             custom_rules.append(
@@ -3912,8 +3985,8 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"\n\nBẢNG MA TRẬN & ĐẶC TẢ CHI TIẾT (CHUẨN CÔNG VĂN 7991/BGDĐT-GDTrH):\n"
             + "\n".join(matrix_details)
             + "\n".join(custom_rules)
-            + "\n3. Phần I (Trắc nghiệm nhiều lựa chọn): Ưu tiên các câu hỏi ở mức độ Biết và Hiểu theo tỷ lệ quy định.\n"
-            "4. Phần II (Đúng - Sai): BẮT BUỘC 100% CÁC CÂU LÀ TÌNH HUỐNG THỰC TẾ / CASE STUDY DỰ ÁN ĐỜI SỐNG HẤP DẪN (50-100 từ, có dữ liệu/đoạn mã/bảng số liệu/nguyên lý hoạt động cụ thể), bám sát đúng chủ đề được phân bổ Phần II trong Ma trận. TUYỆT ĐỐI CẤM các bài toán tiểu học cộc lốc ('mảnh vườn', 'bác nông dân', 'chi phí 20.000đ'). 4 ý con a, b, c, d phân hóa chặt chẽ theo thang bậc: a (Nhận biết thông số/khái niệm) -> b (Thông hiểu nguyên lý/cơ chế) -> c (Vận dụng tính toán/truy vết) -> d (Vận dụng đánh giá tối ưu/an toàn/đạo đức).\n"
+            + "\n3. Phần I (Trắc nghiệm nhiều lựa chọn): Bắt buộc tuân thủ đúng số lượng câu Biết và câu Hiểu theo ma trận, tuyệt đối không tạo câu Vận dụng nếu ma trận không có.\n"
+            "4. Phần II (Đúng - Sai): BẮT BUỘC 100% CÁC CÂU LÀ TÌNH HUỐNG THỰC TẾ / CASE STUDY DỰ ÁN ĐỜI SỐNG HẤP DẪN (50-100 từ, có dữ liệu/đoạn mã/bảng số liệu/nguyên lý hoạt động cụ thể), bám sát đúng chủ đề được phân bổ Phần II trong Ma trận. TUYỆT ĐỐI CẤM các bài toán tiểu học cộc lốc ('mảnh vườn', 'bác nông dân', 'chi phí 20.000đ'). 4 ý con a, b, c, d phân hóa chặt chẽ theo thang bậc: a (Nhận biết thông số/khái niệm) -> b (Nhận biết / Thông hiểu cơ chế) -> c (Thông hiểu / Vận dụng phân tích) -> d (Vận dụng giải quyết vấn đề / đánh giá tối ưu).\n"
             "5. Phần III (Trả lời ngắn) và Phần IV (Tự luận): Tập trung vào mức độ Vận dụng, giải quyết bài toán thực tế theo đúng yêu cầu cần đạt.\n"
             "6. 🚨 NGUYÊN TẮC BẢO VỆ PHẠM VI MA TRẬN: TUYỆT ĐỐI KHÔNG biên soạn câu hỏi có nội dung kiến thức nằm ngoài các Chủ đề đã liệt kê trong Ma trận. Đặc biệt với môn Tin học, KHÔNG tự ý đưa Cơ sở dữ liệu (CSDL) hoặc Lập trình Python vào nếu ma trận không yêu cầu."
         )

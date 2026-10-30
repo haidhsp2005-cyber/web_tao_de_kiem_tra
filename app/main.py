@@ -306,12 +306,12 @@ async def api_export_docx(req: ExportDocxRequest):
         from .services.docx_exporter import create_exam_document
         if req.include_cognitive_levels:
             from .services.ai_generator import ensure_exam_cognitive_levels
-            req.exam = ensure_exam_cognitive_levels(req.exam)
+            req.exam = ensure_exam_cognitive_levels(req.exam, req.matrix_spec)
         req.exam = auto_attach_diagrams_to_exam(req.exam)
         if req.all_variants:
             for v in req.all_variants:
                 if req.include_cognitive_levels:
-                    v.exam = ensure_exam_cognitive_levels(v.exam)
+                    v.exam = ensure_exam_cognitive_levels(v.exam, req.matrix_spec)
                 v.exam = auto_attach_diagrams_to_exam(v.exam)
         doc = create_exam_document(
             exam=req.exam,

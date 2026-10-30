@@ -437,4 +437,5 @@ class ExportDocxRequest(BaseModel):
     include_explanations: bool = True
     red_answers: bool = False
     include_cognitive_levels: bool = False
+    matrix_spec: Optional[Any] = None
 

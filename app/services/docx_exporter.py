@@ -234,11 +234,22 @@ def setup_exam_footer(section, code: str):
     fld_numpages = parse_xml(r'<w:fldSimple xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" w:instr="NUMPAGES"><w:r><w:rPr><w:rFonts w:ascii="Times New Roman" w:hAnsi="Times New Roman"/><w:sz w:val="19"/><w:color w:val="646464"/></w:rPr><w:t>1</w:t></w:r></w:fldSimple>')
     p._p.append(fld_numpages)
 
-def format_level_badge(q, include_levels: bool = False) -> str:
+def format_level_badge(q, include_levels: bool = False, is_part2: bool = False) -> str:
     if not include_levels:
         return ""
     lvl = getattr(q, 'cognitive_level', None)
     top = getattr(q, 'matrix_topic', None)
+    
+    # Đối với câu hỏi Đúng / Sai (Phần II):
+    # Mỗi câu là một bài tập tình huống phân hóa 4 lệnh (2 Biết, 1 Hiểu, 1 Vận dụng).
+    # Không dán nhãn đơn lẻ [Vận dụng] ở đầu câu hỏi!
+    # Từng ý lệnh a, b, c, d đã có nhãn mức độ tương ứng [Nhận biết], [Thông hiểu], [Vận dụng].
+    # Tiêu đề câu chỉ ghi đơn vị kiến thức/chủ đề từ ma trận.
+    if is_part2:
+        if top:
+            return f"[{top}] "
+        return ""
+
     if lvl and top:
         return f"[{lvl} - {top}] "
     elif lvl:
@@ -510,7 +521,7 @@ def create_exam_document(
             p_q.paragraph_format.space_after = Pt(3)
             p_q.paragraph_format.line_spacing = 1.15
             
-            badge = format_level_badge(q, include_cognitive_levels)
+            badge = format_level_badge(q, include_cognitive_levels, is_part2=True)
             run_num = p_q.add_run(f"Câu {idx} {badge}: " if badge else f"Câu {idx}: ")
             run_num.bold = True
             run_num.font.name = "Times New Roman"
@@ -681,7 +692,7 @@ def create_exam_document(
                 rows_data.append((str(stt), "Phần I (Nhiều LC)", f"Câu {idx}", lvl, top, q.answer))
                 stt += 1
             for idx, q in enumerate(exam.part2_tf, start=1):
-                lvl = getattr(q, 'cognitive_level', '') or 'Thông hiểu'
+                lvl = "2 Biết, 1 Hiểu, 1 Vận dụng (4 lệnh a, b, c, d)"
                 top = getattr(q, 'matrix_topic', '') or 'Theo ma trận'
                 ans_str = ", ".join([f"{s.label}:{('Đ' if s.is_correct else 'S')}" for s in q.sub_items])
                 rows_data.append((str(stt), "Phần II (Đúng - Sai)", f"Câu {idx}", lvl, top, ans_str))
@@ -1243,7 +1254,7 @@ def create_exam_document(
                 p_item.paragraph_format.space_before = Pt(6)
                 p_item.paragraph_format.space_after = Pt(2)
                 
-                badge = format_level_badge(q, include_cognitive_levels)
+                badge = format_level_badge(q, include_cognitive_levels, is_part2=True)
                 r_qnum = p_item.add_run(f"Câu {idx} {badge}: " if badge else f"Câu {idx}: ")
                 r_qnum.bold = True
                 r_qnum.font.name = "Times New Roman"
