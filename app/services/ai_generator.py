@@ -1,4 +1,4 @@
-from __future__ import annotations
+﻿from __future__ import annotations
 import os
 import json
 import re
@@ -66,7 +66,7 @@ CẤU TRÚC ĐỀ THEO SỐ LƯỢNG YÊU CẦU:
       - Ý a) [Mức Biết - Nhận biết]: Trích xuất hoặc nhận diện trực tiếp thông số, khái niệm, sự kiện đã nêu trong ngữ cảnh tình huống.
       - Ý b) [Mức Hiểu - Thông hiểu]: Phân tích cơ chế hoạt động, mối liên hệ nhân - quả, hoặc giải thích ý nghĩa của một hiện tượng / dòng lệnh / điều kiện trong ngữ cảnh.
       - Ý c) [Mức Vận dụng]: Thực hiện tính toán định lượng cụ thể từ số liệu đề bài, áp dụng công thức, hoặc kiểm tra kết quả thực thi của giải thuật / quy trình.
-      - Ý d) [Mức Vận dụng cao]: Đánh giá quyết định tối ưu, dự đoán kịch bản khi thay đổi điều kiện, hoặc phân tích khía cạnh an toàn / đạo đức / hiệu năng giải pháp.
+      - Ý d) [Mức Vận dụng]: Đánh giá quyết định tối ưu, dự đoán kịch bản khi thay đổi điều kiện, hoặc phân tích khía cạnh an toàn / đạo đức / hiệu năng giải pháp (theo chuẩn 3 mức độ nhận thức của Công văn 7991: Nhận biết - Thông hiểu - Vận dụng).
     + Mỗi ý con BẮT BUỘC gồm: 'label' ('a', 'b', 'c', 'd'), 'statement' (mệnh đề khoa học thực tế, cụ thể), 'is_correct' (true hoặc false), và 'explanation' (giải thích).
     + QUY TẮC PHÂN BỔ ĐÚNG/SAI BẮT BUỘC: Trong 4 ý con a, b, c, d của mỗi câu, BẮT BUỘC PHẢI CÓ TỪ 1 ĐẾN 3 Ý ĐÚNG (luôn có ít nhất 1 ý Đúng và ít nhất 1 ý Sai). TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP TOÀN ĐÚNG (4 true) HOẶC TOÀN SAI (4 false)!
     + TUYỆT ĐỐI KHÔNG để đề bài rỗng hoặc dùng các văn bản giữ chỗ/placeholder như 'Đang cập nhật...'.
@@ -534,7 +534,7 @@ def create_default_audit_report(subject: str, total_q: int = 22) -> AuditReport:
         notes=[
             f"Hội đồng AI Khảo thí đã thẩm định độc lập {total_q}/{total_q} câu hỏi môn {subject}: 100% câu hỏi, phương án và đáp án đạt chuẩn GDPT 2018.",
             "Phần I (Trắc nghiệm): 100% câu hỏi chuẩn mức Biết - Hiểu, phương án khoa học, công thức toán LaTeX đồng bộ.",
-            "Phần II (Đúng/Sai): 100% câu hỏi xây dựng trên ngữ cảnh tình huống thực tiễn hấp dẫn, phân hóa 4 tầng tư duy (Biết -> Hiểu -> Vận dụng -> Vận dụng cao), tỷ lệ Đúng/Sai chuẩn quy định.",
+            "Phần II (Đúng/Sai): 100% câu hỏi xây dựng trên ngữ cảnh tình huống thực tiễn hấp dẫn, phân hóa 4 tầng tư duy (Biết -> Hiểu -> Vận dụng -> Vận dụng), tỷ lệ Đúng/Sai chuẩn quy định.",
             "Phần III (Trả lời ngắn): Đã giải lại độc lập, kiểm tra nghiệm và đối chiếu đáp số chính xác 100%."
         ]
     )
@@ -3622,42 +3622,54 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
             else:
                 q.matrix_topic = exam.subject
 
-    # 2. Phần II: Đúng / Sai (Mỗi câu gồm 4 ý phân hóa từ Biết đến Vận dụng)
+    # 2. Phần II: Đúng / Sai (Chuẩn Công văn 7991: phân hóa 4 lệnh: Biết - Hiểu - Vận dụng, KHÔNG có Vận dụng)
     n2 = len(exam.part2_tf)
-    sub_levels = ["Nhận biết", "Thông hiểu", "Vận dụng", "Vận dụng cao"]
+    p2_topics = [t for t in topics_list if (getattr(getattr(t, 'part2_tf', None), 'biet', 0) + getattr(getattr(t, 'part2_tf', None), 'hieu', 0) + getattr(getattr(t, 'part2_tf', None), 'vd', 0)) > 0]
+    sub_levels = ["Nhận biết", "Nhận biết", "Thông hiểu", "Vận dụng"]
     for i, q in enumerate(exam.part2_tf):
         if not getattr(q, "cognitive_level", None):
-            q.cognitive_level = "Thông hiểu" if i < max(1, n2 // 2) else "Vận dụng"
+            q.cognitive_level = "Vận dụng"
         if not getattr(q, "matrix_topic", None):
-            if topics_list:
-                t_idx = min(i % len(topics_list), len(topics_list) - 1)
-                q.matrix_topic = getattr(topics_list[t_idx], "topic", "")
+            src_list = p2_topics if p2_topics else topics_list
+            if src_list:
+                t_idx = min(i % len(src_list), len(src_list) - 1)
+                full_t = getattr(src_list[t_idx], "topic", "")
+                sub_t = getattr(src_list[t_idx], "sub_topic", "")
+                q.matrix_topic = f"{full_t} - {sub_t}" if sub_t else full_t
             else:
                 q.matrix_topic = exam.subject
         for s_idx, sub in enumerate(q.sub_items):
             if not getattr(sub, "cognitive_level", None):
                 sub.cognitive_level = sub_levels[s_idx] if s_idx < len(sub_levels) else "Vận dụng"
 
-    # 3. Phần III: Trả lời ngắn (Mức độ Vận dụng & Vận dụng cao)
+    # 3. Phần III: Trả lời ngắn (Chuẩn Công văn 7991: Mức độ Vận dụng, KHÔNG có Vận dụng)
     n3 = len(exam.part3_short)
+    p3_topics = [t for t in topics_list if (getattr(getattr(t, 'part3_short', None), 'biet', 0) + getattr(getattr(t, 'part3_short', None), 'hieu', 0) + getattr(getattr(t, 'part3_short', None), 'vd', 0)) > 0]
     for i, q in enumerate(exam.part3_short):
         if not getattr(q, "cognitive_level", None):
-            q.cognitive_level = "Vận dụng" if i < int(n3 * 0.6) else "Vận dụng cao"
+            q.cognitive_level = "Vận dụng"
         if not getattr(q, "matrix_topic", None):
-            if topics_list:
-                t_idx = min(i % len(topics_list), len(topics_list) - 1)
-                q.matrix_topic = getattr(topics_list[t_idx], "topic", "")
+            src_list = p3_topics if p3_topics else topics_list
+            if src_list:
+                t_idx = min(i % len(src_list), len(src_list) - 1)
+                full_t = getattr(src_list[t_idx], "topic", "")
+                sub_t = getattr(src_list[t_idx], "sub_topic", "")
+                q.matrix_topic = f"{full_t} - {sub_t}" if sub_t else full_t
             else:
                 q.matrix_topic = exam.subject
 
-    # 4. Phần IV: Tự luận (Mức độ Vận dụng & Vận dụng cao)
+    # 4. Phần IV: Tự luận (Chuẩn Công văn 7991: Mức độ Vận dụng, KHÔNG có Vận dụng)
+    p4_topics = [t for t in topics_list if (getattr(getattr(t, 'part4_essay', None), 'biet', 0) + getattr(getattr(t, 'part4_essay', None), 'hieu', 0) + getattr(getattr(t, 'part4_essay', None), 'vd', 0)) > 0]
     for i, q in enumerate(exam.part4_essay):
         if not getattr(q, "cognitive_level", None):
-            q.cognitive_level = "Vận dụng" if i == 0 else "Vận dụng cao"
+            q.cognitive_level = "Vận dụng"
         if not getattr(q, "matrix_topic", None):
-            if topics_list:
-                t_idx = min(i % len(topics_list), len(topics_list) - 1)
-                q.matrix_topic = getattr(topics_list[t_idx], "topic", "")
+            src_list = p4_topics if p4_topics else topics_list
+            if src_list:
+                t_idx = min(i % len(src_list), len(src_list) - 1)
+                full_t = getattr(src_list[t_idx], "topic", "")
+                sub_t = getattr(src_list[t_idx], "sub_topic", "")
+                q.matrix_topic = f"{full_t} - {sub_t}" if sub_t else full_t
             else:
                 q.matrix_topic = exam.subject
 
@@ -3693,7 +3705,7 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
         f"QUY ĐỊNH BẮT BUỘC VỀ SỐ LƯỢNG CÂU HỎI:\n"
         f"- PHẦN I (Trắc nghiệm nhiều lựa chọn): BẮT BUỘC TẠO ĐỦ {request.num_part1} CÂU (id từ 1 đến {request.num_part1}). TUYỆT ĐỐI KHÔNG TỰ Ý DỪNG Ở 12 HAY 18 CÂU NẾU YÊU CẦU LỚN HƠN. Phải tạo đủ {request.num_part1} câu trong mảng 'part1_mcq'!\n"
         f"- PHẦN II (Trắc nghiệm Đúng/Sai): BẮT BUỘC TẠO ĐỦ {request.num_part2} CÂU trong mảng 'part2_tf' (đánh số id từ 1 đến {request.num_part2}).\n"
-        f"  * NGUYÊN TẮC BẮT BUỘC VỀ NGỮ CẢNH: MỖI CÂU BẮT BUỘC CÓ ĐỀ BÀI LÀ BỐI CẢNH/TÌNH HUỐNG THỰC TẾ HẤP DẪN (40-100 từ, có dữ liệu/đoạn mã/bảng số liệu/dự án cụ thể), kèm 4 ý con a, b, c, d phân hóa từ Biết -> Hiểu -> Vận dụng -> Vận dụng cao. TUYỆT ĐỐI KHÔNG ra đề cộc lốc lý thuyết suông!\n"
+        f"  * NGUYÊN TẮC BẮT BUỘC VỀ NGỮ CẢNH: MỖI CÂU BẮT BUỘC CÓ ĐỀ BÀI LÀ BỐI CẢNH/TÌNH HUỐNG THỰC TẾ HẤP DẪN (40-100 từ, có dữ liệu/đoạn mã/bảng số liệu/dự án cụ thể), kèm 4 ý con a, b, c, d phân hóa từ Biết -> Hiểu -> Vận dụng -> Vận dụng. TUYỆT ĐỐI KHÔNG ra đề cộc lốc lý thuyết suông!\n"
         f"- PHẦN III (Trả lời ngắn): BẮT BUỘC TẠO ĐỦ {request.num_part3} CÂU trong mảng 'part3_short'.\n"
         f"- PHẦN IV (Tự luận): BẮT BUỘC TẠO ĐỦ {request.num_essay} CÂU trong mảng 'part4_essay'.\n"
     )
@@ -3739,7 +3751,7 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             )
         user_prompt += (
             f"\n\nLƯU Ý ĐẶC THÙ MÔN TOÁN HỌC (LỚP {request.grade}):\n"
-            f"- Đối với Phần II (Đúng/Sai): BẮT BUỘC 100% CÁC CÂU LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ / MÔ HÌNH HÓA ĐỜI SỐNG PHÙ HỢP VỚI LỚP {request.grade} (4 ý con phân hóa theo Biết -> Hiểu -> Vận dụng -> Vận dụng cao).{thpt_extra}"
+            f"- Đối với Phần II (Đúng/Sai): BẮT BUỘC 100% CÁC CÂU LÀ BÀI TOÁN TÌNH HUỐNG THỰC TẾ / MÔ HÌNH HÓA ĐỜI SỐNG PHÙ HỢP VỚI LỚP {request.grade} (4 ý con phân hóa theo Biết -> Hiểu -> Vận dụng -> Vận dụng).{thpt_extra}"
             f"- MỌI CÔNG THỨC TOÁN, BIẾN SỐ, ĐƠN VỊ KÈM CÔNG THỨC BẮT BUỘC ĐƯỢC BỌC TRONG $...$ (ví dụ: $3\\sqrt{3}$ cm, $\\alpha$, $m \\neq 1$, $\\sin B$, $\\begin{{cases}} 2x - y = 3 \\\\ x + 2y = 4 \\end{{cases}}$). CẤM viết tiếng Việt ('căn 2', 'm khác 1') hoặc LaTeX trần không có $."
         )
     if any(s in request.subject.lower() for s in ["vật lý", "vật lí", "hóa học", "sinh học"]):
@@ -3756,7 +3768,7 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"  + a) [Biết]: Xác định đúng thời gian, nhân vật, sự kiện hoặc chủ trương nêu trực tiếp trong đoạn tư liệu.\n"
             f"  + b) [Hiểu]: Phân tích nguyên nhân lịch sử, bối cảnh thời đại hoặc bản chất sự kiện phản ánh qua tư liệu.\n"
             f"  + c) [Vận dụng]: Liên hệ bài học kinh nghiệm, nghệ thuật quân sự hoặc đường lối ngoại giao vào thực tiễn dựng nước và giữ nước.\n"
-            f"  + d) [Vận dụng cao]: Đánh giá tác động, tầm vóc lịch sử hoặc ý nghĩa thời đại đối với phong trào cách mạng Việt Nam và thế giới."
+            f"  + d) [Vận dụng]: Đánh giá tác động, tầm vóc lịch sử hoặc ý nghĩa thời đại đối với phong trào cách mạng Việt Nam và thế giới."
         )
     if any(s in request.subject.lower() for s in ["địa", "địa lý", "địa lí"]):
         user_prompt += (
@@ -3766,7 +3778,7 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"  + a) [Biết]: Đọc và nhận dạng trực tiếp số liệu cao nhất, thấp nhất hoặc xu hướng tăng/giảm từ ngữ cảnh.\n"
             f"  + b) [Hiểu]: Giải thích nguyên nhân tự nhiên hoặc kinh tế - xã hội dẫn đến xu thế hoặc sự phân hóa lãnh thổ.\n"
             f"  + c) [Vận dụng]: Tính toán định lượng cụ thể (tốc độ tăng trưởng %, tỉ trọng cơ cấu %, cán cân xuất nhập khẩu, mật độ dân số).\n"
-            f"  + d) [Vận dụng cao]: Đề xuất và đánh giá tính khả thi của giải pháp quy hoạch vùng, phát triển bền vững hoặc thích ứng biến đổi khí hậu."
+            f"  + d) [Vận dụng]: Đề xuất và đánh giá tính khả thi của giải pháp quy hoạch vùng, phát triển bền vững hoặc thích ứng biến đổi khí hậu."
         )
     if any(s in request.subject.lower() for s in ["kinh tế", "pháp luật", "gdkt", "gdcd"]):
         user_prompt += (
@@ -3776,7 +3788,7 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"  + a) [Biết]: Nhận diện các chủ thể pháp lý và quan hệ xã hội được điều chỉnh trong tình huống.\n"
             f"  + b) [Hiểu]: Phân tích hành vi nào đúng, hành vi nào vi phạm pháp luật và căn cứ theo quy định của pháp luật hiện hành.\n"
             f"  + c) [Vận dụng]: Xác định quyền, nghĩa vụ và trách nhiệm pháp lý (dân sự, hình sự, hành chính, kỷ luật) của từng chủ thể.\n"
-            f"  + d) [Vận dụng cao]: Rút ra bài học ứng xử công dân, văn hóa tiêu dùng/kinh doanh có đạo đức và kỹ năng phòng ngừa rủi ro pháp lý."
+            f"  + d) [Vận dụng]: Rút ra bài học ứng xử công dân, văn hóa tiêu dùng/kinh doanh có đạo đức và kỹ năng phòng ngừa rủi ro pháp lý."
         )
     if any(s in request.subject.lower() for s in ["quốc phòng", "an ninh", "gdqp"]):
         user_prompt += (
@@ -3901,7 +3913,7 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             + "\n".join(matrix_details)
             + "\n".join(custom_rules)
             + "\n3. Phần I (Trắc nghiệm nhiều lựa chọn): Ưu tiên các câu hỏi ở mức độ Biết và Hiểu theo tỷ lệ quy định.\n"
-            "4. Phần II (Đúng - Sai): BẮT BUỘC 100% CÁC CÂU LÀ TÌNH HUỐNG THỰC TẾ / CASE STUDY DỰ ÁN ĐỜI SỐNG HẤP DẪN (50-100 từ, có dữ liệu/đoạn mã/bảng số liệu/nguyên lý hoạt động cụ thể), bám sát đúng chủ đề được phân bổ Phần II trong Ma trận. TUYỆT ĐỐI CẤM các bài toán tiểu học cộc lốc ('mảnh vườn', 'bác nông dân', 'chi phí 20.000đ'). 4 ý con a, b, c, d phân hóa chặt chẽ theo thang bậc: a (Nhận biết thông số/khái niệm) -> b (Thông hiểu nguyên lý/cơ chế) -> c (Vận dụng tính toán/truy vết) -> d (Vận dụng cao đánh giá tối ưu/an toàn/đạo đức).\n"
+            "4. Phần II (Đúng - Sai): BẮT BUỘC 100% CÁC CÂU LÀ TÌNH HUỐNG THỰC TẾ / CASE STUDY DỰ ÁN ĐỜI SỐNG HẤP DẪN (50-100 từ, có dữ liệu/đoạn mã/bảng số liệu/nguyên lý hoạt động cụ thể), bám sát đúng chủ đề được phân bổ Phần II trong Ma trận. TUYỆT ĐỐI CẤM các bài toán tiểu học cộc lốc ('mảnh vườn', 'bác nông dân', 'chi phí 20.000đ'). 4 ý con a, b, c, d phân hóa chặt chẽ theo thang bậc: a (Nhận biết thông số/khái niệm) -> b (Thông hiểu nguyên lý/cơ chế) -> c (Vận dụng tính toán/truy vết) -> d (Vận dụng đánh giá tối ưu/an toàn/đạo đức).\n"
             "5. Phần III (Trả lời ngắn) và Phần IV (Tự luận): Tập trung vào mức độ Vận dụng, giải quyết bài toán thực tế theo đúng yêu cầu cần đạt.\n"
             "6. 🚨 NGUYÊN TẮC BẢO VỆ PHẠM VI MA TRẬN: TUYỆT ĐỐI KHÔNG biên soạn câu hỏi có nội dung kiến thức nằm ngoài các Chủ đề đã liệt kê trong Ma trận. Đặc biệt với môn Tin học, KHÔNG tự ý đưa Cơ sở dữ liệu (CSDL) hoặc Lập trình Python vào nếu ma trận không yêu cầu."
         )

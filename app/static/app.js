@@ -313,65 +313,74 @@ createApp({
       const list = [];
       const ms = matrixSpec.value;
       const topics = ms.topics || [];
-      
-      // Part 1
-      const p1Count = form.num_part1 !== undefined ? form.num_part1 : (ms.num_part1 || 12);
+
+      // Phân loại topics theo từng phần thi dựa vào phân bổ trong ma trận
+      const p1Topics = topics.filter(t => t.part1_mcq && ((t.part1_mcq.biet || 0) + (t.part1_mcq.hieu || 0) + (t.part1_mcq.vd || 0)) > 0);
+      const p2Topics = topics.filter(t => t.part2_tf && ((t.part2_tf.biet || 0) + (t.part2_tf.hieu || 0) + (t.part2_tf.vd || 0)) > 0);
+      const p3Topics = topics.filter(t => t.part3_short && ((t.part3_short.biet || 0) + (t.part3_short.hieu || 0) + (t.part3_short.vd || 0)) > 0);
+      const p4Topics = topics.filter(t => t.part4_essay && ((t.part4_essay.biet || 0) + (t.part4_essay.hieu || 0) + (t.part4_essay.vd || 0)) > 0);
+
+      // Part 1: Nhiều lựa chọn (Chuẩn Công văn 7991: Nhận biết & Thông hiểu, một số bài có Vận dụng)
+      const p1Count = form.num_part1 !== undefined ? form.num_part1 : (ms.num_part1 || 16);
+      const activeP1 = p1Topics.length ? p1Topics : topics;
       for (let i = 1; i <= p1Count; i++) {
-        const t = topics.length ? topics[(i - 1) % topics.length] : null;
+        const t = activeP1.length ? activeP1[(i - 1) % activeP1.length] : null;
         let level = "Nhận biết";
-        if (i > p1Count * 0.85) level = "Vận dụng";
-        else if (i > p1Count * 0.5) level = "Thông hiểu";
+        if (i > p1Count * 0.5) level = "Thông hiểu";
+        if (t && t.part1_mcq && t.part1_mcq.vd > 0 && i > p1Count * 0.85) {
+          level = "Vận dụng";
+        }
         list.push({
           num: i,
           part: "Phần I (Nhiều LC)",
           level,
-          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Toán học"),
+          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Tin học"),
           requirement: t && t.requirements ? (level === "Nhận biết" ? t.requirements.recognition : (level === "Thông hiểu" ? t.requirements.comprehension : t.requirements.application)) : ""
         });
       }
-      
-      // Part 2
+
+      // Part 2: Đúng / Sai (Chuẩn Công văn 7991: Tình huống thực tiễn, phân hóa 4 lệnh: Biết, Hiểu, Vận dụng; KHÔNG có Vận dụng cao)
       const p2Count = form.num_part2 !== undefined ? form.num_part2 : (ms.num_part2 || 4);
+      const activeP2 = p2Topics.length ? p2Topics : topics;
       for (let i = 1; i <= p2Count; i++) {
-        const t = topics.length ? topics[(i - 1) % topics.length] : null;
-        const level = i <= Math.ceil(p2Count / 2) ? "Thông hiểu" : "Vận dụng";
+        const t = activeP2.length ? activeP2[(i - 1) % activeP2.length] : null;
         list.push({
           num: i,
           part: "Phần II (Đúng - Sai)",
-          level,
-          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Toán học"),
-          requirement: "Phân hóa 4 lệnh: a) Nhận biết - b) Thông hiểu - c) Vận dụng - d) Vận dụng cao"
+          level: "Vận dụng",
+          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Tin học"),
+          requirement: "Phân hóa 4 lệnh: a, b (Nhận biết) - c (Thông hiểu) - d (Vận dụng)"
         });
       }
-      
-      // Part 3
-      const p3Count = form.num_part3 !== undefined ? form.num_part3 : (ms.num_part3 || 6);
+
+      // Part 3: Trả lời ngắn (Chuẩn Công văn 7991: Mức độ Vận dụng)
+      const p3Count = form.num_part3 !== undefined ? form.num_part3 : (ms.num_part3 || 0);
+      const activeP3 = p3Topics.length ? p3Topics : topics;
       for (let i = 1; i <= p3Count; i++) {
-        const t = topics.length ? topics[(i - 1) % topics.length] : null;
-        const level = i <= Math.ceil(p3Count * 0.6) ? "Vận dụng" : "Vận dụng cao";
+        const t = activeP3.length ? activeP3[(i - 1) % activeP3.length] : null;
         list.push({
           num: i,
           part: "Phần III (Trả lời ngắn)",
-          level,
-          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Toán học"),
+          level: "Vận dụng",
+          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Tin học"),
           requirement: t && t.requirements ? (t.requirements.application || t.requirements.comprehension) : "Giải quyết vấn đề thực tiễn"
         });
       }
 
-      // Part 4
+      // Part 4: Tự luận (Chuẩn Công văn 7991: Mức độ Vận dụng, KHÔNG có Vận dụng cao)
       const p4Count = form.num_essay !== undefined ? form.num_essay : (ms.num_essay || 0);
+      const activeP4 = p4Topics.length ? p4Topics : topics;
       for (let i = 1; i <= p4Count; i++) {
-        const t = topics.length ? topics[(i - 1) % topics.length] : null;
-        const level = i === 1 ? "Vận dụng" : "Vận dụng cao";
+        const t = activeP4.length ? activeP4[(i - 1) % activeP4.length] : null;
         list.push({
           num: i,
           part: "Phần IV (Tự luận)",
-          level,
-          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Toán học"),
-          requirement: t && t.requirements ? (t.requirements.application || "Trình bày giải toán tự luận") : "Vận dụng tổng hợp"
+          level: "Vận dụng",
+          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Tin học"),
+          requirement: t && t.requirements ? (t.requirements.application || "Trình bày giải bài tập tự luận") : "Vận dụng tổng hợp"
         });
       }
-      
+
       return list;
     });
 

@@ -2825,7 +2825,7 @@ async def run_ai_auditor_healing(
                 f"Bắt buộc viết lại hoàn toàn thành bài toán tình huống thực tế / mô hình hóa cao cấp môn {exam.subject} chuẩn Lớp {exam.grade} "
                 f"(độ dài 50-120 từ, có số liệu thực tế/kinh tế/kỹ thuật/CNTT/mạng/HTML/AI cụ thể). "
                 f"CẤM TUYỆT ĐỐI giữ lại các bài toán 'bác nông dân', 'mảnh vườn', 'mở rộng chiều dài 2m', 'chi phí 20.000đ', '5.000đ'. "
-                f"Nâng cấp 4 ý con theo thang bậc tư duy 4 tầng (a: Biết, b: Hiểu, c: Vận dụng tính toán, d: Vận dụng cao đánh giá)."
+                f"Nâng cấp 4 ý con theo chuẩn 3 mức độ nhận thức Công văn 7991 (a, b: Biết, c: Hiểu, d: Vận dụng)."
             )
             if issue:
                 issue += f" | {warn_msg}"
@@ -2900,7 +2900,7 @@ QUY TẮC THẨM ĐỊNH, GIẢI ĐỘC LẬP VÀ SỬA CHỮA:
        • Ý a [Biết]: Trích xuất hoặc nhận biết thông số/khái niệm trong ngữ cảnh.
        • Ý b [Hiểu]: Phân tích cơ chế hoạt động, nguyên nhân - kết quả của tình huống.
        • Ý c [Vận dụng]: Tính toán định lượng cụ thể từ số liệu hoặc kiểm tra kết quả thực thi.
-       • Ý d [Vận dụng cao]: Đánh giá quyết định tối ưu, dự đoán kịch bản hoặc phân tích khía cạnh an toàn / đạo đức / hiệu năng.
+       • Ý d [Vận dụng]: Đánh giá quyết định tối ưu, dự đoán kịch bản hoặc phân tích khía cạnh an toàn / đạo đức / hiệu năng (chuẩn CV 7991).
    - BẮT BUỘC TỰ GIẢI ĐỘC LẬP xét tính Đúng / Sai của từng mệnh đề a, b, c, d:
      + So sánh với 'is_correct'. NẾU 'is_correct' BỊ ĐÁNH GIÁ SAI (ví dụ mệnh đề thực tế là ĐÚNG nhưng ghi false, hoặc thực tế là SAI nhưng ghi true): BẮT BUỘC SỬA LẠI 'is_correct' CHO CHUẨN XÁC 100%!
      + Viết lại 'explanation' cho từng mệnh đề chứng minh rõ tại sao Đúng, tại sao Sai.

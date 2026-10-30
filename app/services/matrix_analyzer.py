@@ -23,17 +23,26 @@ CV7991_PROMPT = """Bạn là chuyên gia thẩm định và khảo thí giáo d�
 Nhiệm vụ của bạn là đọc hiểu và bóc tách toàn bộ dữ liệu từ tệp MA TRẬN ĐỀ KIỂM TRA ĐỊNH KÌ và/hoặc BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KÌ
 theo đúng chuẩn biểu mẫu chính thức tại PHỤ LỤC ban hành kèm theo Công văn số 7991/BGDĐT-GDTrH ngày 17/12/2024 của Bộ GDĐT.
 
+QUY TẮC CỐT LÕI VỀ MỨC ĐỘ NHẬN THỨC THEO CÔNG VĂN 7991:
+1. CHỈ CÓ 3 MỨC ĐỘ NHẬN THỨC: Nhận biết, Thông hiểu, Vận dụng.
+2. TUYỆT ĐỐI KHÔNG CÓ MỨC "VẬN DỤNG CAO". Mức "Vận dụng cao" đã bị bãi bỏ hoàn toàn theo CV 7991. Toàn bộ câu hỏi tự luận, bài tập thực hành, hoặc ý (d) của câu hỏi Đúng - Sai đều thuộc mức "Vận dụng".
+
 BIỂU MẪU CÔNG VĂN 7991/BGDĐT-GDTrH GỒM 2 BẢNG:
 1. BẢNG 1: MA TRẬN ĐỀ KIỂM TRA ĐỊNH KÌ
    - Các cột: TT | Chủ đề/Chương | Nội dung/đơn vị kiến thức | Mức độ đánh giá (chia theo 4 hình thức thi) | Tổng theo mức độ (Biết, Hiểu, Vận dụng) | Tỉ lệ % điểm.
    - 4 hình thức câu hỏi trong bảng và các ký hiệu viết tắt giáo viên thường dùng trong ô:
      + TNKQ Nhiều lựa chọn (Phần I của đề thi): cột Biết | Hiểu | Vận dụng. Ký hiệu thường gặp: '1 MC', '2 MC', '1 MCQ', '1 TNKQ' hoặc số nguyên '1', '2'.
-     + TNKQ "Đúng - Sai" (Phần II của đề thi): cột Biết | Hiểu | Vận dụng. Ký hiệu thường gặp: '2 YN1(a,b)', '1 YN1(c)', '1 YN1(d)', 'YN2(...)', 'ĐS1(...)'. Mỗi câu hỏi lớn gồm 4 ý lệnh nhỏ a, b, c, d.
-       * QUY TẮC CỰC KỲ QUAN TRỌNG VỀ PHẦN II (ĐÚNG - SAI): Trường "num_part2" là SỐ CÂU HỎI LỚN (ví dụ YN1, YN2, YN3, YN4 -> num_part2 là 4), KHÔNG PHẢI tổng số lệnh hỏi a,b,c,d (16 lệnh).
+     + TNKQ "Đúng - Sai" (Phần II của đề thi): cột Biết | Hiểu | Vận dụng. Ký hiệu thường gặp: '2 YN1(a,b)', '1 YN1(c)', '1 YN1(d)', 'YN2(...)', 'ĐS1(...)'. Mỗi câu hỏi lớn gồm 4 ý lệnh nhỏ a, b, c, d (phân hóa: 2 Biết, 1 Hiểu, 1 Vận dụng).
+       * QUY TẮC PHẦN II (ĐÚNG - SAI): 
+         - Trường "num_part2" là SỐ CÂU HỎI LỚN (ví dụ YN1, YN2, YN3, YN4 -> num_part2 là 4), KHÔNG PHẢI tổng số lệnh hỏi a,b,c,d (16 lệnh).
+         - Trong mảng "topics", CHỈ GÁN part2_tf CHO ĐÚNG BÀI NÀO CÓ KÝ HIỆU YN TRONG MA TRẬN (ví dụ: YN1 ở Bài 1, YN2 ở Bài 4, YN3 ở Bài 5, YN4 ở Bài 9). Các bài khác (như Bài 2, 3, 6, 7, 8) KHÔNG có YN thì BẮT BUỘC gán "part2_tf": {"biet": 0, "hieu": 0, "vd": 0}.
      + TNKQ Trả lời ngắn (Phần III của đề thi): cột Biết | Hiểu | Vận dụng. Ký hiệu thường gặp: '1 TLN', '1 SA' hoặc số nguyên.
        * QUY TẮC: Nếu bảng KHÔNG CÓ cột Trả lời ngắn hoặc ghi 0 câu/ý hoặc để trống, thì BẮT BUỘC "num_part3": 0 và "scoring_summary.part3_points": 0.0. TUYỆT ĐỐI KHÔNG tự ý điền 6 câu.
      + Tự luận (Phần IV của đề thi): cột Biết | Hiểu | Vận dụng. Ký hiệu thường gặp: '1 TL1', '1 TL2', '1 TL'.
-       * QUY TẮC: Nếu bảng có tự luận (ví dụ TL1, TL2), "num_essay" là số câu hỏi tự luận (ví dụ 2 câu) và "scoring_summary.part4_points" là điểm tự luận tương ứng (ví dụ 2.0). Nếu không có, "num_essay": 0 và "part4_points": 0.0.
+       * QUY TẮC TỰ LUẬN CỰC KỲ QUAN TRỌNG:
+         - "num_essay" là số câu hỏi tự luận (ví dụ TL1, TL2 -> num_essay là 2) và "scoring_summary.part4_points" là điểm tự luận tương ứng (ví dụ 2.0). Nếu không có, "num_essay": 0 và "part4_points": 0.0.
+         - Trong mảng "topics", CHỈ GÁN part4_essay CHO ĐÚNG BÀI NÀO CÓ KÝ HIỆU TL TRONG MA TRẬN (ví dụ: TL1 ở Bài 2 -> Bài 2 có "part4_essay": {"biet": 0, "hieu": 0, "vd": 1}; TL2 ở Bài 8 -> Bài 8 có "part4_essay": {"biet": 0, "hieu": 0, "vd": 1}).
+         - TẤT CẢ CÁC BÀI KHÁC (như Bài 1, 3, 4, 5, 6, 7, 9) KHÔNG CÓ KÝ HIỆU TL thì BẮT BUỘC gán "part4_essay": {"biet": 0, "hieu": 0, "vd": 0}. TUYỆT ĐỐI KHÔNG gán tự luận nhầm sang Bài 1 hay bất kỳ bài nào không có TL!
    - Các dòng tổng kết cuối bảng (BẮT BUỘC PHẢI ĐỐI CHIẾU VỚI CÁC DÒNG NÀY):
      + Dòng "Tổng số câu/ý": Ghi tổng số câu hoặc ý lệnh cho từng phần và tổng chung (ví dụ: Nhiều lựa chọn 16 câu, Đúng/Sai 16 ý = 4 câu lớn, Tự luận 2 câu -> Tổng 34 câu/ý).
      + Dòng "Tổng số điểm": Ví dụ Nhiều lựa chọn 4.0đ | Đúng - Sai 4.0đ | Trả lời ngắn 0.0đ | Tự luận 2.0đ -> Tổng điểm 10.0đ.
@@ -643,6 +652,58 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
         raw_markdown_table=text[:5000]
     )
 
+def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text: str):
+    """
+    Đối soát chính xác từng bài/nội dung với ký hiệu YN (Đúng-Sai) và TL (Tự luận) trong văn bản ma trận.
+    Đảm bảo 100% không bị lệch vị trí tự luận (như Bài 2, Bài 8) hay Đúng/Sai (Bài 1, 4, 5, 9).
+    """
+    if not topics_list or not text:
+        return
+        
+    has_tokens = bool(re.search(r"\b(?:MC|YN\d+|TL\d+)\b", text, re.IGNORECASE))
+    if not has_tokens:
+        return
+
+    lines = text.split("\n")
+    for t_item in topics_list:
+        sub = (t_item.sub_topic or "").strip().lower()
+        top = (t_item.topic or "").strip().lower()
+        if not sub and not top:
+            continue
+            
+        matched_line = ""
+        for l in lines:
+            if "|" not in l:
+                continue
+            l_low = l.lower()
+            if sub and sub in l_low:
+                matched_line = l
+                break
+            if not matched_line and top and top in l_low and not any(k in l_low for k in ["tổng", "cộng", "tỉ lệ"]):
+                matched_line = l
+                
+        if matched_line:
+            # Kiểm tra xem dòng này có TL không
+            has_tl_in_line = bool(re.search(r"\bTL\d*\b", matched_line, re.IGNORECASE) and not re.search(r"\bTLN\b", matched_line, re.IGNORECASE))
+            if has_tl_in_line:
+                t_item.part4_essay.vd = max(t_item.part4_essay.vd, 1)
+            else:
+                t_item.part4_essay.biet = 0
+                t_item.part4_essay.hieu = 0
+                t_item.part4_essay.vd = 0
+
+            # Kiểm tra xem dòng này có YN không
+            has_yn_in_line = bool(re.search(r"\bYN\d*\b", matched_line, re.IGNORECASE))
+            if not has_yn_in_line:
+                t_item.part2_tf.biet = 0
+                t_item.part2_tf.hieu = 0
+                t_item.part2_tf.vd = 0
+            else:
+                if (t_item.part2_tf.biet + t_item.part2_tf.hieu + t_item.part2_tf.vd) == 0:
+                    t_item.part2_tf.biet = 2
+                    t_item.part2_tf.hieu = 1
+                    t_item.part2_tf.vd = 1
+
 async def analyze_matrix_document(
     file_bytes: Optional[bytes] = None,
     filename: Optional[str] = None,
@@ -757,6 +818,9 @@ async def analyze_matrix_document(
                     points=float(t.get("points") or 0.0)
                 )
                 topics_list.append(item)
+
+        # Đối soát và bảo vệ vị trí YN, TL theo các token thực tế trong tài liệu
+        reconcile_topics_with_matrix_tokens(topics_list, extracted_text)
 
         def safe_int_val(val, default):
             if val is None or val == "":

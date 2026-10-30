@@ -14,7 +14,7 @@ class Part1Question(BaseModel):
     explanation: Optional[str] = ''
     image_base64: Optional[str] = None
     image_caption: Optional[str] = None
-    cognitive_level: Optional[str] = None  # 'Nhận biết' | 'Thông hiểu' | 'Vận dụng' | 'Vận dụng cao'
+    cognitive_level: Optional[str] = None  # 'Nhận biết' | 'Thông hiểu' | 'Vận dụng' (Chuẩn Công văn 7991)
     matrix_topic: Optional[str] = None     # Tên chủ đề / mạch kiến thức từ ma trận
 
 class SubItem(BaseModel):
@@ -31,7 +31,7 @@ class Part2Question(BaseModel):
     explanation: Optional[str] = ''
     image_base64: Optional[str] = None
     image_caption: Optional[str] = None
-    cognitive_level: Optional[str] = None  # 'Nhận biết' | 'Thông hiểu' | 'Vận dụng' | 'Vận dụng cao'
+    cognitive_level: Optional[str] = None  # 'Nhận biết' | 'Thông hiểu' | 'Vận dụng' (Chuẩn Công văn 7991)
     matrix_topic: Optional[str] = None
 
 class Part3Question(BaseModel):
@@ -41,7 +41,7 @@ class Part3Question(BaseModel):
     explanation: Optional[str] = ''
     image_base64: Optional[str] = None
     image_caption: Optional[str] = None
-    cognitive_level: Optional[str] = None  # 'Nhận biết' | 'Thông hiểu' | 'Vận dụng' | 'Vận dụng cao'
+    cognitive_level: Optional[str] = None  # 'Nhận biết' | 'Thông hiểu' | 'Vận dụng' (Chuẩn Công văn 7991)
     matrix_topic: Optional[str] = None
 
 class Part4EssayQuestion(BaseModel):
@@ -52,7 +52,7 @@ class Part4EssayQuestion(BaseModel):
     explanation: Optional[str] = '' # Hướng dẫn chấm chi tiết & biểu điểm
     image_base64: Optional[str] = None
     image_caption: Optional[str] = None
-    cognitive_level: Optional[str] = None  # 'Vận dụng' | 'Vận dụng cao'
+    cognitive_level: Optional[str] = None  # 'Vận dụng' (Chuẩn Công văn 7991)
     matrix_topic: Optional[str] = None
 
 class AuditReport(BaseModel):
