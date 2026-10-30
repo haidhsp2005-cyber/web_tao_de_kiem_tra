@@ -3901,7 +3901,7 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             + "\n".join(matrix_details)
             + "\n".join(custom_rules)
             + "\n3. Phần I (Trắc nghiệm nhiều lựa chọn): Ưu tiên các câu hỏi ở mức độ Biết và Hiểu theo tỷ lệ quy định.\n"
-            "4. Phần II (Đúng - Sai): Mỗi câu gồm 4 ý con a, b, c, d với độ khó phân hóa từ Biết đến Hiểu và Vận dụng, đúng với chủ đề được chỉ định.\n"
+            "4. Phần II (Đúng - Sai): BẮT BUỘC 100% CÁC CÂU LÀ TÌNH HUỐNG THỰC TẾ / CASE STUDY DỰ ÁN ĐỜI SỐNG HẤP DẪN (50-100 từ, có dữ liệu/đoạn mã/bảng số liệu/nguyên lý hoạt động cụ thể), bám sát đúng chủ đề được phân bổ Phần II trong Ma trận. TUYỆT ĐỐI CẤM các bài toán tiểu học cộc lốc ('mảnh vườn', 'bác nông dân', 'chi phí 20.000đ'). 4 ý con a, b, c, d phân hóa chặt chẽ theo thang bậc: a (Nhận biết thông số/khái niệm) -> b (Thông hiểu nguyên lý/cơ chế) -> c (Vận dụng tính toán/truy vết) -> d (Vận dụng cao đánh giá tối ưu/an toàn/đạo đức).\n"
             "5. Phần III (Trả lời ngắn) và Phần IV (Tự luận): Tập trung vào mức độ Vận dụng, giải quyết bài toán thực tế theo đúng yêu cầu cần đạt.\n"
             "6. 🚨 NGUYÊN TẮC BẢO VỆ PHẠM VI MA TRẬN: TUYỆT ĐỐI KHÔNG biên soạn câu hỏi có nội dung kiến thức nằm ngoài các Chủ đề đã liệt kê trong Ma trận. Đặc biệt với môn Tin học, KHÔNG tự ý đưa Cơ sở dữ liệu (CSDL) hoặc Lập trình Python vào nếu ma trận không yêu cầu."
         )
@@ -3916,7 +3916,8 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"2. Nếu tài liệu bao gồm nhiều tệp (ví dụ gồm cả giáo án lý thuyết, đề cương ôn tập và các ảnh bài tập), hãy tổng hợp và bao quát đầy đủ nội dung từ TẤT CẢ các tệp, không được bỏ qua tệp nào.\n"
             f"3. Ưu tiên chuyển hóa trực tiếp các bài tập, câu hỏi, dữ liệu số trong tài liệu/ảnh thành các câu trắc nghiệm, đúng sai và trả lời ngắn chuẩn GDPT 2025.\n"
             f"4. Nếu tài liệu đính kèm thể hiện rõ môn học và khối lớp cụ thể (ví dụ: Tin học 10, Vật lí 11, Hóa học 10, Toán 12...), "
-            f"hãy tự động ưu tiên lấy đúng môn học và khối lớp của tài liệu để đặt tiêu đề 'title' và biên soạn toàn bộ đề thi chuẩn xác nhất."
+            f"hãy tự động ưu tiên lấy đúng môn học và khối lớp của tài liệu để đặt tiêu đề 'title' và biên soạn toàn bộ đề thi chuẩn xác nhất.\n"
+            f"5. ĐỐI VỚI PHẦN II (ĐÚNG/SAI) KHI TẠO TỪ TÀI LIỆU: BẮT BUỘC khai thác các ngữ cảnh thực tế, ví dụ ứng dụng, sơ đồ, bảng biểu hoặc tình huống thực tiễn có trong tài liệu đính kèm để làm tình huống mở đầu cho mỗi câu. Tuyệt đối không sinh ra các câu hỏi tình huống chung chung, ấu trĩ hoặc lệch đề."
         )
         
     if request.matrix_spec and request.file_content:

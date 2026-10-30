@@ -158,7 +158,7 @@ SIMPLISTIC_THPT_TF_PATTERNS = [
     r"diện tích mảnh vườn sau khi mở rộng",
 ]
 
-def is_dry_or_simple_tf_stem(text: str, grade: str = "12") -> bool:
+def is_dry_or_simple_tf_stem(text: str, grade: str = "12", subject: str = "") -> bool:
     if not text:
         return True
     clean = text.strip()
@@ -166,8 +166,8 @@ def is_dry_or_simple_tf_stem(text: str, grade: str = "12") -> bool:
     g = str(grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
     is_thpt = g in ("10", "11", "12", "thpt")
 
-    # Đối với THPT, đề bài dẫn Phần II bắt buộc là case study thực tế sâu sắc (ít nhất 45 từ)
-    min_words = 45 if is_thpt else 28
+    # Bắt buộc độ dài ngữ cảnh: THPT tối thiểu 45 từ, THCS tối thiểu 30 từ
+    min_words = 45 if is_thpt else 30
     if len(words) < min_words:
         return True
 
@@ -176,10 +176,15 @@ def is_dry_or_simple_tf_stem(text: str, grade: str = "12") -> bool:
         if re.search(pat, clean_lower):
             return True
 
-    if is_thpt:
-        for pat in SIMPLISTIC_THPT_TF_PATTERNS:
-            if re.search(pat, clean_lower):
-                return True
+    # CẤM các mô típ ấu trĩ, tiểu học (mảnh vườn, bác nông dân, chi phí 20.000đ...) trên MỌI khối lớp từ THCS đến THPT
+    for pat in SIMPLISTIC_THPT_TF_PATTERNS:
+        if re.search(pat, clean_lower):
+            return True
+
+    # Nếu môn học là Tin học, bắt buộc ngữ cảnh phải thuộc CNTT/Tin học, cấm hoàn toàn bài toán hình học mảnh vườn/hàm số/tam giác
+    if subject and ("tin" in subject.lower() or "informatics" in subject.lower()):
+        if any(k in clean_lower for k in ["mảnh vườn", "bác nông dân", "tam giác abc", "hình chữ nhật x", "hàm số", "tiệm cận", "đạo hàm", "tích phân", "chi phí 20.000", "chi phí cố định là"]):
+            return True
 
     return False
 
@@ -409,7 +414,7 @@ def is_mcq_defective(q: Part1Question, grade: str = "12") -> Tuple[bool, str]:
         
     return False, ""
 
-def is_tf_defective(q: Part2Question, grade: str = "12") -> Tuple[bool, str]:
+def is_tf_defective(q: Part2Question, grade: str = "12", subject: str = "Toán học") -> Tuple[bool, str]:
     q.question = normalize_latex_delimiters(q.question)
     stem_bad, reason = is_question_stem_defective(q.question)
     if stem_bad:
@@ -428,11 +433,11 @@ def is_tf_defective(q: Part2Question, grade: str = "12") -> Tuple[bool, str]:
         return True, f"Lệch pha ngữ cảnh Phần II: {ctx_reason}"
 
     # Bắt buộc ngữ cảnh tình huống thực tế cho Phần II (không cộc lốc lý thuyết suông hoặc quá đơn giản/tiểu học cho THPT)
-    if is_dry_or_simple_tf_stem(q.question, grade=grade):
+    if is_dry_or_simple_tf_stem(q.question, grade=grade, subject=subject):
         g = str(grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
         if g in ("10", "11", "12", "thpt"):
-            return True, f"Đề bài Phần II THPT (Lớp {grade}) quá đơn giản, cộc lốc hoặc dùng ngữ cảnh tiểu học/THCS (dưới 45 từ hoặc dạng 'mảnh vườn', 'bác nông dân', 'chi phí 20.000đ'), không đạt chuẩn tình huống thực tế GDPT 2018"
-        return True, "Đề bài Phần II cộc lốc lý thuyết suông, thiếu ngữ cảnh/tình huống thực tế hấp dẫn đạt chuẩn GDPT 2018"
+            return True, f"Đề bài Phần II môn {subject} (Lớp {grade}) quá đơn giản, cộc lốc hoặc dùng ngữ cảnh tiểu học/lệch môn (dưới 45 từ hoặc dạng 'mảnh vườn', 'bác nông dân', 'chi phí 20.000đ'), không đạt chuẩn tình huống thực tế GDPT 2018"
+        return True, f"Đề bài Phần II môn {subject} cộc lốc lý thuyết suông hoặc quá đơn giản, thiếu ngữ cảnh/tình huống thực tế hấp dẫn đạt chuẩn GDPT 2018"
 
     for s in q.sub_items:
         s.statement = normalize_latex_delimiters(s.statement)
@@ -2811,14 +2816,14 @@ async def run_ai_auditor_healing(
     # Audit all questions in Part 2 (True/False)
     for idx, q in enumerate(exam.part2_tf):
         q_text = q.question or ""
-        is_too_simple = is_dry_or_simple_tf_stem(q_text, grade=exam.grade)
+        is_too_simple = is_dry_or_simple_tf_stem(q_text, grade=exam.grade, subject=exam.subject)
         
         issue = defect_map_p2.get(idx, "")
         if is_too_simple:
             warn_msg = (
-                f"ĐỀ BÀI PHẦN II QUÁ ĐƠN GIẢN HOẶC DÙNG NGỮ CẢNH TIỂU HỌC/THCS CHO KHỐI LỚP {exam.grade}: "
-                f"Bắt buộc viết lại hoàn toàn thành bài toán tình huống thực tế / mô hình hóa cao cấp chuẩn THPT Lớp {exam.grade} "
-                f"(độ dài 50-120 từ, có số liệu thực tế/kinh tế/kỹ thuật/y tế/vũ trụ/Oxyz cụ thể). "
+                f"ĐỀ BÀI PHẦN II QUÁ ĐƠN GIẢN HOẶC DÙNG NGỮ CẢNH TIỂU HỌC/LỆCH MÔN CHO KHỐI LỚP {exam.grade}: "
+                f"Bắt buộc viết lại hoàn toàn thành bài toán tình huống thực tế / mô hình hóa cao cấp môn {exam.subject} chuẩn Lớp {exam.grade} "
+                f"(độ dài 50-120 từ, có số liệu thực tế/kinh tế/kỹ thuật/CNTT/mạng/HTML/AI cụ thể). "
                 f"CẤM TUYỆT ĐỐI giữ lại các bài toán 'bác nông dân', 'mảnh vườn', 'mở rộng chiều dài 2m', 'chi phí 20.000đ', '5.000đ'. "
                 f"Nâng cấp 4 ý con theo thang bậc tư duy 4 tầng (a: Biết, b: Hiểu, c: Vận dụng tính toán, d: Vận dụng cao đánh giá)."
             )
@@ -3127,7 +3132,7 @@ async def audit_and_verify_exam(
             defective_p1.append((i, reason))
             
     for i, q in enumerate(exam.part2_tf):
-        is_bad, reason = is_tf_defective(q, grade=exam.grade)
+        is_bad, reason = is_tf_defective(q, grade=exam.grade, subject=exam.subject)
         if is_bad:
             defective_p2.append((i, reason))
             
@@ -3166,7 +3171,7 @@ async def audit_and_verify_exam(
             notes.append(f"Câu {q.id} (Phần I): Đã tự động chuẩn hóa câu hỏi và phương án môn {exam.subject}.")
             
     for i, q in enumerate(exam.part2_tf):
-        is_bad, reason = is_tf_defective(q, grade=exam.grade)
+        is_bad, reason = is_tf_defective(q, grade=exam.grade, subject=exam.subject)
         if is_bad:
             exam.part2_tf[i] = heal_tf_offline(q, exam.subject, i, exam.grade)
             notes.append(f"Câu {q.id} (Phần II): Đã tự động chuẩn hóa đề bài và 4 mệnh đề Đúng/Sai thực tế môn {exam.subject}.")
