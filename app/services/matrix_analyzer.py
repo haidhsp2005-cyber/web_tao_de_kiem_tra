@@ -26,74 +26,78 @@ theo đúng chuẩn biểu mẫu chính thức tại PHỤ LỤC ban hành kèm 
 BIỂU MẪU CÔNG VĂN 7991/BGDĐT-GDTrH GỒM 2 BẢNG:
 1. BẢNG 1: MA TRẬN ĐỀ KIỂM TRA ĐỊNH KÌ
    - Các cột: TT | Chủ đề/Chương | Nội dung/đơn vị kiến thức | Mức độ đánh giá (chia theo 4 hình thức thi) | Tổng theo mức độ (Biết, Hiểu, Vận dụng) | Tỉ lệ % điểm.
-   - 4 hình thức câu hỏi trong bảng:
-     + TNKQ Nhiều lựa chọn (Phần I của đề thi): có 3 cột con Biết | Hiểu | Vận dụng
-     + TNKQ "Đúng - Sai" (Phần II của đề thi): có 3 cột con Biết | Hiểu | Vận dụng. Mỗi câu gồm 4 ý nhỏ a, b, c, d; trong ô có thể ghi số câu 'n' hoặc '(n)'.
-     + TNKQ Trả lời ngắn (Phần III của đề thi): có 3 cột con Biết | Hiểu | Vận dụng.
-     + Tự luận (Phần IV của đề thi): có 3 cột con Biết | Hiểu | Vận dụng.
-   - Các dòng tổng kết cuối bảng:
-     + Tổng số câu (theo từng dạng và từng mức độ).
-     + Tổng số điểm: ví dụ 3,0đ (Nhiều lựa chọn) | 2,0đ (Đúng - Sai) | 2,0đ (Trả lời ngắn) | 3,0đ (Tự luận); Tổng điểm: Biết 4,0đ (40%) | Hiểu 3,0đ (30%) | Vận dụng 3,0đ (30%).
-     + Tỉ lệ %: 30% | 20% | 20% | 30% theo dạng; 40% | 30% | 30% theo mức độ nhận thức.
+   - 4 hình thức câu hỏi trong bảng và các ký hiệu viết tắt giáo viên thường dùng trong ô:
+     + TNKQ Nhiều lựa chọn (Phần I của đề thi): cột Biết | Hiểu | Vận dụng. Ký hiệu thường gặp: '1 MC', '2 MC', '1 MCQ', '1 TNKQ' hoặc số nguyên '1', '2'.
+     + TNKQ "Đúng - Sai" (Phần II của đề thi): cột Biết | Hiểu | Vận dụng. Ký hiệu thường gặp: '2 YN1(a,b)', '1 YN1(c)', '1 YN1(d)', 'YN2(...)', 'ĐS1(...)'. Mỗi câu hỏi lớn gồm 4 ý lệnh nhỏ a, b, c, d.
+       * QUY TẮC CỰC KỲ QUAN TRỌNG VỀ PHẦN II (ĐÚNG - SAI): Trường "num_part2" là SỐ CÂU HỎI LỚN (ví dụ YN1, YN2, YN3, YN4 -> num_part2 là 4), KHÔNG PHẢI tổng số lệnh hỏi a,b,c,d (16 lệnh).
+     + TNKQ Trả lời ngắn (Phần III của đề thi): cột Biết | Hiểu | Vận dụng. Ký hiệu thường gặp: '1 TLN', '1 SA' hoặc số nguyên.
+       * QUY TẮC: Nếu bảng KHÔNG CÓ cột Trả lời ngắn hoặc ghi 0 câu/ý hoặc để trống, thì BẮT BUỘC "num_part3": 0 và "scoring_summary.part3_points": 0.0. TUYỆT ĐỐI KHÔNG tự ý điền 6 câu.
+     + Tự luận (Phần IV của đề thi): cột Biết | Hiểu | Vận dụng. Ký hiệu thường gặp: '1 TL1', '1 TL2', '1 TL'.
+       * QUY TẮC: Nếu bảng có tự luận (ví dụ TL1, TL2), "num_essay" là số câu hỏi tự luận (ví dụ 2 câu) và "scoring_summary.part4_points" là điểm tự luận tương ứng (ví dụ 2.0). Nếu không có, "num_essay": 0 và "part4_points": 0.0.
+   - Các dòng tổng kết cuối bảng (BẮT BUỘC PHẢI ĐỐI CHIẾU VỚI CÁC DÒNG NÀY):
+     + Dòng "Tổng số câu/ý": Ghi tổng số câu hoặc ý lệnh cho từng phần và tổng chung (ví dụ: Nhiều lựa chọn 16 câu, Đúng/Sai 16 ý = 4 câu lớn, Tự luận 2 câu -> Tổng 34 câu/ý).
+     + Dòng "Tổng số điểm": Ví dụ Nhiều lựa chọn 4.0đ | Đúng - Sai 4.0đ | Trả lời ngắn 0.0đ | Tự luận 2.0đ -> Tổng điểm 10.0đ.
+     + Dòng "Tỉ lệ %": Biết (40%) | Hiểu (30%) | Vận dụng (30%).
 
 2. BẢNG 2: BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KÌ
-   - Các cột: TT | Chủ đề/Chương | Nội dung/đơn vị kiến thức | Yêu cầu cần đạt | Số câu hỏi ở các mức độ đánh giá (Nhiều lựa chọn, "Đúng - Sai", Trả lời ngắn, Tự luận).
-   - Cột "Yêu cầu cần đạt" có các gạch đầu dòng rất quan trọng:
-     + - Biết: ... (Kiến thức nhận biết cơ bản)
-     + - Hiểu: ... (Khả năng giải thích, phân biệt, suy luận)
-     + - VD: ... (Vận dụng giải quyết bài tập hoặc tình huống thực tế)
+   - Các cột: TT | Chủ đề/Chương | Nội dung/đơn vị kiến thức | Yêu cầu cần đạt | Mức độ đánh giá (Nhiều lựa chọn, Đúng/Sai, Tự luận, Trả lời ngắn).
+   - Cột "Yêu cầu cần đạt" chứa văn bản chi tiết theo từng mức độ nhận thức:
+     + - Nhận biết: ... (Kiến thức nhận biết cơ bản)
+     + - Thông hiểu: ... (Khả năng giải thích, so sánh, phân biệt)
+     + - Vận dụng: ... (Khả năng áp dụng, giải quyết tình huống thực tế, phân tích nguy cơ, viết mã/thuật toán...)
+   - BẮT BUỘC TRÍCH XUẤT NGUYÊN VĂN NỘI DUNG YÊU CẦU CẦN ĐẠT CỦA TỪNG BÀI/NỘI DUNG vào trường 'requirements' tương ứng (recognition, comprehension, application).
 
 HÃY PHÂN TÍCH TÀI LIỆU DƯỚI ĐÂY VÀ TRẢ VỀ DUY NHẤT MỘT CHUỖI JSON HỢP LỆ VỚI CẤU TRÚC:
 {
-  "title": "MA TRẬN & BẢN ĐẶC TẢ ĐỀ KIỂM TRA ĐỊNH KÌ MÔN...",
-  "subject": "Toán học / Vật lý / Hóa học / Sinh học / Tin học / GDQP / Lịch sử / Địa lý / Ngữ văn / Tiếng Anh...",
-  "grade": "12" (hoặc "11", "10", "9", "8", "7", "6", "5", "4", "3"),
-  "duration_minutes": 50 (số nguyên số phút làm bài, e.g. 45, 50, 90),
+  "title": "MA TRẬN & BẢN ĐẶC TẢ ĐỀ KIỂM TRA MÔN TIN HỌC 12 GIỮA KÌ I...",
+  "subject": "Tin học" (hoặc Toán học / Vật lý / Hóa học / Sinh học / Lịch sử / Địa lý / GDQP / Tiếng Anh...),
+  "grade": "12" (hoặc "11", "10", "9", "8", "7", "6"),
+  "duration_minutes": 45 (số nguyên số phút làm bài theo tài liệu),
   "school_name": "Tên trường hoặc Sở nếu có, hoặc để trống",
   "academic_year": "NĂM HỌC 2026 - 2027",
-  "num_part1": 12 (Tổng số câu hỏi TNKQ nhiều lựa chọn),
-  "num_part2": 4 (Tổng số câu hỏi TNKQ Đúng - Sai),
-  "num_part3": 6 (Tổng số câu hỏi TNKQ Trả lời ngắn),
-  "num_essay": 0 (Tổng số câu hỏi Tự luận, nếu không có tự luận thì là 0),
+  "num_part1": 16 (Số câu TNKQ nhiều lựa chọn từ dòng tổng kết, ví dụ 16 hoặc 12),
+  "num_part2": 4 (Số câu TNKQ Đúng - Sai lớn, mỗi câu 4 ý a,b,c,d; ví dụ 4),
+  "num_part3": 0 (Số câu Trả lời ngắn, nếu ma trận không có dạng này thì là 0),
+  "num_essay": 2 (Số câu Tự luận, ví dụ 2 hoặc 0 nếu không có),
   "total_points": 10.0,
   "scoring_summary": {
-    "part1_points": 3.0,
-    "part2_points": 2.0,
-    "part3_points": 2.0,
-    "part4_points": 3.0
+    "part1_points": 4.0,
+    "part2_points": 4.0,
+    "part3_points": 0.0,
+    "part4_points": 2.0
   },
   "cognitive_summary": {
-    "biet_count": 14,
+    "biet_count": 16,
     "biet_pct": 40.0,
-    "hieu_count": 10,
+    "hieu_count": 12,
     "hieu_pct": 30.0,
-    "vd_count": 8,
+    "vd_count": 6,
     "vd_pct": 30.0
   },
   "topics": [
     {
       "id": 1,
-      "topic": "Tên Chủ đề / Chương (Ví dụ: Chủ đề 1: Hàm số và đồ thị)",
-      "sub_topic": "Nội dung / đơn vị kiến thức cụ thể (Ví dụ: Tính đơn điệu của hàm số)",
+      "topic": "Chủ đề 1. Máy tính và xã hội tri thức",
+      "sub_topic": "1. Làm quen với trí tuệ nhân tạo",
       "requirements": {
-        "recognition": "Nội dung sau gạch đầu dòng - Biết: ...",
-        "comprehension": "Nội dung sau gạch đầu dòng - Hiểu: ...",
-        "application": "Nội dung sau gạch đầu dòng - VD: ..."
+        "recognition": "Trình bày được khái niệm AI, các đặc trưng cơ bản.",
+        "comprehension": "Hiểu được lợi ích và nêu ví dụ ứng dụng điển hình.",
+        "application": "Đánh giá độ tin cậy và vai trò con người trong hệ thống AI."
       },
-      "part1_mcq": {"biet": 2, "hieu": 1, "vd": 0},
-      "part2_tf": {"biet": 0, "hieu": 1, "vd": 0},
-      "part3_short": {"biet": 0, "hieu": 0, "vd": 1},
+      "part1_mcq": {"biet": 1, "hieu": 1, "vd": 0},
+      "part2_tf": {"biet": 2, "hieu": 1, "vd": 1},
+      "part3_short": {"biet": 0, "hieu": 0, "vd": 0},
       "part4_essay": {"biet": 0, "hieu": 0, "vd": 0},
-      "total_questions": 4,
+      "total_questions": 6,
       "points": 1.5
     }
   ]
 }
 
-QUY TẮC QUAN TRỌNG:
-1. Đọc kỹ số lượng ở từng cột. Nếu ô có ghi '(1)' hoặc '(2)' hoặc '1', '2' thì đó là số câu hỏi.
-2. Với các yêu cầu cần đạt (- Biết, - Hiểu, - VD), hãy trích xuất nguyên văn đầy đủ để đưa vào 'requirements'.
-3. Nếu tài liệu chỉ có Ma trận (Bảng 1) mà không có Bản đặc tả (Bảng 2), hãy tự động suy luận các yêu cầu cần đạt cốt lõi bám sát chương trình GDPT 2018 cho từng chủ đề.
+QUY TẮC BẮT BUỘC:
+1. Đọc kỹ số lượng từ dòng TỔNG SỐ CÂU/Ý và TỔNG SỐ ĐIỂM của tài liệu để điền chính xác num_part1, num_part2, num_part3, num_essay.
+2. Với các yêu cầu cần đạt (- Nhận biết, - Thông hiểu, - Vận dụng), hãy trích xuất nguyên văn đầy đủ từ Bản đặc tả để đưa vào 'requirements' của mỗi bài.
+3. Nếu tài liệu chỉ có Ma trận (Bảng 1) mà không có Bản đặc tả (Bảng 2), hãy tự động suy luận các yêu cầu cần đạt bám sát chương trình GDPT 2018 cho từng chủ đề.
 4. Chỉ trả về chuỗi JSON thuần túy, không bọc trong ```json và không kèm văn bản giải thích.
 """
 
@@ -321,6 +325,7 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
     """
     Thuật toán Heuristic quét các dòng văn bản và bảng Markdown
     để trích xuất ma trận chuẩn Công văn 7991 khi không có kết nối LLM.
+    Hỗ trợ cả bảng số truyền thống và ký hiệu viết tắt (1 MC, 2 YN1(a,b), 1 TL1...).
     """
     subject = detect_subject_from_text(text)
     grade = detect_grade_from_text(text)
@@ -328,211 +333,287 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
     
     title = f"MA TRẬN & BẢN ĐẶC TẢ ĐỀ KIỂM TRA MÔN {subject.upper()} {grade}"
     
-    # Tìm kiếm các dòng bảng chứa Chủ đề
     lines = text.split("\n")
+    
+    # 1. Trích xuất yêu cầu cần đạt từ Bảng 2 (Bản đặc tả) nếu có
+    # Map từ tên bài/tiểu chủ đề -> TopicRequirements
+    requirements_map: Dict[str, TopicRequirements] = {}
+    for l in lines:
+        if "|" in l and ("nhận biết:" in l.lower() or "thông hiểu:" in l.lower() or "vận dụng:" in l.lower()):
+            clean_l = re.sub(r"<[^>]+>", "", l)
+            parts = [p.strip() for p in clean_l.split("|") if p.strip()]
+            for p in parts:
+                if "nhận biết:" in p.lower() or "thông hiểu:" in p.lower() or "vận dụng:" in p.lower():
+                    nb = re.search(r"[-*•]?\s*Nhận biết\s*:\s*([^.\n-]+(?:\.[^.\n-]+)*)", p, re.IGNORECASE)
+                    th = re.search(r"[-*•]?\s*Thông hiểu\s*:\s*([^.\n-]+(?:\.[^.\n-]+)*)", p, re.IGNORECASE)
+                    vd = re.search(r"[-*•]?\s*Vận dụng\s*:\s*([^.\n-]+(?:\.[^.\n-]+)*)", p, re.IGNORECASE)
+                    
+                    req_nb = nb.group(1).strip() if nb else ""
+                    req_th = th.group(1).strip() if th else ""
+                    req_vd = vd.group(1).strip() if vd else ""
+                    
+                    row_key = " ".join(parts[:3]).lower()
+                    requirements_map[row_key] = TopicRequirements(
+                        recognition=req_nb, comprehension=req_th, application=req_vd
+                    )
+
+    # 2. Kiểm tra xem tài liệu có chứa ký hiệu viết tắt (MC, YN, TL, SA) hay không
+    has_tokens = bool(re.search(r"\b\d+\s*(?:MC|MCQ|YN|TL)\b", text, re.IGNORECASE))
+
+    # 3. Quét dòng tổng kết cuối bảng (nếu có)
+    summary_mc_count = None
+    summary_short_count = None
+    summary_biet_pct = None
+    summary_hieu_pct = None
+    summary_vd_pct = None
+
+    for raw_l in lines:
+        if "|" not in raw_l:
+            continue
+        clean_row = re.sub(r"<[^>]+>", "", raw_l)
+        parts = [p.strip() for p in clean_row.split("|") if p.strip()]
+        if not parts:
+            continue
+        first_col = parts[0].lower()
+        if "tỉ lệ %" in first_col or "tỉ lệ" in first_col:
+            pcts = [float(p) for p in re.findall(r"(\d+(?:\.\d+)?)\s*%", clean_row)]
+            if len(pcts) >= 3:
+                summary_biet_pct, summary_hieu_pct, summary_vd_pct = pcts[0], pcts[1], pcts[2]
+
+    # 4. Quét từng dòng chủ đề trong Bảng 1 (Ma trận)
     topics: List[Cv7991TopicItem] = []
-    
     current_topic_name = ""
-    sub_topic_name = ""
-    req_biet = ""
-    req_hieu = ""
-    req_vd = ""
-    
     topic_counter = 1
-    num_p1 = 0
-    num_p2 = 0
-    num_p3 = 0
-    num_p4 = 0
+    
+    all_mc_count = 0
+    all_yn_qids = set()
+    all_tl_qids = set()
+    all_short_count = 0
     
     total_biet = 0
     total_hieu = 0
     total_vd = 0
 
-    for raw_line in lines:
-        line = raw_line.strip()
-        if not line:
+    # Flag để chỉ đọc bảng 1 (dừng trước khi sang bảng 2 nếu có)
+    in_table_1 = True
+
+    for raw_l in lines:
+        clean_l = re.sub(r"<[^>]+>", "", raw_l).strip()
+        if not clean_l:
+            continue
+        if "bản đặc tả" in clean_l.lower():
+            in_table_1 = False
+            
+        if not in_table_1:
             continue
             
-        # Kiểm tra nếu là dòng bảng có dấu |
-        if "|" in line:
-            parts = [p.strip() for p in line.split("|") if p.strip()]
-            if not parts:
-                continue
-                
-            # Kiểm tra dòng tiêu đề hoặc dòng tổng
-            first_col_lower = parts[0].lower()
-            if "tổng" in first_col_lower or "cộng" in first_col_lower:
-                # Quét các số ở dòng tổng
-                nums = []
-                for p in parts[1:]:
-                    found_nums = re.findall(r"\b\d+(?:[.,]\d+)?\b", p)
-                    nums.extend(found_nums)
-                continue
-                
-            if "chủ đề" in first_col_lower or "stt" in first_col_lower or "mức độ" in first_col_lower or "tnkq" in first_col_lower:
-                continue
-                
-            # Nhận diện dòng chứa tên Chủ đề
-            # Ví dụ: 1 | Chủ đề 1: Este - Lipit | Este | ...
-            col_text = " ".join(parts[:3])
-            m_topic = re.search(r"(chủ\s*đề\s*\d+[^|]*|chương\s*\d+[^|]*|bài\s*\d+[^|]*)", col_text, re.IGNORECASE)
-            if m_topic:
-                current_topic_name = m_topic.group(1).strip(" -:;,")
-            elif not current_topic_name and len(parts) >= 2 and not parts[0].isdigit():
-                current_topic_name = parts[0]
-                
-            sub_name = parts[1] if len(parts) > 1 and parts[1] != current_topic_name else current_topic_name
+        if "|" not in clean_l:
+            continue
             
-            # Quét số câu hỏi ở các cột số
+        parts = [p.strip() for p in clean_l.split("|")]
+        # Bỏ phần tử rỗng ở 2 đầu
+        if parts and not parts[0]:
+            parts = parts[1:]
+        if parts and not parts[-1]:
+            parts = parts[:-1]
+        if not parts:
+            continue
+            
+        first_col_lower = parts[0].lower()
+        if any(k in first_col_lower for k in ["tổng", "cộng", "tt", "stt", "chủ đề", "mức độ", "trắc nghiệm"]):
+            continue
+            
+        # Tìm tiêu đề Chủ đề lớn
+        col_text = " ".join(parts[:3])
+        m_top = re.search(r"(chủ\s*đề\s*\d+[^|.\n]*|chương\s*\d+[^|.\n]*|phần\s*\d+[^|.\n]*)", col_text, re.IGNORECASE)
+        if m_top:
+            current_topic_name = m_top.group(1).strip(" -:;,")
+        elif not current_topic_name and len(parts) >= 2 and not parts[0].isdigit():
+            current_topic_name = parts[0]
+            
+        # Tên bài/nội dung
+        sub_name = ""
+        for p in parts[:3]:
+            m_sub = re.search(r"(\d+\.\s*[^|\n]+)", p)
+            if m_sub:
+                sub_name = m_sub.group(1).strip()
+                break
+        if not sub_name and len(parts) >= 3 and parts[2] and parts[2] != current_topic_name:
+            sub_name = parts[2]
+        if not sub_name and len(parts) >= 2 and parts[1] != current_topic_name:
+            sub_name = parts[1]
+
+        p1_cb = CognitiveBreakdown()
+        p2_cb = CognitiveBreakdown()
+        p3_cb = CognitiveBreakdown()
+        p4_cb = CognitiveBreakdown()
+
+        if has_tokens:
+            # Bóc tách theo Tokens (MC, YN, TL, SA)
+            for c_idx, cell in enumerate(parts[3:], start=3):
+                # 1. MC (Trắc nghiệm nhiều lựa chọn)
+                for m in re.finditer(r"(\d+)\s*(?:MC|MCQ|TNKQ)\b", cell, re.IGNORECASE):
+                    cnt = int(m.group(1))
+                    all_mc_count += cnt
+                    if c_idx <= 4:
+                        p1_cb.biet += cnt
+                        total_biet += cnt
+                    elif c_idx == 5:
+                        p1_cb.hieu += cnt
+                        total_hieu += cnt
+                    else:
+                        p1_cb.vd += cnt
+                        total_vd += cnt
+                        
+                # 2. YN (Trắc nghiệm Đúng - Sai)
+                for m in re.finditer(r"(?:(\d+)\s*)?YN(\d+)(?:\(([^)]+)\))?", cell, re.IGNORECASE):
+                    subs = m.group(3) or ""
+                    cnt = int(m.group(1)) if m.group(1) else (len(subs.split(',')) if subs else 1)
+                    qid = m.group(2)
+                    all_yn_qids.add(qid)
+                    if "a" in subs or "b" in subs:
+                        p2_cb.biet += cnt
+                        total_biet += cnt
+                    elif "c" in subs:
+                        p2_cb.hieu += cnt
+                        total_hieu += cnt
+                    elif "d" in subs:
+                        p2_cb.vd += cnt
+                        total_vd += cnt
+                    else:
+                        if c_idx <= 7:
+                            p2_cb.biet += cnt
+                            total_biet += cnt
+                        elif c_idx == 8:
+                            p2_cb.hieu += cnt
+                            total_hieu += cnt
+                        else:
+                            p2_cb.vd += cnt
+                            total_vd += cnt
+                            
+                # 3. TL (Tự luận)
+                for m in re.finditer(r"(?:(\d+)\s*)?TL(\d+)?\b", cell, re.IGNORECASE):
+                    if "TLN" in cell.upper():
+                        continue
+                    cnt = int(m.group(1)) if m.group(1) else 1
+                    qid = m.group(2) or str(topic_counter)
+                    all_tl_qids.add(qid)
+                    p4_cb.vd += cnt
+                    total_vd += cnt
+                    
+                # 4. TLN (Trả lời ngắn)
+                for m in re.finditer(r"(\d+)\s*(?:TLN|SA)\b", cell, re.IGNORECASE):
+                    cnt = int(m.group(1))
+                    all_short_count += cnt
+                    if c_idx <= 10:
+                        p3_cb.biet += cnt
+                        total_biet += cnt
+                    elif c_idx == 11:
+                        p3_cb.hieu += cnt
+                        total_hieu += cnt
+                    else:
+                        p3_cb.vd += cnt
+                        total_vd += cnt
+        else:
+            # Bóc tách dạng số truyền thống
             int_candidates = []
-            for p in parts:
-                # Trích xuất số dạng '2', '(2)', '2.0', v.v.
-                # Bỏ qua các chuỗi như "Biết", "Hiểu"
+            for p in parts[3:]:
                 if p.isdigit():
                     int_candidates.append(int(p))
                 else:
                     m_paren = re.search(r"\((\d+)\)", p)
                     if m_paren:
                         int_candidates.append(int(m_paren.group(1)))
-                        
-            # Nếu dòng có chứa số câu hỏi
             if int_candidates:
-                # Phân bổ giả định theo thứ tự các cột của CV 7991:
-                # Nhiều lựa chọn (NB, TH, VD) | Đúng - Sai (NB, TH, VD) | Trả lời ngắn (NB, TH, VD) | Tự luận (NB, TH, VD)
                 p1_nb = int_candidates[0] if len(int_candidates) > 0 else 0
                 p1_th = int_candidates[1] if len(int_candidates) > 1 else 0
                 p1_vd = int_candidates[2] if len(int_candidates) > 2 else 0
+                p1_cb = CognitiveBreakdown(biet=p1_nb, hieu=p1_th, vd=p1_vd)
+                all_mc_count += (p1_nb + p1_th + p1_vd)
                 
                 p2_nb = int_candidates[3] if len(int_candidates) > 3 else 0
                 p2_th = int_candidates[4] if len(int_candidates) > 4 else 0
                 p2_vd = int_candidates[5] if len(int_candidates) > 5 else 0
+                p2_cb = CognitiveBreakdown(biet=p2_nb, hieu=p2_th, vd=p2_vd)
                 
                 p3_nb = int_candidates[6] if len(int_candidates) > 6 else 0
                 p3_th = int_candidates[7] if len(int_candidates) > 7 else 0
                 p3_vd = int_candidates[8] if len(int_candidates) > 8 else 0
+                p3_cb = CognitiveBreakdown(biet=p3_nb, hieu=p3_th, vd=p3_vd)
+                all_short_count += (p3_nb + p3_th + p3_vd)
                 
                 p4_nb = int_candidates[9] if len(int_candidates) > 9 else 0
                 p4_th = int_candidates[10] if len(int_candidates) > 10 else 0
                 p4_vd = int_candidates[11] if len(int_candidates) > 11 else 0
-                
-                t_p1 = p1_nb + p1_th + p1_vd
-                t_p2 = p2_nb + p2_th + p2_vd
-                t_p3 = p3_nb + p3_th + p3_vd
-                t_p4 = p4_nb + p4_th + p4_vd
-                
-                item = Cv7991TopicItem(
-                    id=topic_counter,
-                    topic=current_topic_name or f"Chủ đề {topic_counter}",
-                    sub_topic=sub_name if sub_name != current_topic_name else "",
-                    requirements=TopicRequirements(
-                        recognition=req_biet or f"Nhận biết kiến thức cốt lõi của {current_topic_name}",
-                        comprehension=req_hieu or f"Hiểu và giải thích các tính chất, công thức của {current_topic_name}",
-                        application=req_vd or f"Vận dụng giải các bài toán thực tiễn về {current_topic_name}"
-                    ),
-                    part1_mcq=CognitiveBreakdown(biet=p1_nb, hieu=p1_th, vd=p1_vd),
-                    part2_tf=CognitiveBreakdown(biet=p2_nb, hieu=p2_th, vd=p2_vd),
-                    part3_short=CognitiveBreakdown(biet=p3_nb, hieu=p3_th, vd=p3_vd),
-                    part4_essay=CognitiveBreakdown(biet=p4_nb, hieu=p4_th, vd=p4_vd),
-                    total_questions=t_p1 + t_p2 + t_p3 + t_p4,
-                    points=round(t_p1 * 0.25 + t_p2 * 1.0 + t_p3 * 0.5 + t_p4 * 1.0, 2)
-                )
-                topics.append(item)
-                topic_counter += 1
-                
-                num_p1 += t_p1
-                num_p2 += t_p2
-                num_p3 += t_p3
-                num_p4 += t_p4
+                p4_cb = CognitiveBreakdown(biet=p4_nb, hieu=p4_th, vd=p4_vd)
                 
                 total_biet += (p1_nb + p2_nb + p3_nb + p4_nb)
                 total_hieu += (p1_th + p2_th + p3_th + p4_th)
                 total_vd += (p1_vd + p2_vd + p3_vd + p4_vd)
-                
-                req_biet = ""
-                req_hieu = ""
-                req_vd = ""
-                
-        else:
-            # Thu thập các dòng Yêu cầu cần đạt
-            if "- biết" in line.lower() or "nhận biết:" in line.lower():
-                req_biet = line.split(":", 1)[-1].strip() if ":" in line else line
-            elif "- hiểu" in line.lower() or "thông hiểu:" in line.lower():
-                req_hieu = line.split(":", 1)[-1].strip() if ":" in line else line
-            elif "- vd" in line.lower() or "vận dụng:" in line.lower():
-                req_vd = line.split(":", 1)[-1].strip() if ":" in line else line
-            elif re.match(r"^chủ\s*đề\s*\d+", line, re.IGNORECASE):
-                current_topic_name = line.strip(" -:;,")
 
-    # Nếu không bóc tách được các chủ đề từ bảng do định dạng đặc thù,
-    # tạo bộ phân bổ chủ đề chuẩn Công văn 7991 theo môn học
-    if not topics:
-        topics = [
-            Cv7991TopicItem(
-                id=1,
-                topic=f"Chủ đề 1: Kiến thức trọng tâm môn {subject}",
-                sub_topic="Lý thuyết và quy luật nền tảng",
-                requirements=TopicRequirements(
-                    recognition=f"Nhận biết các khái niệm, định nghĩa, công thức cơ bản môn {subject}.",
-                    comprehension=f"Hiểu ý nghĩa, phân biệt và liên hệ các hiện tượng/bài toán môn {subject}.",
-                    application=f"Vận dụng công thức giải quyết bài toán cơ bản."
-                ),
-                part1_mcq=CognitiveBreakdown(biet=6, hieu=4, vd=0),
-                part2_tf=CognitiveBreakdown(biet=0, hieu=2, vd=0),
-                part3_short=CognitiveBreakdown(biet=0, hieu=0, vd=3),
-                part4_essay=CognitiveBreakdown(biet=0, hieu=0, vd=0),
-                total_questions=15,
-                points=5.0
-            ),
-            Cv7991TopicItem(
-                id=2,
-                topic=f"Chủ đề 2: Ứng dụng và giải quyết vấn đề môn {subject}",
-                sub_topic="Vận dụng thực tiễn và tính toán nâng cao",
-                requirements=TopicRequirements(
-                    recognition=f"Nhận biết điều kiện áp dụng và phương pháp giải.",
-                    comprehension=f"Hiểu và phân tích mô hình bài toán thực tiễn.",
-                    application=f"Vận dụng tổng hợp giải quyết tình huống thực tế môn {subject}."
-                ),
-                part1_mcq=CognitiveBreakdown(biet=6, hieu=4, vd=0),
-                part2_tf=CognitiveBreakdown(biet=0, hieu=2, vd=0),
-                part3_short=CognitiveBreakdown(biet=0, hieu=0, vd=3),
-                part4_essay=CognitiveBreakdown(biet=0, hieu=0, vd=0),
-                total_questions=15,
-                points=5.0
+        # Gán Yêu cầu cần đạt tương ứng từ Bản đặc tả
+        matched_req = None
+        for k, v in requirements_map.items():
+            if (sub_name and sub_name.lower() in k) or (current_topic_name and current_topic_name.lower() in k):
+                matched_req = v
+                break
+                
+        if not matched_req:
+            matched_req = TopicRequirements(
+                recognition=f"Nhận biết kiến thức cốt lõi về {sub_name or current_topic_name}.",
+                comprehension=f"Hiểu và giải thích các nguyên lý, đặc điểm của {sub_name or current_topic_name}.",
+                application=f"Vận dụng giải quyết bài toán và tình huống thực tế về {sub_name or current_topic_name}."
             )
-        ]
-        num_part1 = 12
-        num_part2 = 4
-        num_part3 = 6
-        num_essay = 0
-        total_biet = 12
-        total_hieu = 12
-        total_vd = 6
+            
+        t_p1 = p1_cb.biet + p1_cb.hieu + p1_cb.vd
+        t_p2 = p2_cb.biet + p2_cb.hieu + p2_cb.vd
+        t_p3 = p3_cb.biet + p3_cb.hieu + p3_cb.vd
+        t_p4 = p4_cb.biet + p4_cb.hieu + p4_cb.vd
+        
+        t_item = Cv7991TopicItem(
+            id=topic_counter,
+            topic=current_topic_name or f"Chủ đề {topic_counter}",
+            sub_topic=sub_name if sub_name != current_topic_name else "",
+            requirements=matched_req,
+            part1_mcq=p1_cb,
+            part2_tf=p2_cb,
+            part3_short=p3_cb,
+            part4_essay=p4_cb,
+            total_questions=t_p1 + t_p2 + t_p3 + t_p4,
+            points=round(t_p1 * 0.25 + t_p2 * 0.25 + t_p3 * 0.5 + t_p4 * 1.0, 2)
+        )
+        topics.append(t_item)
+        topic_counter += 1
+
+    # Chuẩn hóa tổng số lượng câu hỏi từng phần
+    if has_tokens:
+        num_part1 = all_mc_count if all_mc_count > 0 else 16
+        num_part2 = len(all_yn_qids) if all_yn_qids else 4
+        num_part3 = all_short_count
+        num_essay = len(all_tl_qids) if all_tl_qids else 0
     else:
-        # Chuẩn hóa số lượng
-        num_part1 = max(num_p1, sum(t.part1_mcq.biet + t.part1_mcq.hieu + t.part1_mcq.vd for t in topics))
-        num_part2 = max(num_p2, sum(t.part2_tf.biet + t.part2_tf.hieu + t.part2_tf.vd for t in topics))
-        num_part3 = max(num_p3, sum(t.part3_short.biet + t.part3_short.hieu + t.part3_short.vd for t in topics))
-        num_essay = max(num_p4, sum(t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd for t in topics))
+        num_part1 = all_mc_count if all_mc_count > 0 else 12
+        num_part2 = max(4, sum(t.part2_tf.biet + t.part2_tf.hieu + t.part2_tf.vd for t in topics) // 4 or 4)
+        num_part3 = all_short_count
+        num_essay = sum(t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd for t in topics)
 
-    # Đảm bảo các giá trị tối thiểu hợp lệ nếu bảng chỉ có tiêu đề
-    if num_part1 == 0 and num_part2 == 0 and num_part3 == 0 and num_essay == 0:
-        num_part1, num_part2, num_part3, num_essay = 12, 4, 6, 0
+    # Thang điểm chuẩn hóa
+    s1_pts = round(num_part1 * 0.25, 2)
+    s2_pts = round(num_part2 * 1.0, 2)
+    s4_pts = round(num_essay * 1.0, 2)
+    s3_pts = round(max(0.0, 10.0 - s1_pts - s2_pts - s4_pts), 2) if num_part3 > 0 else 0.0
 
+    # Tỉ lệ nhận thức
     total_q = total_biet + total_hieu + total_vd
     if total_q == 0:
-        total_q = num_part1 + num_part2 + num_part3 + num_essay
+        total_q = num_part1 + num_part2 * 4 + num_part3 + num_essay
         total_biet = int(total_q * 0.4)
         total_hieu = int(total_q * 0.3)
         total_vd = total_q - total_biet - total_hieu
 
-    biet_pct = round((total_biet / total_q) * 100, 1) if total_q > 0 else 40.0
-    hieu_pct = round((total_hieu / total_q) * 100, 1) if total_q > 0 else 30.0
-    vd_pct = round(100.0 - biet_pct - hieu_pct, 1)
-
-    s1_pts = round(num_part1 * 0.25, 2) if num_part1 > 0 else 0.0
-    s2_pts = round(num_part2 * 1.0, 2) if num_part2 > 0 else 0.0
-    s4_pts = 3.0 if num_essay > 0 else 0.0
-    s3_pts = round(max(0.0, 10.0 - s1_pts - s2_pts - s4_pts), 2) if num_part3 > 0 else 0.0
+    biet_pct = summary_biet_pct or (round((total_biet / total_q) * 100, 1) if total_q > 0 else 40.0)
+    hieu_pct = summary_hieu_pct or (round((total_hieu / total_q) * 100, 1) if total_q > 0 else 30.0)
+    vd_pct = summary_vd_pct or round(100.0 - biet_pct - hieu_pct, 1)
 
     return ExamMatrixSpec(
         title=title,
@@ -677,29 +758,67 @@ async def analyze_matrix_document(
                 )
                 topics_list.append(item)
 
+        def safe_int_val(val, default):
+            if val is None or val == "":
+                return default
+            try:
+                return int(val)
+            except Exception:
+                return default
+
+        def safe_float_val(val, default):
+            if val is None or val == "":
+                return default
+            try:
+                return float(val)
+            except Exception:
+                return default
+
+        num_part1 = safe_int_val(data.get("num_part1"), 12)
+        num_part2 = safe_int_val(data.get("num_part2"), 4)
+        num_part3 = safe_int_val(data.get("num_part3"), 0)
+        num_essay = safe_int_val(data.get("num_essay"), 0)
+
+        scoring = data.get("scoring_summary") or {}
+        s1 = safe_float_val(scoring.get("part1_points"), round(num_part1 * 0.25, 2))
+        s2 = safe_float_val(scoring.get("part2_points"), round(num_part2 * 1.0, 2))
+        s3 = safe_float_val(scoring.get("part3_points"), round(num_part3 * 0.5, 2) if num_part3 > 0 else 0.0)
+        s4 = safe_float_val(scoring.get("part4_points"), round(num_essay * 1.0, 2) if num_essay > 0 else 0.0)
+
+        scoring_dict = {
+            "part1_points": s1,
+            "part2_points": s2,
+            "part3_points": s3,
+            "part4_points": s4
+        }
+
+        tot_pts = safe_float_val(data.get("total_points"), round(s1 + s2 + s3 + s4, 2))
+        if tot_pts <= 0:
+            tot_pts = 10.0
+
         cog_sum = data.get("cognitive_summary", {})
         cog_obj = CognitiveSummary(
-            biet_count=int(cog_sum.get("biet_count") or cog_sum.get("nb") or 0),
-            biet_pct=float(cog_sum.get("biet_pct") or 40.0),
-            hieu_count=int(cog_sum.get("hieu_count") or cog_sum.get("th") or 0),
-            hieu_pct=float(cog_sum.get("hieu_pct") or 30.0),
-            vd_count=int(cog_sum.get("vd_count") or cog_sum.get("vd") or 0),
-            vd_pct=float(cog_sum.get("vd_pct") or 30.0)
+            biet_count=safe_int_val(cog_sum.get("biet_count") or cog_sum.get("nb"), 0),
+            biet_pct=safe_float_val(cog_sum.get("biet_pct"), 40.0),
+            hieu_count=safe_int_val(cog_sum.get("hieu_count") or cog_sum.get("th"), 0),
+            hieu_pct=safe_float_val(cog_sum.get("hieu_pct"), 30.0),
+            vd_count=safe_int_val(cog_sum.get("vd_count") or cog_sum.get("vd"), 0),
+            vd_pct=safe_float_val(cog_sum.get("vd_pct"), 30.0)
         )
 
         matrix_spec = ExamMatrixSpec(
             title=str(data.get("title") or f"MA TRẬN ĐỀ KIỂM TRA MÔN {data.get('subject', 'TOÁN HỌC')}"),
             subject=str(data.get("subject") or detect_subject_from_text(extracted_text)),
             grade=str(data.get("grade") or detect_grade_from_text(extracted_text)),
-            duration_minutes=int(data.get("duration_minutes") or detect_duration_from_text(extracted_text)),
+            duration_minutes=safe_int_val(data.get("duration_minutes"), detect_duration_from_text(extracted_text)),
             school_name=str(data.get("school_name") or ""),
             academic_year=str(data.get("academic_year") or "NĂM HỌC 2026 - 2027"),
-            num_part1=int(data.get("num_part1") or 12),
-            num_part2=int(data.get("num_part2") or 4),
-            num_part3=int(data.get("num_part3") or 6),
-            num_essay=int(data.get("num_essay") or 0),
-            total_points=float(data.get("total_points") or 10.0),
-            scoring_summary=data.get("scoring_summary") or {},
+            num_part1=num_part1,
+            num_part2=num_part2,
+            num_part3=num_part3,
+            num_essay=num_essay,
+            total_points=tot_pts,
+            scoring_summary=scoring_dict,
             cognitive_summary=cog_obj,
             topics=topics_list,
             raw_markdown_table=extracted_text[:5000]
