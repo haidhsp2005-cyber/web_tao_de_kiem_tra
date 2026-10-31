@@ -2,6 +2,7 @@ from __future__ import annotations
 import os
 import json
 import re
+import random
 from typing import List, Dict, Any, Optional, Tuple, Union
 import httpx
 import json_repair
@@ -401,7 +402,7 @@ async def generate_with_gemini(prompt: str, api_key: str, model: str = "auto") -
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
         "generationConfig": {
-            "temperature": 0.2,
+            "temperature": 0.7,
             "maxOutputTokens": 8192,
             "responseMimeType": "application/json"
         },
@@ -512,7 +513,7 @@ async def generate_with_openai(prompt: str, api_key: str, model: str = "gpt-4o-m
         ],
         "response_format": {"type": "json_object"},
         "max_tokens": 8192,
-        "temperature": 0.2
+        "temperature": 0.7
     }
     async with httpx.AsyncClient(timeout=160.0) as client:
         response = await client.post(url, headers=headers, json=payload)
@@ -3674,33 +3675,29 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
             q1 = exam.part2_tf[0]
             q1_text = (q1.question or "").lower()
             if any(k in q1_text for k in ["narrow ai", "transfer learning", "data drift", "camera ai", "camera giao thông", "xe buýt"]):
-                q1.question = "Trong giờ thực hành Tin học 11, bạn An thực hiện các thao tác quản lý tệp và tối ưu hóa hệ thống máy tính chạy hệ điều hành Windows. Sau một thời gian sử dụng, máy tính của An có hiện tượng chạy chậm, ổ đĩa C báo dung lượng sắp đầy và một ứng dụng đang mở bị đóng băng (Not Responding)."
-                q1.sub_items = [
-                    SubItem(
-                        label="a",
-                        statement="An có thể mở công cụ Task Manager (bằng tổ hợp phím Ctrl + Shift + Esc) để kiểm tra mức sử dụng CPU, RAM và chọn 'End task' để buộc dừng ứng dụng đang bị treo.",
-                        is_correct=True,
-                        explanation="Task Manager là tiện ích của hệ điều hành giúp giám sát tài nguyên phần cứng và quản lý, kết thúc các tiến trình ứng dụng đang hoạt động."
+                tf_pool = [
+                    (
+                        "Trong giờ thực hành Tin học 11, bạn An thực hiện các thao tác quản lý tệp và tối ưu hóa hệ thống máy tính chạy hệ điều hành Windows. Sau một thời gian sử dụng, máy tính của An có hiện tượng chạy chậm, ổ đĩa C báo dung lượng sắp đầy và một ứng dụng đang mở bị đóng băng (Not Responding).",
+                        [
+                            SubItem(label="a", statement="An có thể mở công cụ Task Manager (bằng tổ hợp phím Ctrl + Shift + Esc) để kiểm tra mức sử dụng CPU, RAM và chọn 'End task' để buộc dừng ứng dụng đang bị treo.", is_correct=True, explanation="Task Manager là tiện ích của hệ điều hành giúp giám sát tài nguyên phần cứng và quản lý, kết thúc các tiến trình ứng dụng đang hoạt động."),
+                            SubItem(label="b", statement="Để giải phóng dung lượng ổ đĩa C bị đầy một cách an toàn, An nên sử dụng tiện ích Disk Cleanup để xóa các tệp tạm (Temporary files), xóa tệp cài đặt cũ và làm rỗng Thùng rác (Recycle Bin).", is_correct=True, explanation="Disk Cleanup giúp tìm và dọn dẹp các tệp tin rác, tệp tạm thời không còn sử dụng mà không làm ảnh hưởng đến dữ liệu cá nhân hay tệp hệ thống quan trọng."),
+                            SubItem(label="c", statement="Để giảm dung lượng lưu trữ và thuận tiện gửi qua email cho giáo viên, An có thể chọn các tệp tài liệu bài tập, nháy chuột phải chọn Send to -> Compressed (zipped) folder để nén lại thành một tệp duy nhất.", is_correct=True, explanation="Hệ điều hành Windows tích hợp sẵn tính năng nén tệp/thư mục dưới định dạng .zip giúp giảm kích thước và dễ dàng chia sẻ, lưu trữ."),
+                            SubItem(label="d", statement="Để giải phóng tối đa không gian ổ đĩa C, An nên truy cập vào thư mục C:\\Windows\\System32 và xóa toàn bộ các tệp tin trong thư mục này.", is_correct=False, explanation="Thư mục System32 chứa các tệp tin cốt lõi của hệ điều hành; xóa các tệp này sẽ làm hỏng hệ thống và máy tính không thể khởi động được.")
+                        ]
                     ),
-                    SubItem(
-                        label="b",
-                        statement="Để giải phóng dung lượng ổ đĩa C bị đầy một cách an toàn, An nên sử dụng tiện ích Disk Cleanup để xóa các tệp tạm (Temporary files), xóa tệp cài đặt cũ và làm rỗng Thùng rác (Recycle Bin).",
-                        is_correct=True,
-                        explanation="Disk Cleanup giúp tìm và dọn dẹp các tệp tin rác, tệp tạm thời không còn sử dụng mà không làm ảnh hưởng đến dữ liệu cá nhân hay tệp hệ thống quan trọng."
-                    ),
-                    SubItem(
-                        label="c",
-                        statement="Để giảm dung lượng lưu trữ và thuận tiện gửi qua email cho giáo viên, An có thể chọn các tệp tài liệu bài tập, nháy chuột phải chọn Send to -> Compressed (zipped) folder để nén lại thành một tệp duy nhất.",
-                        is_correct=True,
-                        explanation="Hệ điều hành Windows tích hợp sẵn tính năng nén tệp/thư mục dưới định dạng .zip giúp giảm kích thước và dễ dàng chia sẻ, lưu trữ."
-                    ),
-                    SubItem(
-                        label="d",
-                        statement="Để giải phóng tối đa không gian ổ đĩa C, An nên truy cập vào thư mục C:\\Windows\\System32 và xóa toàn bộ các tệp tin trong thư mục này.",
-                        is_correct=False,
-                        explanation="Thư mục System32 chứa các tệp tin cốt lõi của hệ điều hành; xóa các tệp này sẽ làm hỏng hệ thống và máy tính không thể khởi động được."
+                    (
+                        "Trong buổi thực hành tại phòng máy trường học, bạn Bình cần thiết lập môi trường làm việc trên hệ điều hành Windows để phục vụ dự án học tập. Bình thực hiện tìm kiếm tài liệu, kiểm tra thông số máy tính và quản lý các phần mềm chạy ngầm.",
+                        [
+                            SubItem(label="a", statement="Bình có thể sử dụng thanh tìm kiếm trong File Explorer kết hợp cú pháp phần mở rộng như '*.docx' hoặc '*.pdf' để lọc nhanh các tệp văn bản bài tập trên máy tính.", is_correct=True, explanation="File Explorer hỗ trợ tìm kiếm theo mẫu ký tự đại diện và phần mở rộng của tệp để định vị tài liệu nhanh chóng."),
+                            SubItem(label="b", statement="Để xem thông tin cấu hình phần cứng như phiên bản hệ điều hành Windows, dung lượng RAM cài đặt và tên chip xử lý CPU, Bình có thể nhấp chuột phải vào 'This PC' và chọn 'Properties'.", is_correct=True, explanation="Mục Properties của This PC mở cửa sổ System Settings hiển thị toàn bộ thông số phần cứng và thông tin bản quyền Windows."),
+                            SubItem(label="c", statement="Trong Task Manager, Bình chuyển sang tab 'Startup' để vô hiệu hóa (Disable) các ứng dụng không cần thiết khởi động cùng Windows, giúp giảm thời gian khởi động máy tính.", is_correct=True, explanation="Tab Startup trong Task Manager cho phép quản lý và tắt bớt ứng dụng chạy ngầm khi mở máy để tối ưu tốc độ khởi động."),
+                            SubItem(label="d", statement="Hệ điều hành Windows tự động phục hồi toàn bộ dữ liệu người dùng khi ổ cứng bị hỏng vật lý nên Bình không cần sao lưu (Backup) tài liệu quan trọng sang ổ đĩa ngoài hay đám mây.", is_correct=False, explanation="Hệ điều hành không thể tự bảo vệ dữ liệu trước hỏng hóc phần cứng vật lý; người dùng cần chủ động sao lưu định kỳ sang USB, ổ cứng di động hoặc Google Drive/OneDrive.")
+                        ]
                     )
                 ]
+                chosen_stem, chosen_items = random.choice(tf_pool)
+                q1.question = chosen_stem
+                q1.sub_items = chosen_items
 
         # 3. Phần III: Trả lời ngắn (nếu có)
         for q in exam.part3_short:
@@ -3715,18 +3712,44 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
             exam.part4_essay[0].cognitive_level = "Thông hiểu"
             c1_text = (exam.part4_essay[0].question or "").lower()
             if not any(k in c1_text for k in ["cổng logic", "logic", "cpu", "ram", "phần cứng", "bộ xử lý", "mạch"]):
-                exam.part4_essay[0].question = "Trình bày bảng chân lý và phân tích nguyên lý hoạt động của hai cổng logic cơ bản AND và OR. Giải thích ngắn gọn vì sao việc ghép nối hàng tỷ cổng logic lại là nền tảng để bộ xử lý trung tâm (CPU) thực hiện được các phép toán phức tạp từ các bit 0 và 1."
-                exam.part4_essay[0].answer = "Bảng chân lý của cổng AND (ra 1 khi cả 2 đầu vào đều là 1), cổng OR (ra 1 khi có ít nhất 1 đầu vào là 1); CPU sử dụng hàng tỷ mạch logic để thực hiện phép toán số học và logic."
-                exam.part4_essay[0].explanation = "- Cổng AND: Đầu ra nhận giá trị 1 khi và chỉ khi tất cả các đầu vào đều bằng 1; nhận giá trị 0 trong các trường hợp còn lại.\n- Cổng OR: Đầu ra nhận giá trị 1 khi có ít nhất một đầu vào bằng 1; chỉ nhận giá trị 0 khi tất cả các đầu vào đều bằng 0.\n- Vai trò trong CPU: Bằng cách kết hợp các cổng logic cơ bản (AND, OR, NOT), ta tạo thành các mạch logic phức tạp hơn như mạch cộng (Adder), bộ nhớ (Flip-Flop), bộ logic số học (ALU). Hàng tỷ cổng logic tích hợp trên chip bán dẫn cho phép CPU thực hiện các phép tính nhị phân ở tốc độ cực cao, tạo nên toàn bộ hoạt động tính toán và điều khiển của máy tính."
+                c1_pool = [
+                    {
+                        "question": "Trình bày bảng chân lý và phân tích nguyên lý hoạt động của hai cổng logic cơ bản AND và OR. Giải thích ngắn gọn vì sao việc ghép nối hàng tỷ cổng logic lại là nền tảng để bộ xử lý trung tâm (CPU) thực hiện được các phép toán phức tạp từ các bit 0 và 1.",
+                        "answer": "Bảng chân lý của cổng AND (ra 1 khi cả 2 đầu vào đều là 1), cổng OR (ra 1 khi có ít nhất 1 đầu vào là 1); CPU sử dụng hàng tỷ mạch logic để thực hiện phép toán số học và logic.",
+                        "explanation": "- Cổng AND: Đầu ra nhận giá trị 1 khi và chỉ khi tất cả các đầu vào đều bằng 1; nhận giá trị 0 trong các trường hợp còn lại.\n- Cổng OR: Đầu ra nhận giá trị 1 khi có ít nhất một đầu vào bằng 1; chỉ nhận giá trị 0 khi tất cả các đầu vào đều bằng 0.\n- Vai trò trong CPU: Bằng cách kết hợp các cổng logic cơ bản (AND, OR, NOT), ta tạo thành các mạch logic phức tạp hơn như mạch cộng (Adder), bộ nhớ (Flip-Flop), bộ logic số học (ALU). Hàng tỷ cổng logic tích hợp trên chip bán dẫn cho phép CPU thực hiện các phép tính nhị phân ở tốc độ cực cao, tạo nên toàn bộ hoạt động tính toán và điều khiển của máy tính."
+                    },
+                    {
+                        "question": "Trình bày vai trò và nguyên lý hoạt động của cổng logic NOT và cổng logic XOR trong mạch số. Phân tích chức năng của bộ số học và logic (ALU) trong CPU và giải thích cách ALU thực hiện phép cộng nhị phân 1-bit dựa trên các cổng logic này.",
+                        "answer": "Bảng chân lý cổng NOT (đảo giá trị bit) và XOR (ra 1 khi 2 đầu vào khác nhau); ALU dùng cổng XOR để tính tổng và cổng AND để tính số nhớ trong phép cộng nhị phân.",
+                        "explanation": "- Cổng NOT: Thực hiện phép phủ định logic, đổi bit 0 thành 1 và đổi bit 1 thành 0.\n- Cổng XOR: Đầu ra bằng 1 khi hai đầu vào có giá trị khác nhau (0-1 hoặc 1-0); đầu ra bằng 0 khi hai đầu vào giống nhau (0-0 hoặc 1-1).\n- Hoạt động của ALU: ALU (Arithmetic Logic Unit) là thành phần trong CPU chuyên thực hiện các phép toán số học (+, -, *, /) và logic (AND, OR, XOR). Để cộng 2 bit A và B, ALU dùng cổng XOR để tính bit tổng (Sum = A XOR B) và cổng AND để tính bit nhớ (Carry = A AND B). Ghép nối nhiều mạch này tạo thành bộ cộng nhiều bit cho CPU."
+                    }
+                ]
+                chosen_c1 = random.choice(c1_pool)
+                exam.part4_essay[0].question = chosen_c1["question"]
+                exam.part4_essay[0].answer = chosen_c1["answer"]
+                exam.part4_essay[0].explanation = chosen_c1["explanation"]
 
         if len(exam.part4_essay) > 1:
             exam.part4_essay[1].matrix_topic = "Chủ đề 3. Đạo đức, pháp luật và văn hoá trong môi trường số - 9. Giao tiếp an toàn trên Internet"
             exam.part4_essay[1].cognitive_level = "Vận dụng"
             c2_text = (exam.part4_essay[1].question or "").lower()
             if any(k in c2_text for k in ["html", "<body>", "<head>", "<html>", "<h1>", "<p>", "thẻ", "web", "trang web", "css"]) or not any(k in c2_text for k in ["giao tiếp", "an toàn", "internet", "mạng", "lừa đảo", "đạo đức", "ai", "bảo vệ"]):
-                exam.part4_essay[1].question = "Hiện nay, nhiều học sinh THPT thường xuyên sử dụng mạng xã hội và các ứng dụng trí tuệ nhân tạo (AI) trong học tập và giải trí. Tuy nhiên, môi trường số cũng tiềm ẩn nhiều nguy cơ như lộ lọt thông tin cá nhân, lừa đảo trực tuyến (phishing), bạo lực mạng và vi phạm đạo đức số khi sử dụng AI (như tạo tin giả, sao chép không trung thực).\nEm hãy phân tích các rủi ro trên và đề xuất ít nhất 3 biện pháp thiết thực giúp bản thân và bạn bè giao tiếp văn minh, an toàn và có trách nhiệm trên Internet."
-                exam.part4_essay[1].answer = "Phân tích được các nguy cơ trên không gian mạng và đề xuất đúng 3 biện pháp phòng tránh rủi ro, bảo vệ thông tin và ứng xử văn minh."
-                exam.part4_essay[1].explanation = "- Phân tích các rủi ro trên môi trường số:\n  + Nguy cơ lừa đảo và đánh cắp tài khoản: Bị dẫn dụ qua các liên kết độc hại, cuộc gọi/tin nhắn giả mạo để chiếm đoạt tài khoản mạng xã hội hoặc thông tin tài chính.\n  + Rủi ro bạo lực mạng và xâm phạm quyền riêng tư: Tán phát hình ảnh, thông tin cá nhân chưa được cho phép; công kích, xúc phạm danh dự người khác.\n  + Vi phạm đạo đức khi lạm dụng AI: Sao chép nguyên văn bài làm của AI nộp cho giáo viên dẫn đến suy giảm tư duy độc lập; phát tán hình ảnh/video giả mạo (Deepfake) gây hoang mang dư luận.\n- Đề xuất các biện pháp phòng tránh và giao tiếp an toàn:\n  + Thiết lập bảo mật mạnh: Kích hoạt xác thực 2 bước (2FA), không cung cấp mật khẩu, mã OTP hay thông tin cá nhân cho người lạ.\n  + Tuân thủ nguyên tắc cảnh giác: Áp dụng quy tắc 'Chậm lại - Kiểm tra ngay - Dừng lại không gửi'; xác minh thông tin từ các nguồn chính thống trước khi chia sẻ.\n  + Ứng xử văn minh và sử dụng AI có đạo đức: Không tham gia bắt nạt mạng; tôn trọng quyền tác giả và trung thực trong học tập khi tham khảo AI."
+                c2_pool = [
+                    {
+                        "question": "Hiện nay, nhiều học sinh THPT thường xuyên sử dụng mạng xã hội và các ứng dụng trí tuệ nhân tạo (AI) trong học tập và giải trí. Tuy nhiên, môi trường số cũng tiềm ẩn nhiều nguy cơ như lộ lọt thông tin cá nhân, lừa đảo trực tuyến (phishing), bạo lực mạng và vi phạm đạo đức số khi sử dụng AI (như tạo tin giả, sao chép không trung thực).\nEm hãy phân tích các rủi ro trên và đề xuất ít nhất 3 biện pháp thiết thực giúp bản thân và bạn bè giao tiếp văn minh, an toàn và có trách nhiệm trên Internet.",
+                        "answer": "Phân tích được các nguy cơ trên không gian mạng và đề xuất đúng 3 biện pháp phòng tránh rủi ro, bảo vệ thông tin và ứng xử văn minh.",
+                        "explanation": "- Phân tích các rủi ro trên môi trường số:\n  + Nguy cơ lừa đảo và đánh cắp tài khoản: Bị dẫn dụ qua các liên kết độc hại, cuộc gọi/tin nhắn giả mạo để chiếm đoạt tài khoản mạng xã hội hoặc thông tin tài chính.\n  + Rủi ro bạo lực mạng và xâm phạm quyền riêng tư: Tán phát hình ảnh, thông tin cá nhân chưa được cho phép; công kích, xúc phạm danh dự người khác.\n  + Vi phạm đạo đức khi lạm dụng AI: Sao chép nguyên văn bài làm của AI nộp cho giáo viên dẫn đến suy giảm tư duy độc lập; phát tán hình ảnh/video giả mạo (Deepfake) gây hoang mang dư luận.\n- Đề xuất các biện pháp phòng tránh và giao tiếp an toàn:\n  + Thiết lập bảo mật mạnh: Kích hoạt xác thực 2 bước (2FA), không cung cấp mật khẩu, mã OTP hay thông tin cá nhân cho người lạ.\n  + Tuân thủ nguyên tắc cảnh giác: Áp dụng quy tắc 'Chậm lại - Kiểm tra ngay - Dừng lại không gửi'; xác minh thông tin từ các nguồn chính thống trước khi chia sẻ.\n  + Ứng xử văn minh và sử dụng AI có đạo đức: Không tham gia bắt nạt mạng; tôn trọng quyền tác giả và trung thực trong học tập khi tham khảo AI."
+                    },
+                    {
+                        "question": "Trong không gian mạng ngày nay, các hình thức lừa đảo trực tuyến (như mạo danh người quen vay tiền, gửi link độc nhận quà, cuộc gọi video giả mạo Deepfake) và bắt nạt trên mạng (Cyberbullying) diễn biến hết sức phức tạp. Em hãy phân tích 3 nguyên tắc vàng phòng chống lừa đảo trên Internet ('Chậm lại - Kiểm tra ngay - Dừng lại không gửi') và nêu rõ trách nhiệm đạo đức, văn hoá ứng xử của học sinh khi tham gia các hội nhóm mạng xã hội.",
+                        "answer": "Nêu và giải thích đúng 3 nguyên tắc phòng chống lừa đảo; phân tích trách nhiệm văn hoá ứng xử và đạo đức học sinh trên không gian số.",
+                        "explanation": "- Phân tích 3 nguyên tắc phòng chống lừa đảo trực tuyến:\n  1. Chậm lại: Giữ bình tĩnh trước các tin nhắn/cuộc gọi gấp gáp đòi chuyển tiền hoặc đe dọa; không vội vàng làm theo yêu cầu của đối tượng.\n  2. Kiểm tra ngay: Xác minh lại danh tính người gửi qua một kênh độc lập (như gọi điện thoại trực tiếp); kiểm tra độ tin cậy của đường dẫn website trước khi nhập mật khẩu.\n  3. Dừng lại không gửi: Tuyệt đối không gửi mã OTP, thông tin tài khoản ngân hàng hoặc chuyển tiền khi chưa xác thực chắc chắn.\n- Trách nhiệm đạo đức và văn hoá ứng xử của học sinh:\n  + Tôn trọng và bảo vệ danh dự người khác: Không tham gia công kích hội đồng, không phát tán clip bạo lực hay tin đồn ác ý.\n  + Có ý thức bảo vệ danh tính số: Không tò mò truy cập hay chia sẻ các nội dung độc hại; chấp hành nghiêm chỉnh Luật An ninh mạng."
+                    }
+                ]
+                chosen_c2 = random.choice(c2_pool)
+                exam.part4_essay[1].question = chosen_c2["question"]
+                exam.part4_essay[1].answer = chosen_c2["answer"]
+                exam.part4_essay[1].explanation = chosen_c2["explanation"]
 
         return exam
 
@@ -4250,6 +4273,14 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
         user_prompt += "\nLƯU Ý QUAN TRỌNG: Người dùng chọn 0 câu tự luận. TUYỆT ĐỐI KHÔNG TẠO BẤT KỲ CÂU HỎI TỰ LUẬN NÀO, trường 'part4_essay' BẮT BUỘC để mảng rỗng []."
     else:
         user_prompt += f"\nLƯU Ý QUAN TRỌNG VỀ TỰ LUẬN: BẮT BUỘC tạo đúng {request.num_essay} câu hỏi tự luận trong 'part4_essay'. Trong phần 'explanation', TUYỆT ĐỐI KHÔNG ghi 'Bước 1 (0.5đ):' hay chia nhỏ điểm các bước (vì tổng điểm các bước cộng lại sẽ bị lệch so với điểm câu hỏi), BẮT BUỘC CHỈ gạch đầu dòng '-' các ý chính của đáp án."
+
+    import uuid, time
+    gen_entropy = uuid.uuid4().hex[:6]
+    user_prompt += (
+        f"\n\n🎲 YÊU CẦU ĐỔI MỚI & TÍNH ĐỘC BẢN CHO TỪNG LẦN TẠO ĐỀ (Phiên #{gen_entropy} - {int(time.time())}):\n"
+        f"- Mỗi lần người dùng bấm nút tạo đề là một phiên độc lập. BẮT BUỘC biên soạn một bộ đề thi MỚI HOÀN TOÀN, không sao chép lại nguyên văn câu chữ của các phiên trước.\n"
+        f"- Hãy đổi mới ngữ cảnh tình huống thực tế, đổi mới số liệu bài toán, câu hỏi dẫn dắt và góc độ đánh giá nhưng vẫn bám sát 100% chuẩn kiến thức kỹ năng của ma trận."
+    )
 
     full_prompt = (
         SYSTEM_PROMPT

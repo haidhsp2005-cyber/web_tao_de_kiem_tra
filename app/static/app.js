@@ -964,8 +964,12 @@ createApp({
         if (form.academic_year) data.academic_year = form.academic_year;
         exam.value = data;
         generateError.value = "";
-        showToast("Tạo đề kiểm tra thành công! Đang tiến hành trộn đề...");
+        showToast("Đã khởi tạo bộ đề kiểm tra mới thành công! Đang tiến hành trộn đề...");
         await startShuffle();
+        setTimeout(() => {
+          const el = document.getElementById("exam-section");
+          if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 150);
       } catch (err) {
         const errMsg = formatErrorMessage(err, "Không thể tạo đề thi từ AI.");
         generateError.value = errMsg;
