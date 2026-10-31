@@ -421,10 +421,10 @@ async def generate_with_gemini(prompt: str, api_key: str, model: str = "auto") -
             
         # Priority: active high-speed reasoning models on Google AI Studio
         for pref in [
-            "gemini-3.1-flash-lite",
-            "gemini-3-flash-preview",
-            "gemini-3.5-flash",
-            "gemini-3.8-flash",
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-1.5-flash",
+            "gemini-2.0-flash-lite",
             "gemini-flash-latest"
         ]:
             if pref not in candidate_models:
@@ -3713,9 +3713,20 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
         if len(exam.part4_essay) > 0:
             exam.part4_essay[0].matrix_topic = "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính"
             exam.part4_essay[0].cognitive_level = "Thông hiểu"
+            c1_text = (exam.part4_essay[0].question or "").lower()
+            if not any(k in c1_text for k in ["cổng logic", "logic", "cpu", "ram", "phần cứng", "bộ xử lý", "mạch"]):
+                exam.part4_essay[0].question = "Trình bày bảng chân lý và phân tích nguyên lý hoạt động của hai cổng logic cơ bản AND và OR. Giải thích ngắn gọn vì sao việc ghép nối hàng tỷ cổng logic lại là nền tảng để bộ xử lý trung tâm (CPU) thực hiện được các phép toán phức tạp từ các bit 0 và 1."
+                exam.part4_essay[0].answer = "Bảng chân lý của cổng AND (ra 1 khi cả 2 đầu vào đều là 1), cổng OR (ra 1 khi có ít nhất 1 đầu vào là 1); CPU sử dụng hàng tỷ mạch logic để thực hiện phép toán số học và logic."
+                exam.part4_essay[0].explanation = "- Cổng AND: Đầu ra nhận giá trị 1 khi và chỉ khi tất cả các đầu vào đều bằng 1; nhận giá trị 0 trong các trường hợp còn lại.\n- Cổng OR: Đầu ra nhận giá trị 1 khi có ít nhất một đầu vào bằng 1; chỉ nhận giá trị 0 khi tất cả các đầu vào đều bằng 0.\n- Vai trò trong CPU: Bằng cách kết hợp các cổng logic cơ bản (AND, OR, NOT), ta tạo thành các mạch logic phức tạp hơn như mạch cộng (Adder), bộ nhớ (Flip-Flop), bộ logic số học (ALU). Hàng tỷ cổng logic tích hợp trên chip bán dẫn cho phép CPU thực hiện các phép tính nhị phân ở tốc độ cực cao, tạo nên toàn bộ hoạt động tính toán và điều khiển của máy tính."
+
         if len(exam.part4_essay) > 1:
             exam.part4_essay[1].matrix_topic = "Chủ đề 3. Đạo đức, pháp luật và văn hoá trong môi trường số - 9. Giao tiếp an toàn trên Internet"
             exam.part4_essay[1].cognitive_level = "Vận dụng"
+            c2_text = (exam.part4_essay[1].question or "").lower()
+            if any(k in c2_text for k in ["html", "<body>", "<head>", "<html>", "<h1>", "<p>", "thẻ", "web", "trang web", "css"]) or not any(k in c2_text for k in ["giao tiếp", "an toàn", "internet", "mạng", "lừa đảo", "đạo đức", "ai", "bảo vệ"]):
+                exam.part4_essay[1].question = "Hiện nay, nhiều học sinh THPT thường xuyên sử dụng mạng xã hội và các ứng dụng trí tuệ nhân tạo (AI) trong học tập và giải trí. Tuy nhiên, môi trường số cũng tiềm ẩn nhiều nguy cơ như lộ lọt thông tin cá nhân, lừa đảo trực tuyến (phishing), bạo lực mạng và vi phạm đạo đức số khi sử dụng AI (như tạo tin giả, sao chép không trung thực).\nEm hãy phân tích các rủi ro trên và đề xuất ít nhất 3 biện pháp thiết thực giúp bản thân và bạn bè giao tiếp văn minh, an toàn và có trách nhiệm trên Internet."
+                exam.part4_essay[1].answer = "Phân tích được các nguy cơ trên không gian mạng và đề xuất đúng 3 biện pháp phòng tránh rủi ro, bảo vệ thông tin và ứng xử văn minh."
+                exam.part4_essay[1].explanation = "- Phân tích các rủi ro trên môi trường số:\n  + Nguy cơ lừa đảo và đánh cắp tài khoản: Bị dẫn dụ qua các liên kết độc hại, cuộc gọi/tin nhắn giả mạo để chiếm đoạt tài khoản mạng xã hội hoặc thông tin tài chính.\n  + Rủi ro bạo lực mạng và xâm phạm quyền riêng tư: Tán phát hình ảnh, thông tin cá nhân chưa được cho phép; công kích, xúc phạm danh dự người khác.\n  + Vi phạm đạo đức khi lạm dụng AI: Sao chép nguyên văn bài làm của AI nộp cho giáo viên dẫn đến suy giảm tư duy độc lập; phát tán hình ảnh/video giả mạo (Deepfake) gây hoang mang dư luận.\n- Đề xuất các biện pháp phòng tránh và giao tiếp an toàn:\n  + Thiết lập bảo mật mạnh: Kích hoạt xác thực 2 bước (2FA), không cung cấp mật khẩu, mã OTP hay thông tin cá nhân cho người lạ.\n  + Tuân thủ nguyên tắc cảnh giác: Áp dụng quy tắc 'Chậm lại - Kiểm tra ngay - Dừng lại không gửi'; xác minh thông tin từ các nguồn chính thống trước khi chia sẻ.\n  + Ứng xử văn minh và sử dụng AI có đạo đức: Không tham gia bắt nạt mạng; tôn trọng quyền tác giả và trung thực trong học tập khi tham khảo AI."
 
         return exam
 
@@ -3827,6 +3838,14 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
         else:
             q.matrix_topic = exam.subject
             q.cognitive_level = "Vận dụng"
+
+        # Khử triệt để ảo giác HTML trong câu hỏi tự luận về Giao tiếp an toàn / Đạo đức môi trường số
+        if any(k in (q.matrix_topic or "").lower() for k in ["giao tiếp an toàn", "đạo đức", "môi trường số", "bảo vệ thông tin"]):
+            q_txt = (q.question or "").lower()
+            if any(k in q_txt for k in ["html", "<body>", "<head>", "<html>", "<h1>", "<p>", "thẻ", "web", "trang web", "css"]):
+                q.question = "Hiện nay, môi trường số tiềm ẩn nhiều nguy cơ mất an toàn thông tin như lộ lọt dữ liệu cá nhân, lừa đảo trực tuyến (phishing), bạo lực mạng và việc lạm dụng AI tạo sinh tin giả (Deepfake). Em hãy phân tích các rủi ro trên và đề xuất ít nhất 3 biện pháp thiết thực giúp học sinh giao tiếp văn minh, an toàn và có trách nhiệm trên Internet."
+                q.answer = "Phân tích được các nguy cơ trên không gian mạng và đề xuất đúng 3 biện pháp phòng tránh rủi ro, bảo vệ thông tin và ứng xử văn minh."
+                q.explanation = "- Nguy cơ mất an toàn: Lừa đảo chiếm đoạt tài khoản/tài sản qua mã độc, rò rỉ dữ liệu cá nhân, bạo lực mạng, tiếp xúc với thông tin sai lệch do AI tạo ra.\n- Biện pháp phòng ngừa: Đặt mật khẩu mạnh và bật 2FA; áp dụng nguyên tắc 'Chậm lại - Kiểm tra ngay - Dừng lại không gửi'; không chia sẻ thông tin nhạy cảm; kiểm chứng nguồn tin trước khi chia sẻ; sử dụng công nghệ số và AI một cách có đạo đức."
 
     return exam
 
@@ -4148,6 +4167,8 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
                     lvl_str = "Vận dụng"
                     req_str = t.requirements.application if t.requirements else ""
                 req_text = f" (Yêu cầu cần đạt: {req_str})" if req_str else ""
+                if any(k in top_label.lower() for k in ["giao tiếp an toàn", "đạo đức", "môi trường số", "bảo vệ thông tin"]):
+                    req_text += " [LƯU Ý ĐẶC BIỆT: Chủ đề này về an toàn mạng, bảo mật dữ liệu, phòng chống lừa đảo trực tuyến và đạo đức AI/số. TUYỆT ĐỐI CẤM HỎI VỀ HTML, CSS, LẬP TRÌNH HOẶC THIẾT KẾ WEB!]"
                 p4_blueprint.append(f"  + Câu {c_num} (Tự luận - Mức {lvl_str}): {top_label}{req_text}")
                 c_num += 1
 

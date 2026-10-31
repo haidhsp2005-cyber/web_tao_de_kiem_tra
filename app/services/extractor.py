@@ -114,7 +114,7 @@ async def extract_text_from_image(filename: str, file_bytes: bytes, api_keys: Op
         "CHỈ XUẤT RA NỘI DUNG ĐÃ TRÍCH XUẤT, TUYỆT ĐỐI KHÔNG THÊM LỜI CHÀO, BÌNH LUẬN HAY GIẢI THÍCH."
     )
 
-    candidate_models = ["gemini-flash-latest", "gemini-3.8-flash", "gemini-3.5-flash", "gemini-3.1-flash-lite"]
+    candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash", "gemini-2.0-flash-lite", "gemini-flash-latest"]
     last_err = ""
 
     async with httpx.AsyncClient(timeout=45.0) as client:
