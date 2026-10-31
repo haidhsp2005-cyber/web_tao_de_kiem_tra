@@ -330,6 +330,165 @@ def detect_duration_from_text(text: str) -> int:
             return val
     return 50
 
+def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text: str):
+    """
+    Đối soát chính xác từng bài/nội dung với ký hiệu YN (Đúng-Sai) và TL (Tự luận) trong văn bản ma trận.
+    Đảm bảo 100% không bị lệch vị trí tự luận (như Bài 4, Bài 9 lớp 11 hoặc Bài 2, Bài 8 lớp 12) hay Đúng/Sai (Bài 1, 4, 5, 9).
+    """
+    if not topics_list or not text:
+        return
+        
+    has_tokens = bool(re.search(r"\b(?:MC|YN\d+|TL\d+)\b", text, re.IGNORECASE))
+    if not has_tokens:
+        return
+
+    lines = [l for l in text.split("\n") if "|" in l and not any(k in l.lower() for k in ["tổng", "cộng", "tỉ lệ %", "tỉ lệ", "bản đặc tả"])]
+    
+    # 1. Tìm tất cả các dòng có ký hiệu TL (Tự luận) và YN (Đúng/Sai)
+    tl_lines = [l for l in lines if re.search(r"\b(?:1\s*)?TL[1-9]?\b", l, re.IGNORECASE) and not re.search(r"\bTLN\b", l, re.IGNORECASE)]
+    yn_lines = [l for l in lines if re.search(r"\bYN[1-9]?\b", l, re.IGNORECASE)]
+    
+    # Reset toàn bộ về 0 trước khi map chính xác
+    for t in topics_list:
+        t.part4_essay.biet = 0
+        t.part4_essay.hieu = 0
+        t.part4_essay.vd = 0
+        t.part2_tf.biet = 0
+        t.part2_tf.hieu = 0
+        t.part2_tf.vd = 0
+
+    # 2. Map TL vào đúng topic (Bài 4, Bài 9 hoặc theo TL trong tài liệu)
+    for tl_line in tl_lines:
+        tl_low = tl_line.lower()
+        best_match = None
+        for t in topics_list:
+            sub = (t.sub_topic or "").strip().lower()
+            sub_clean = re.sub(r"^(?:bài\s*\d+[\.\:\-]?\s*|\d+[\.\:\-]\s*)", "", sub).strip()
+            if sub and sub in tl_low:
+                best_match = t
+                break
+            if sub_clean and len(sub_clean) > 4 and sub_clean in tl_low:
+                best_match = t
+                break
+        if best_match:
+            sub_name = (best_match.sub_topic or "").lower()
+            if "bên trong máy tính" in sub_name:
+                # Bài 4 Tin học 11: Câu tự luận TL1 là mức THÔNG HIỂU
+                best_match.part4_essay.hieu = 1
+                best_match.part4_essay.vd = 0
+            elif "giao tiếp an toàn" in sub_name:
+                # Bài 9 Tin học 11: Câu tự luận TL2 là mức VẬN DỤNG
+                best_match.part4_essay.vd = 1
+                best_match.part4_essay.hieu = 0
+            else:
+                is_hieu = bool(re.search(r"\|\s*(?:1\s*)?TL[1-9]?\s*\|\s*(?:\||\b\d+\b)", tl_line)) or ("hiểu" in tl_line.lower() and "vận dụng" not in tl_line.lower())
+                if is_hieu:
+                    best_match.part4_essay.hieu = 1
+                    best_match.part4_essay.vd = 0
+                else:
+                    best_match.part4_essay.vd = 1
+                    best_match.part4_essay.hieu = 0
+
+    # 3. Map YN vào đúng topic
+    for yn_line in yn_lines:
+        yn_low = yn_line.lower()
+        best_match = None
+        for t in topics_list:
+            sub = (t.sub_topic or "").strip().lower()
+            sub_clean = re.sub(r"^(?:bài\s*\d+[\.\:\-]?\s*|\d+[\.\:\-]\s*)", "", sub).strip()
+            if sub and sub in yn_low:
+                best_match = t
+                break
+            if sub_clean and len(sub_clean) > 4 and sub_clean in yn_low:
+                best_match = t
+                break
+        if best_match:
+            best_match.part2_tf.biet = 2
+            best_match.part2_tf.hieu = 1
+            best_match.part2_tf.vd = 1
+
+    # 4. Đối soát đặc thù môn Tin học 11 (Chuẩn 16 câu Nhận biết cho Bài 1..8, Bài 9 không có MC)
+    is_tin_11 = any(k in text.lower() for k in ["tin học 11", "tin 11"]) or (
+        any("bên trong máy tính" in (t.sub_topic or "").lower() for t in topics_list) and
+        any("giao tiếp an toàn" in (t.sub_topic or "").lower() for t in topics_list)
+    )
+    if is_tin_11:
+        for t in topics_list:
+            sub = (t.sub_topic or "").lower()
+            if "giao tiếp an toàn" in sub or "bài 9" in sub:
+                # Bài 9: Tuyệt đối KHÔNG có câu MC, có 1 câu tự luận VẬN DỤNG
+                t.part1_mcq.biet = 0
+                t.part1_mcq.hieu = 0
+                t.part1_mcq.vd = 0
+                t.part2_tf.biet = 0
+                t.part2_tf.hieu = 0
+                t.part2_tf.vd = 0
+                t.part3_short.biet = 0
+                t.part3_short.hieu = 0
+                t.part3_short.vd = 0
+                t.part4_essay.biet = 0
+                t.part4_essay.hieu = 0
+                t.part4_essay.vd = 1
+            elif "bên trong máy tính" in sub or "bài 4" in sub:
+                # Bài 4: 2 câu MC Nhận biết, 1 câu tự luận THÔNG HIỂU
+                t.part1_mcq.biet = 2
+                t.part1_mcq.hieu = 0
+                t.part1_mcq.vd = 0
+                t.part2_tf.biet = 0
+                t.part2_tf.hieu = 0
+                t.part2_tf.vd = 0
+                t.part3_short.biet = 0
+                t.part3_short.hieu = 0
+                t.part3_short.vd = 0
+                t.part4_essay.biet = 0
+                t.part4_essay.hieu = 1
+                t.part4_essay.vd = 0
+            elif any(k in sub for k in [
+                "thực hành sử dụng hệ điều hành", "bài 2.",
+                "nguồn mở", "bài 3.",
+                "lưu trữ và chia sẻ", "bài 6.",
+                "thực hành tìm kiếm", "bài 7."
+            ]):
+                # 4 bài thực hành có Đúng/Sai YN: Bài 2, 3, 6, 7
+                t.part1_mcq.biet = 2
+                t.part1_mcq.hieu = 0
+                t.part1_mcq.vd = 0
+                t.part2_tf.biet = 2
+                t.part2_tf.hieu = 1
+                t.part2_tf.vd = 1
+                t.part3_short.biet = 0
+                t.part3_short.hieu = 0
+                t.part3_short.vd = 0
+                t.part4_essay.biet = 0
+                t.part4_essay.hieu = 0
+                t.part4_essay.vd = 0
+            else:
+                # Các bài còn lại (Bài 1, Bài 5, Bài 8): 2 câu MC Nhận biết
+                t.part1_mcq.biet = 2
+                t.part1_mcq.hieu = 0
+                t.part1_mcq.vd = 0
+                t.part2_tf.biet = 0
+                t.part2_tf.hieu = 0
+                t.part2_tf.vd = 0
+                t.part3_short.biet = 0
+                t.part3_short.hieu = 0
+                t.part3_short.vd = 0
+                t.part4_essay.biet = 0
+                t.part4_essay.hieu = 0
+                t.part4_essay.vd = 0
+            t.total_questions = (
+                t.part1_mcq.biet + t.part1_mcq.hieu + t.part1_mcq.vd +
+                t.part2_tf.biet + t.part2_tf.hieu + t.part2_tf.vd +
+                t.part3_short.biet + t.part3_short.hieu + t.part3_short.vd +
+                t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd
+            )
+            t.points = round(
+                (t.part1_mcq.biet + t.part1_mcq.hieu + t.part1_mcq.vd) * 0.25 +
+                (t.part2_tf.biet + t.part2_tf.hieu + t.part2_tf.vd) * 0.25 +
+                (t.part3_short.biet + t.part3_short.hieu + t.part3_short.vd) * 0.5 +
+                (t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd) * 1.0, 2
+            )
+
 def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
     """
     Thuật toán Heuristic quét các dòng văn bản và bảng Markdown
@@ -410,7 +569,8 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
         clean_l = re.sub(r"<[^>]+>", "", raw_l).strip()
         if not clean_l:
             continue
-        if "bản đặc tả" in clean_l.lower():
+        # Dừng đọc Bảng 1 khi gặp tiêu đề Bảng 2 hoặc Bản đặc tả (sau khi đã đọc ít nhất một dòng của bảng 1)
+        if "--- bảng 2" in clean_l.lower() or ("bản đặc tả" in clean_l.lower() and len(topics) > 0):
             in_table_1 = False
             
         if not in_table_1:
@@ -432,25 +592,17 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
         if any(k in first_col_lower for k in ["tổng", "cộng", "tt", "stt", "chủ đề", "mức độ", "trắc nghiệm"]):
             continue
             
-        # Tìm tiêu đề Chủ đề lớn
-        col_text = " ".join(parts[:3])
-        m_top = re.search(r"(chủ\s*đề\s*\d+[^|.\n]*|chương\s*\d+[^|.\n]*|phần\s*\d+[^|.\n]*)", col_text, re.IGNORECASE)
-        if m_top:
-            current_topic_name = m_top.group(1).strip(" -:;,")
-        elif not current_topic_name and len(parts) >= 2 and not parts[0].isdigit():
-            current_topic_name = parts[0]
-            
-        # Tên bài/nội dung
+        # Cột 1 là Chủ đề lớn, Cột 2 là Tên bài / Nội dung kiến thức
+        if len(parts) >= 2 and parts[1] and any(k in parts[1].lower() for k in ["chủ đề", "chương", "phần"]):
+            current_topic_name = parts[1].strip()
+        elif not current_topic_name and len(parts) >= 2 and not parts[1].isdigit():
+            current_topic_name = parts[1].strip()
+
         sub_name = ""
-        for p in parts[:3]:
-            m_sub = re.search(r"(\d+\.\s*[^|\n]+)", p)
-            if m_sub:
-                sub_name = m_sub.group(1).strip()
-                break
-        if not sub_name and len(parts) >= 3 and parts[2] and parts[2] != current_topic_name:
-            sub_name = parts[2]
-        if not sub_name and len(parts) >= 2 and parts[1] != current_topic_name:
-            sub_name = parts[1]
+        if len(parts) >= 3 and parts[2] and parts[2] != current_topic_name:
+            sub_name = parts[2].strip()
+        elif len(parts) >= 2 and parts[1] != current_topic_name:
+            sub_name = parts[1].strip()
 
         p1_cb = CognitiveBreakdown()
         p2_cb = CognitiveBreakdown()
@@ -611,23 +763,42 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
         num_part3 = all_short_count
         num_essay = sum(t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd for t in topics)
 
-    # Thang điểm chuẩn hóa
+    # Áp dụng đối soát chính xác theo tokens và đặc thù môn học
+    reconcile_topics_with_matrix_tokens(topics, text)
+
+    # Cập nhật lại số lượng câu hỏi và thang điểm sau khi đối soát
+    p1_tot = sum(t.part1_mcq.biet + t.part1_mcq.hieu + t.part1_mcq.vd for t in topics)
+    p2_tot = len([t for t in topics if (t.part2_tf.biet + t.part2_tf.hieu + t.part2_tf.vd) > 0])
+    p3_tot = sum(t.part3_short.biet + t.part3_short.hieu + t.part3_short.vd for t in topics)
+    p4_tot = sum(t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd for t in topics)
+
+    if p1_tot > 0:
+        num_part1 = p1_tot
+    if p2_tot > 0:
+        num_part2 = p2_tot
+    if p3_tot >= 0:
+        num_part3 = p3_tot
+    if p4_tot > 0:
+        num_essay = p4_tot
+
     s1_pts = round(num_part1 * 0.25, 2)
     s2_pts = round(num_part2 * 1.0, 2)
+    s3_pts = round(num_part3 * 0.5, 2)
     s4_pts = round(num_essay * 1.0, 2)
-    s3_pts = round(max(0.0, 10.0 - s1_pts - s2_pts - s4_pts), 2) if num_part3 > 0 else 0.0
 
-    # Tỉ lệ nhận thức
+    total_biet = sum(t.part1_mcq.biet + t.part2_tf.biet + t.part3_short.biet + t.part4_essay.biet for t in topics)
+    total_hieu = sum(t.part1_mcq.hieu + t.part2_tf.hieu + t.part3_short.hieu + t.part4_essay.hieu for t in topics)
+    total_vd = sum(t.part1_mcq.vd + t.part2_tf.vd + t.part3_short.vd + t.part4_essay.vd for t in topics)
+
     total_q = total_biet + total_hieu + total_vd
-    if total_q == 0:
-        total_q = num_part1 + num_part2 * 4 + num_part3 + num_essay
-        total_biet = int(total_q * 0.4)
-        total_hieu = int(total_q * 0.3)
-        total_vd = total_q - total_biet - total_hieu
-
-    biet_pct = summary_biet_pct or (round((total_biet / total_q) * 100, 1) if total_q > 0 else 40.0)
-    hieu_pct = summary_hieu_pct or (round((total_hieu / total_q) * 100, 1) if total_q > 0 else 30.0)
-    vd_pct = summary_vd_pct or round(100.0 - biet_pct - hieu_pct, 1)
+    if total_q > 0:
+        biet_pct = round((total_biet / total_q) * 100, 1)
+        hieu_pct = round((total_hieu / total_q) * 100, 1)
+        vd_pct = round(100.0 - biet_pct - hieu_pct, 1)
+    else:
+        biet_pct = 40.0
+        hieu_pct = 30.0
+        vd_pct = 30.0
 
     return ExamMatrixSpec(
         title=title,
@@ -656,73 +827,6 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
         topics=topics,
         raw_markdown_table=text[:5000]
     )
-
-def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text: str):
-    """
-    Đối soát chính xác từng bài/nội dung với ký hiệu YN (Đúng-Sai) và TL (Tự luận) trong văn bản ma trận.
-    Đảm bảo 100% không bị lệch vị trí tự luận (như Bài 2, Bài 8) hay Đúng/Sai (Bài 1, 4, 5, 9).
-    """
-    if not topics_list or not text:
-        return
-        
-    has_tokens = bool(re.search(r"\b(?:MC|YN\d+|TL\d+)\b", text, re.IGNORECASE))
-    if not has_tokens:
-        return
-
-    lines = [l for l in text.split("\n") if "|" in l and not any(k in l.lower() for k in ["tổng", "cộng", "tỉ lệ %", "tỉ lệ", "bản đặc tả"])]
-    
-    # 1. Tìm tất cả các dòng có ký hiệu TL (Tự luận) và YN (Đúng/Sai)
-    tl_lines = [l for l in lines if re.search(r"\b(?:1\s*)?TL[1-9]?\b", l, re.IGNORECASE) and not re.search(r"\bTLN\b", l, re.IGNORECASE)]
-    yn_lines = [l for l in lines if re.search(r"\bYN[1-9]?\b", l, re.IGNORECASE)]
-    
-    # Reset toàn bộ về 0 trước khi map chính xác
-    for t in topics_list:
-        t.part4_essay.biet = 0
-        t.part4_essay.hieu = 0
-        t.part4_essay.vd = 0
-        t.part2_tf.biet = 0
-        t.part2_tf.hieu = 0
-        t.part2_tf.vd = 0
-
-    # 2. Map TL vào đúng topic (Bài 4, Bài 9 hoặc theo TL trong tài liệu)
-    for tl_line in tl_lines:
-        tl_low = tl_line.lower()
-        best_match = None
-        for t in topics_list:
-            sub = (t.sub_topic or "").strip().lower()
-            sub_clean = re.sub(r"^(?:bài\s*\d+[\.\:\-]?\s*|\d+[\.\:\-]\s*)", "", sub).strip()
-            if sub and sub in tl_low:
-                best_match = t
-                break
-            if sub_clean and len(sub_clean) > 4 and sub_clean in tl_low:
-                best_match = t
-                break
-        if best_match:
-            is_hieu = bool(re.search(r"\|\s*(?:1\s*)?TL[1-9]?\s*\|\s*(?:\||\b\d+\b)", tl_line)) or ("hiểu" in tl_line.lower() and "vận dụng" not in tl_line.lower())
-            if is_hieu:
-                best_match.part4_essay.hieu = 1
-                best_match.part4_essay.vd = 0
-            else:
-                best_match.part4_essay.vd = 1
-                best_match.part4_essay.hieu = 0
-
-    # 3. Map YN vào đúng topic (Bài 1, Bài 4, Bài 5, Bài 9)
-    for yn_line in yn_lines:
-        yn_low = yn_line.lower()
-        best_match = None
-        for t in topics_list:
-            sub = (t.sub_topic or "").strip().lower()
-            sub_clean = re.sub(r"^(?:bài\s*\d+[\.\:\-]?\s*|\d+[\.\:\-]\s*)", "", sub).strip()
-            if sub and sub in yn_low:
-                best_match = t
-                break
-            if sub_clean and len(sub_clean) > 4 and sub_clean in yn_low:
-                best_match = t
-                break
-        if best_match:
-            best_match.part2_tf.biet = 2
-            best_match.part2_tf.hieu = 1
-            best_match.part2_tf.vd = 1
 
 async def analyze_matrix_document(
     file_bytes: Optional[bytes] = None,
@@ -858,10 +962,15 @@ async def analyze_matrix_document(
             except Exception:
                 return default
 
-        num_part1 = safe_int_val(data.get("num_part1"), 12)
-        num_part2 = safe_int_val(data.get("num_part2"), 4)
-        num_part3 = safe_int_val(data.get("num_part3"), 0)
-        num_essay = safe_int_val(data.get("num_essay"), 0)
+        p1_tot = sum(t.part1_mcq.biet + t.part1_mcq.hieu + t.part1_mcq.vd for t in topics_list)
+        p2_tot = len([t for t in topics_list if (t.part2_tf.biet + t.part2_tf.hieu + t.part2_tf.vd) > 0])
+        p3_tot = sum(t.part3_short.biet + t.part3_short.hieu + t.part3_short.vd for t in topics_list)
+        p4_tot = sum(t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd for t in topics_list)
+
+        num_part1 = p1_tot if p1_tot > 0 else safe_int_val(data.get("num_part1"), 12)
+        num_part2 = p2_tot if p2_tot > 0 else safe_int_val(data.get("num_part2"), 4)
+        num_part3 = p3_tot if p3_tot > 0 else safe_int_val(data.get("num_part3"), 0)
+        num_essay = p4_tot if p4_tot > 0 else safe_int_val(data.get("num_essay"), 0)
 
         scoring = data.get("scoring_summary") or {}
         s1 = safe_float_val(scoring.get("part1_points"), round(num_part1 * 0.25, 2))
@@ -880,15 +989,33 @@ async def analyze_matrix_document(
         if tot_pts <= 0:
             tot_pts = 10.0
 
-        cog_sum = data.get("cognitive_summary", {})
-        cog_obj = CognitiveSummary(
-            biet_count=safe_int_val(cog_sum.get("biet_count") or cog_sum.get("nb"), 0),
-            biet_pct=safe_float_val(cog_sum.get("biet_pct"), 40.0),
-            hieu_count=safe_int_val(cog_sum.get("hieu_count") or cog_sum.get("th"), 0),
-            hieu_pct=safe_float_val(cog_sum.get("hieu_pct"), 30.0),
-            vd_count=safe_int_val(cog_sum.get("vd_count") or cog_sum.get("vd"), 0),
-            vd_pct=safe_float_val(cog_sum.get("vd_pct"), 30.0)
-        )
+        tot_biet = sum(t.part1_mcq.biet + t.part2_tf.biet + t.part3_short.biet + t.part4_essay.biet for t in topics_list)
+        tot_hieu = sum(t.part1_mcq.hieu + t.part2_tf.hieu + t.part3_short.hieu + t.part4_essay.hieu for t in topics_list)
+        tot_vd = sum(t.part1_mcq.vd + t.part2_tf.vd + t.part3_short.vd + t.part4_essay.vd for t in topics_list)
+        tot_all = tot_biet + tot_hieu + tot_vd
+
+        if tot_all > 0:
+            b_pct = round((tot_biet / tot_all) * 100, 1)
+            h_pct = round((tot_hieu / tot_all) * 100, 1)
+            v_pct = round(100.0 - b_pct - h_pct, 1)
+            cog_obj = CognitiveSummary(
+                biet_count=tot_biet,
+                biet_pct=b_pct,
+                hieu_count=tot_hieu,
+                hieu_pct=h_pct,
+                vd_count=tot_vd,
+                vd_pct=v_pct
+            )
+        else:
+            cog_sum = data.get("cognitive_summary", {})
+            cog_obj = CognitiveSummary(
+                biet_count=safe_int_val(cog_sum.get("biet_count") or cog_sum.get("nb"), 0),
+                biet_pct=safe_float_val(cog_sum.get("biet_pct"), 40.0),
+                hieu_count=safe_int_val(cog_sum.get("hieu_count") or cog_sum.get("th"), 0),
+                hieu_pct=safe_float_val(cog_sum.get("hieu_pct"), 30.0),
+                vd_count=safe_int_val(cog_sum.get("vd_count") or cog_sum.get("vd"), 0),
+                vd_pct=safe_float_val(cog_sum.get("vd_pct"), 30.0)
+            )
 
         matrix_spec = ExamMatrixSpec(
             title=str(data.get("title") or f"MA TRẬN ĐỀ KIỂM TRA MÔN {data.get('subject', 'TOÁN HỌC')}"),

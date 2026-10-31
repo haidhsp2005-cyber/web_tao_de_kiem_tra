@@ -3620,6 +3620,78 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
     if matrix_spec and getattr(matrix_spec, "topics", None):
         topics_list = [t for t in matrix_spec.topics]
 
+    # Kiểm tra đặc thù môn Tin học 11
+    sub_title = (getattr(exam, "subject", "") or "") + " " + (getattr(matrix_spec, "title", "") or "") + " " + (getattr(matrix_spec, "raw_markdown_table", "") or "")
+    is_tin_11 = any(k in sub_title.lower() for k in ["tin học 11", "tin 11"]) or (
+        str(getattr(exam, "grade", "")).strip() in ["11", "lớp 11"] and any(k in sub_title.lower() for k in ["tin", "tin học"])
+    ) or (
+        any("bên trong máy tính" in (getattr(t, "sub_topic", "") or "").lower() for t in topics_list) and
+        any("giao tiếp an toàn" in (getattr(t, "sub_topic", "") or "").lower() for t in topics_list)
+    )
+
+    if is_tin_11:
+        # Chuẩn hóa tuyệt đối môn Tin học 11 theo đúng ma trận giáo viên:
+        # 1. Phần I: 16 câu toàn bộ là Nhận biết (16 Biết), phân bổ đều Bài 1..8 (2 câu/bài), Bài 9 KHÔNG có câu MC nào.
+        tin11_p1_topics = [
+            "Chủ đề 1. Máy tính và xã hội tri thức - 1. Hệ điều hành",
+            "Chủ đề 1. Máy tính và xã hội tri thức - 1. Hệ điều hành",
+            "Chủ đề 1. Máy tính và xã hội tri thức - 2. Thực hành sử dụng hệ điều hành",
+            "Chủ đề 1. Máy tính và xã hội tri thức - 2. Thực hành sử dụng hệ điều hành",
+            "Chủ đề 1. Máy tính và xã hội tri thức - 3. Phần mềm nguồn mở và phần mềm chạy trên Internet",
+            "Chủ đề 1. Máy tính và xã hội tri thức - 3. Phần mềm nguồn mở và phần mềm chạy trên Internet",
+            "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính",
+            "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính",
+            "Chủ đề 1. Máy tính và xã hội tri thức - 5. Kết nối máy tính với các thiết bị số",
+            "Chủ đề 1. Máy tính và xã hội tri thức - 5. Kết nối máy tính với các thiết bị số",
+            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 6. Lưu trữ và chia sẻ tệp tin trên Internet",
+            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 6. Lưu trữ và chia sẻ tệp tin trên Internet",
+            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 7. Thực hành tìm kiếm thông tin trên Internet",
+            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 7. Thực hành tìm kiếm thông tin trên Internet",
+            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội",
+            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội"
+        ]
+        for i, q in enumerate(exam.part1_mcq):
+            q.cognitive_level = "Nhận biết"
+            q.matrix_topic = tin11_p1_topics[i] if i < len(tin11_p1_topics) else "Chủ đề 1. Máy tính và xã hội tri thức - 1. Hệ điều hành"
+            
+            # Kiểm tra phân loại ngữ nghĩa ranh giới kiến thức
+            q_text = (q.question or "").lower()
+            if any(k in q_text for k in ["cổng and", "cổng or", "cổng not", "cổng xor", "bảng chân lý", "mạch logic", "alu", "cpu", "ram"]):
+                q.matrix_topic = "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính"
+            elif any(k in q_text for k in ["hdmi", "vga", "usb", "displayport", "bluetooth", "safely remove", "ngắt kết nối an toàn"]):
+                q.matrix_topic = "Chủ đề 1. Máy tính và xã hội tri thức - 5. Kết nối máy tính với các thiết bị số"
+
+        # 2. Phần II: 4 câu Đúng/Sai phân bổ vào 4 bài thực hành: Bài 2, Bài 3, Bài 6, Bài 7
+        tin11_p2_topics = [
+            "Chủ đề 1. Máy tính và xã hội tri thức - 2. Thực hành sử dụng hệ điều hành",
+            "Chủ đề 1. Máy tính và xã hội tri thức - 3. Phần mềm nguồn mở và phần mềm chạy trên Internet",
+            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 6. Lưu trữ và chia sẻ tệp tin trên Internet",
+            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 7. Thực hành tìm kiếm thông tin trên Internet"
+        ]
+        sub_levels = ["Nhận biết", "Nhận biết", "Thông hiểu", "Vận dụng"]
+        for i, q in enumerate(exam.part2_tf):
+            q.cognitive_level = "2 Biết, 1 Hiểu, 1 Vận dụng"
+            q.matrix_topic = tin11_p2_topics[i % len(tin11_p2_topics)]
+            for s_idx, sub in enumerate(q.sub_items):
+                sub.cognitive_level = sub_levels[s_idx] if s_idx < len(sub_levels) else "Vận dụng"
+
+        # 3. Phần III: Trả lời ngắn (nếu có)
+        for q in exam.part3_short:
+            q.cognitive_level = "Vận dụng"
+            q.matrix_topic = "Tin học 11"
+
+        # 4. Phần IV: Tự luận
+        # Câu 1: Bài 4 (Bên trong máy tính) - Mức THÔNG HIỂU (1.0đ)
+        # Câu 2: Bài 9 (Giao tiếp an toàn trên Internet) - Mức VẬN DỤNG (1.0đ)
+        if len(exam.part4_essay) > 0:
+            exam.part4_essay[0].matrix_topic = "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính"
+            exam.part4_essay[0].cognitive_level = "Thông hiểu"
+        if len(exam.part4_essay) > 1:
+            exam.part4_essay[1].matrix_topic = "Chủ đề 3. Đạo đức, pháp luật và văn hoá trong môi trường số - 9. Giao tiếp an toàn trên Internet"
+            exam.part4_essay[1].cognitive_level = "Vận dụng"
+
+        return exam
+
     # Xây dựng blueprint chi tiết cho Phần I từ ma trận
     p1_spec_items = []
     if topics_list:
@@ -3789,7 +3861,14 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             f"  + Nếu đề kiểm tra thuộc Học kỳ 1 hoặc các chủ đề căn bản (như Phần cứng, Hệ điều hành, Mạng máy tính, An toàn thông tin số, Bảng tính điện tử, Soạn thảo văn bản...), TUYỆT ĐỐI CẤM đưa các kiến thức chưa học như CSDL, SQL, hay cú pháp Python vào đề!\n"
             f"- Phần I: Các câu trắc nghiệm nhiều lựa chọn theo đúng chủ đề bài học đã chỉ định.\n"
             f"- Phần II (Đúng/Sai): Biên soạn dưới dạng TÌNH HUỐNG DỰ ÁN/ỨNG DỤNG CNTT THỰC TẾ PHÙ HỢP CHỦ ĐỀ MA TRẬN (ví dụ: dự án xử lý dữ liệu bảng tính, thiết lập mạng trường học, an toàn thông tin số, hoặc dự án lập trình/CSDL nếu ma trận yêu cầu). 4 ý a, b, c, d lần lượt kiểm tra: a (Nhận diện khái niệm/thông số) - b (Hiểu cơ chế hoạt động/nguyên nhân) - c (Tính toán định lượng/truy vết kết quả thực thi) - d (Đánh giá tối ưu/an toàn thông tin/đạo đức số).\n"
-            f"- Phần III (Trả lời ngắn): Yêu cầu tính toán kết quả số cụ thể theo đúng chủ đề (ví dụ: công thức bảng tính, đơn vị đo dung lượng thông tin Byte, KB, MB, GB, bit, địa chỉ IP hoặc kết quả thuật toán nếu có trong ma trận)."
+            f"- Phần III (Trả lời ngắn): Yêu cầu tính toán kết quả số cụ thể theo đúng chủ đề (ví dụ: công thức bảng tính, đơn vị đo dung lượng thông tin Byte, KB, MB, GB, bit, địa chỉ IP hoặc kết quả thuật toán nếu có trong ma trận).\n"
+            + ((
+                f"  * ĐẶC BIỆT BẮT BUỘC CHO TIN HỌC 11 (THEO MA TRẬN GIÁO VIÊN):\n"
+                f"    - PHẦN I (16 câu MC): TOÀN BỘ 16 CÂU LÀ MỨC NHẬN BIẾT (16 Biết - 0 Hiểu - 0 Vận dụng). Phân bổ đều cho Bài 1 đến Bài 8 (mỗi bài đúng 2 câu). TUYỆT ĐỐI KHÔNG tạo câu trắc nghiệm cho Bài 9 (Bài 9 có 0 câu MC).\n"
+                f"    - CỔNG LOGIC: Các câu hỏi về cổng logic (AND, OR, NOT, XOR), bảng chân lý, mạch logic, CPU, RAM, ROM BẮT BUỘC gán vào Bài 4 (Bên trong máy tính). Bài 5 chỉ hỏi về cổng kết nối vật lý (HDMI, VGA, USB, DisplayPort) và ngắt kết nối an toàn.\n"
+                f"    - PHẦN II (Đúng/Sai): 4 câu tình huống bám sát 4 bài thực hành: Bài 2, Bài 3, Bài 6, Bài 7 (mỗi câu 4 ý: 2 Biết, 1 Hiểu, 1 Vận dụng).\n"
+                f"    - PHẦN IV (Tự luận): Câu 1 là Bài 4 (Bên trong máy tính) ở mức THÔNG HIỂU (1.0 điểm); Câu 2 là Bài 9 (Giao tiếp an toàn trên Internet) ở mức VẬN DỤNG (1.0 điểm).\n"
+            ) if str(request.grade).strip().lower().replace("lớp", "").replace("lop", "") == "11" else "")
         )
     if "toán" in request.subject.lower():
         g_check = str(request.grade).strip().lower().replace("lớp", "").replace("lop", "").strip()
@@ -3939,8 +4018,9 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
                 if t.requirements.application:
                     matrix_details.append(f"  + Yêu cầu mức Vận dụng: {t.requirements.application}")
                     
-        # Kiểm tra nếu người dùng yêu cầu toàn bộ nhận biết trong prompt hoặc ma trận
-        force_p1_all_nb = bool(re.search(r"(?:16|toàn bộ|100%)\s*(?:câu)?\s*(?:trắc nghiệm|nhiều lựa chọn|phần i|mcq)?\s*(?:là|đều là|thuộc)?\s*mức\s*nhận biết|nhận biết\s*toàn bộ", request.prompt or "", re.IGNORECASE))
+        # Kiểm tra nếu người dùng yêu cầu toàn bộ nhận biết trong prompt hoặc ma trận (đặc biệt Tin học 11)
+        is_tin_11_spec = any(k in (request.subject or "").lower() for k in ["tin học", "tin"]) and str(request.grade).strip().lower().replace("lớp", "").replace("lop", "") == "11"
+        force_p1_all_nb = is_tin_11_spec or bool(re.search(r"(?:16|toàn bộ|100%)\s*(?:câu)?\s*(?:trắc nghiệm|nhiều lựa chọn|phần i|mcq)?\s*(?:là|đều là|thuộc)?\s*mức\s*nhận biết|nhận biết\s*toàn bộ", request.prompt or "", re.IGNORECASE))
 
         # Xây dựng danh sách chi tiết từng câu Phần I bám sát 100% Ma trận
         p1_blueprint = []
