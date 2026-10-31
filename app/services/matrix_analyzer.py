@@ -416,9 +416,9 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
         for t in topics_list:
             sub = (t.sub_topic or "").lower()
             if "giao tiếp an toàn" in sub or "bài 9" in sub:
-                # Bài 9: Tuyệt đối KHÔNG có câu MC, có 1 câu tự luận VẬN DỤNG
+                # Bài 9: Đúng 1 câu MC THÔNG HIỂU, 1 câu tự luận VẬN DỤNG
                 t.part1_mcq.biet = 0
-                t.part1_mcq.hieu = 0
+                t.part1_mcq.hieu = 1
                 t.part1_mcq.vd = 0
                 t.part2_tf.biet = 0
                 t.part2_tf.hieu = 0
@@ -429,22 +429,8 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
                 t.part4_essay.biet = 0
                 t.part4_essay.hieu = 0
                 t.part4_essay.vd = 1
-            elif "bên trong máy tính" in sub or "bài 4" in sub:
-                # Bài 4: 2 câu MC Nhận biết, 1 câu tự luận THÔNG HIỂU
-                t.part1_mcq.biet = 2
-                t.part1_mcq.hieu = 0
-                t.part1_mcq.vd = 0
-                t.part2_tf.biet = 0
-                t.part2_tf.hieu = 0
-                t.part2_tf.vd = 0
-                t.part3_short.biet = 0
-                t.part3_short.hieu = 0
-                t.part3_short.vd = 0
-                t.part4_essay.biet = 0
-                t.part4_essay.hieu = 1
-                t.part4_essay.vd = 0
             elif "thực hành sử dụng hệ điều hành" in sub or "bài 2." in sub:
-                # Bài 2: Đúng 1 câu MC Nhận biết, 1 câu Đúng/Sai (tổng Chủ đề 1 có tròn 8 câu MC: 2+1+2+2+1=8)
+                # Bài 2: Đúng 1 câu MC NHẬN BIẾT, 1 câu Đúng/Sai YN1
                 t.part1_mcq.biet = 1
                 t.part1_mcq.hieu = 0
                 t.part1_mcq.vd = 0
@@ -457,10 +443,24 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
                 t.part4_essay.biet = 0
                 t.part4_essay.hieu = 0
                 t.part4_essay.vd = 0
+            elif "bên trong máy tính" in sub or "bài 4" in sub:
+                # Bài 4: 1 MC Nhận biết, 1 MC Thông hiểu, 1 câu tự luận THÔNG HIỂU
+                t.part1_mcq.biet = 1
+                t.part1_mcq.hieu = 1
+                t.part1_mcq.vd = 0
+                t.part2_tf.biet = 0
+                t.part2_tf.hieu = 0
+                t.part2_tf.vd = 0
+                t.part3_short.biet = 0
+                t.part3_short.hieu = 0
+                t.part3_short.vd = 0
+                t.part4_essay.biet = 0
+                t.part4_essay.hieu = 1
+                t.part4_essay.vd = 0
             elif "nguồn mở" in sub or "bài 3." in sub:
-                # Bài 3: 2 câu MC Nhận biết, 1 câu Đúng/Sai
-                t.part1_mcq.biet = 2
-                t.part1_mcq.hieu = 0
+                # Bài 3: 1 MC Nhận biết, 1 MC Thông hiểu, 1 câu Đúng/Sai YN2
+                t.part1_mcq.biet = 1
+                t.part1_mcq.hieu = 1
                 t.part1_mcq.vd = 0
                 t.part2_tf.biet = 2
                 t.part2_tf.hieu = 1
@@ -472,9 +472,9 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
                 t.part4_essay.hieu = 0
                 t.part4_essay.vd = 0
             elif "lưu trữ và chia sẻ" in sub or "bài 6." in sub:
-                # Bài 6: 3 câu MC Nhận biết, 1 câu Đúng/Sai
-                t.part1_mcq.biet = 3
-                t.part1_mcq.hieu = 0
+                # Bài 6: 1 MC Nhận biết, 1 MC Thông hiểu, 1 câu Đúng/Sai YN3
+                t.part1_mcq.biet = 1
+                t.part1_mcq.hieu = 1
                 t.part1_mcq.vd = 0
                 t.part2_tf.biet = 2
                 t.part2_tf.hieu = 1
@@ -486,9 +486,9 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
                 t.part4_essay.hieu = 0
                 t.part4_essay.vd = 0
             elif "thực hành tìm kiếm" in sub or "bài 7." in sub:
-                # Bài 7: 2 câu MC Nhận biết, 1 câu Đúng/Sai
-                t.part1_mcq.biet = 2
-                t.part1_mcq.hieu = 0
+                # Bài 7: 1 MC Nhận biết, 1 MC Thông hiểu, 1 câu Đúng/Sai YN4
+                t.part1_mcq.biet = 1
+                t.part1_mcq.hieu = 1
                 t.part1_mcq.vd = 0
                 t.part2_tf.biet = 2
                 t.part2_tf.hieu = 1
@@ -500,9 +500,9 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
                 t.part4_essay.hieu = 0
                 t.part4_essay.vd = 0
             elif "kết nối máy tính" in sub or "bài 5." in sub:
-                # Bài 5: Đúng 1 câu MC Nhận biết (để Chủ đề 1 có tròn 8 câu: 2+1+2+2+1=8)
+                # Bài 5: 1 MC Nhận biết, 1 MC Thông hiểu
                 t.part1_mcq.biet = 1
-                t.part1_mcq.hieu = 0
+                t.part1_mcq.hieu = 1
                 t.part1_mcq.vd = 0
                 t.part2_tf.biet = 0
                 t.part2_tf.hieu = 0
@@ -514,9 +514,9 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
                 t.part4_essay.hieu = 0
                 t.part4_essay.vd = 0
             elif "thư điện tử" in sub or "bài 8." in sub:
-                # Bài 8: 3 câu MC Nhận biết (để Chủ đề 2 có tròn 8 câu: 3+2+3=8)
-                t.part1_mcq.biet = 3
-                t.part1_mcq.hieu = 0
+                # Bài 8: 1 MC Nhận biết, 1 MC Thông hiểu
+                t.part1_mcq.biet = 1
+                t.part1_mcq.hieu = 1
                 t.part1_mcq.vd = 0
                 t.part2_tf.biet = 0
                 t.part2_tf.hieu = 0
@@ -528,9 +528,9 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
                 t.part4_essay.hieu = 0
                 t.part4_essay.vd = 0
             else:
-                # Các bài còn lại (Bài 1 - Hệ điều hành): 2 câu MC Nhận biết
-                t.part1_mcq.biet = 2
-                t.part1_mcq.hieu = 0
+                # Các bài còn lại (Bài 1 - Hệ điều hành): 1 MC Nhận biết, 1 MC Thông hiểu
+                t.part1_mcq.biet = 1
+                t.part1_mcq.hieu = 1
                 t.part1_mcq.vd = 0
                 t.part2_tf.biet = 0
                 t.part2_tf.hieu = 0

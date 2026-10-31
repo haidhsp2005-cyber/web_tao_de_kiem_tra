@@ -3631,38 +3631,29 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
 
     if is_tin_11:
         # Chuẩn hóa tuyệt đối môn Tin học 11 theo đúng ma trận giáo viên:
-        # Chủ đề 1 (8 câu): Bài 1 (2 câu), Bài 2 (1 câu), Bài 3 (2 câu), Bài 4 (2 câu), Bài 5 (1 câu) = 8 câu
-        # Chủ đề 2 (8 câu): Bài 6 (3 câu), Bài 7 (2 câu), Bài 8 (3 câu) = 8 câu
-        # Bài 9 KHÔNG có câu MC nào.
-        tin11_p1_topics = [
-            "Chủ đề 1. Máy tính và xã hội tri thức - 1. Hệ điều hành",
-            "Chủ đề 1. Máy tính và xã hội tri thức - 1. Hệ điều hành",
-            "Chủ đề 1. Máy tính và xã hội tri thức - 2. Thực hành sử dụng hệ điều hành",
-            "Chủ đề 1. Máy tính và xã hội tri thức - 3. Phần mềm nguồn mở và phần mềm chạy trên Internet",
-            "Chủ đề 1. Máy tính và xã hội tri thức - 3. Phần mềm nguồn mở và phần mềm chạy trên Internet",
-            "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính",
-            "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính",
-            "Chủ đề 1. Máy tính và xã hội tri thức - 5. Kết nối máy tính với các thiết bị số",
-            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 6. Lưu trữ và chia sẻ tệp tin trên Internet",
-            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 6. Lưu trữ và chia sẻ tệp tin trên Internet",
-            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 6. Lưu trữ và chia sẻ tệp tin trên Internet",
-            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 7. Thực hành tìm kiếm thông tin trên Internet",
-            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 7. Thực hành tìm kiếm thông tin trên Internet",
-            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội",
-            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội",
-            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội"
+        # 16 câu MC: 8 Nhận biết và 8 Thông hiểu
+        tin11_p1_specs = [
+            {"level": "Nhận biết", "topic": "Chủ đề 1. Máy tính và xã hội tri thức - 1. Hệ điều hành"},
+            {"level": "Thông hiểu", "topic": "Chủ đề 1. Máy tính và xã hội tri thức - 1. Hệ điều hành"},
+            {"level": "Nhận biết", "topic": "Chủ đề 1. Máy tính và xã hội tri thức - 2. Thực hành sử dụng hệ điều hành"},
+            {"level": "Nhận biết", "topic": "Chủ đề 1. Máy tính và xã hội tri thức - 3. Phần mềm nguồn mở và phần mềm chạy trên Internet"},
+            {"level": "Thông hiểu", "topic": "Chủ đề 1. Máy tính và xã hội tri thức - 3. Phần mềm nguồn mở và phần mềm chạy trên Internet"},
+            {"level": "Nhận biết", "topic": "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính"},
+            {"level": "Thông hiểu", "topic": "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính"},
+            {"level": "Nhận biết", "topic": "Chủ đề 1. Máy tính và xã hội tri thức - 5. Kết nối máy tính với các thiết bị số"},
+            {"level": "Thông hiểu", "topic": "Chủ đề 1. Máy tính và xã hội tri thức - 5. Kết nối máy tính với các thiết bị số"},
+            {"level": "Nhận biết", "topic": "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 6. Lưu trữ và chia sẻ tệp tin trên Internet"},
+            {"level": "Thông hiểu", "topic": "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 6. Lưu trữ và chia sẻ tệp tin trên Internet"},
+            {"level": "Nhận biết", "topic": "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 7. Thực hành tìm kiếm thông tin trên Internet"},
+            {"level": "Thông hiểu", "topic": "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 7. Thực hành tìm kiếm thông tin trên Internet"},
+            {"level": "Nhận biết", "topic": "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội"},
+            {"level": "Thông hiểu", "topic": "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội"},
+            {"level": "Thông hiểu", "topic": "Chủ đề 3. Đạo đức, pháp luật và văn hoá trong môi trường số - 9. Giao tiếp an toàn trên Internet"}
         ]
         for i, q in enumerate(exam.part1_mcq):
-            q.cognitive_level = "Nhận biết"
-            q.matrix_topic = tin11_p1_topics[i] if i < len(tin11_p1_topics) else "Chủ đề 1. Máy tính và xã hội tri thức - 1. Hệ điều hành"
-            
-            # Kiểm tra phân loại ngữ nghĩa ranh giới kiến thức (chỉ trong phạm vi câu 6..8 để không nhảy chệch chủ đề)
-            q_text = (q.question or "").lower()
-            if i in [5, 6, 7]:
-                if any(k in q_text for k in ["cổng and", "cổng or", "cổng not", "cổng xor", "bảng chân lý", "mạch logic", "alu", "cpu"]):
-                    q.matrix_topic = "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính"
-                elif any(k in q_text for k in ["hdmi", "vga", "usb", "displayport", "bluetooth", "safely remove", "ngắt kết nối an toàn"]):
-                    q.matrix_topic = "Chủ đề 1. Máy tính và xã hội tri thức - 5. Kết nối máy tính với các thiết bị số"
+            if i < len(tin11_p1_specs):
+                q.cognitive_level = tin11_p1_specs[i]["level"]
+                q.matrix_topic = tin11_p1_specs[i]["topic"]
 
         # 2. Phần II: 4 câu Đúng/Sai phân bổ vào 4 bài thực hành: Bài 2, Bài 3, Bài 6, Bài 7
         tin11_p2_topics = [
@@ -3677,6 +3668,39 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
             q.matrix_topic = tin11_p2_topics[i % len(tin11_p2_topics)]
             for s_idx, sub in enumerate(q.sub_items):
                 sub.cognitive_level = sub_levels[s_idx] if s_idx < len(sub_levels) else "Vận dụng"
+
+        # Kiểm tra nội dung câu 1 Phần II: Tuyệt đối KHÔNG hỏi về Narrow AI, Transfer Learning, Data Drift...
+        if len(exam.part2_tf) > 0:
+            q1 = exam.part2_tf[0]
+            q1_text = (q1.question or "").lower()
+            if any(k in q1_text for k in ["narrow ai", "transfer learning", "data drift", "camera ai", "camera giao thông", "xe buýt"]):
+                q1.question = "Trong giờ thực hành Tin học 11, bạn An thực hiện các thao tác quản lý tệp và tối ưu hóa hệ thống máy tính chạy hệ điều hành Windows. Sau một thời gian sử dụng, máy tính của An có hiện tượng chạy chậm, ổ đĩa C báo dung lượng sắp đầy và một ứng dụng đang mở bị đóng băng (Not Responding)."
+                q1.sub_items = [
+                    SubItem(
+                        label="a",
+                        statement="An có thể mở công cụ Task Manager (bằng tổ hợp phím Ctrl + Shift + Esc) để kiểm tra mức sử dụng CPU, RAM và chọn 'End task' để buộc dừng ứng dụng đang bị treo.",
+                        is_correct=True,
+                        explanation="Task Manager là tiện ích của hệ điều hành giúp giám sát tài nguyên phần cứng và quản lý, kết thúc các tiến trình ứng dụng đang hoạt động."
+                    ),
+                    SubItem(
+                        label="b",
+                        statement="Để giải phóng dung lượng ổ đĩa C bị đầy một cách an toàn, An nên sử dụng tiện ích Disk Cleanup để xóa các tệp tạm (Temporary files), xóa tệp cài đặt cũ và làm rỗng Thùng rác (Recycle Bin).",
+                        is_correct=True,
+                        explanation="Disk Cleanup giúp tìm và dọn dẹp các tệp tin rác, tệp tạm thời không còn sử dụng mà không làm ảnh hưởng đến dữ liệu cá nhân hay tệp hệ thống quan trọng."
+                    ),
+                    SubItem(
+                        label="c",
+                        statement="Để giảm dung lượng lưu trữ và thuận tiện gửi qua email cho giáo viên, An có thể chọn các tệp tài liệu bài tập, nháy chuột phải chọn Send to -> Compressed (zipped) folder để nén lại thành một tệp duy nhất.",
+                        is_correct=True,
+                        explanation="Hệ điều hành Windows tích hợp sẵn tính năng nén tệp/thư mục dưới định dạng .zip giúp giảm kích thước và dễ dàng chia sẻ, lưu trữ."
+                    ),
+                    SubItem(
+                        label="d",
+                        statement="Để giải phóng tối đa không gian ổ đĩa C, An nên truy cập vào thư mục C:\\Windows\\System32 và xóa toàn bộ các tệp tin trong thư mục này.",
+                        is_correct=False,
+                        explanation="Thư mục System32 chứa các tệp tin cốt lõi của hệ điều hành; xóa các tệp này sẽ làm hỏng hệ thống và máy tính không thể khởi động được."
+                    )
+                ]
 
         # 3. Phần III: Trả lời ngắn (nếu có)
         for q in exam.part3_short:
@@ -4021,9 +4045,9 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
                 if t.requirements.application:
                     matrix_details.append(f"  + Yêu cầu mức Vận dụng: {t.requirements.application}")
                     
-        # Kiểm tra nếu người dùng yêu cầu toàn bộ nhận biết trong prompt hoặc ma trận (đặc biệt Tin học 11)
+        # Kiểm tra nếu người dùng yêu cầu toàn bộ nhận biết trong prompt hoặc ma trận (chỉ khi có yêu cầu rõ ràng)
         is_tin_11_spec = any(k in (request.subject or "").lower() for k in ["tin học", "tin"]) and str(request.grade).strip().lower().replace("lớp", "").replace("lop", "") == "11"
-        force_p1_all_nb = is_tin_11_spec or bool(re.search(r"(?:16|toàn bộ|100%)\s*(?:câu)?\s*(?:trắc nghiệm|nhiều lựa chọn|phần i|mcq)?\s*(?:là|đều là|thuộc)?\s*mức\s*nhận biết|nhận biết\s*toàn bộ", request.prompt or "", re.IGNORECASE))
+        force_p1_all_nb = bool(re.search(r"(?:16|toàn bộ|100%)\s*(?:câu)?\s*(?:trắc nghiệm|nhiều lựa chọn|phần i|mcq)?\s*(?:là|đều là|thuộc)?\s*mức\s*nhận biết|nhận biết\s*toàn bộ", request.prompt or "", re.IGNORECASE))
 
         # Xây dựng danh sách chi tiết từng câu Phần I bám sát 100% Ma trận
         p1_blueprint = []
@@ -4038,6 +4062,21 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
                 req_text = f" (Trọng tâm: {t.requirements.recognition})" if t.requirements and t.requirements.recognition else ""
                 for _ in range(tot_mc):
                     p1_blueprint.append(f"  + Câu {c_num} [Nhận biết]: {top_label}{req_text}")
+                    c_num += 1
+        elif is_tin_11_spec:
+            # Sắp xếp tuần tự từng bài từ Bài 1 đến Bài 9 theo đúng Ma trận Tin học 11 chuẩn mới (8 Biết và 8 Hiểu):
+            for t in ms.topics:
+                mcq = getattr(t, "part1_mcq", None)
+                if not mcq:
+                    continue
+                top_label = t.topic + (f" - {t.sub_topic}" if t.sub_topic else "")
+                req_nb = f" (Trọng tâm: {t.requirements.recognition})" if t.requirements and t.requirements.recognition else ""
+                req_th = f" (Trọng tâm: {t.requirements.comprehension})" if t.requirements and t.requirements.comprehension else ""
+                for _ in range(getattr(mcq, "biet", 0)):
+                    p1_blueprint.append(f"  + Câu {c_num} [Nhận biết]: {top_label}{req_nb}")
+                    c_num += 1
+                for _ in range(getattr(mcq, "hieu", 0)):
+                    p1_blueprint.append(f"  + Câu {c_num} [Thông hiểu]: {top_label}{req_th}")
                     c_num += 1
         else:
             for lvl_name, lvl_key in [("Nhận biết", "biet"), ("Thông hiểu", "hieu"), ("Vận dụng", "vd")]:
@@ -4079,7 +4118,10 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             tot_tf = (getattr(tf, "biet", 0) + getattr(tf, "hieu", 0) + getattr(tf, "vd", 0)) if tf else 0
             if tot_tf > 0:
                 top_label = t.topic + (f" - {t.sub_topic}" if t.sub_topic else "")
-                p2_blueprint.append(f"  + Câu {c_num} (Phần II): {top_label}. Mỗi câu gồm 4 ý: a, b (Nhận biết) - c (Thông hiểu) - d (Vận dụng).")
+                req_hint = ""
+                if "thực hành sử dụng hệ điều hành" in top_label.lower():
+                    req_hint = " [TRỌNG TÂM BÀI 2: Quản lý tiến trình bằng Task Manager, dọn rác bằng Disk Cleanup, nén/giải nén tệp .zip, quản lý thư mục và an toàn hệ điều hành Windows. TUYỆT ĐỐI KHÔNG hỏi về các thuật ngữ AI chuyên sâu như Narrow AI, Data Drift, Transfer Learning!]"
+                p2_blueprint.append(f"  + Câu {c_num} (Phần II): {top_label}{req_hint}. Mỗi câu gồm 4 ý: a, b (Nhận biết) - c (Thông hiểu) - d (Vận dụng).")
                 c_num += 1
 
         if p2_blueprint:
