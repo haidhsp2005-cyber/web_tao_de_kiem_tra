@@ -3631,22 +3631,24 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
 
     if is_tin_11:
         # Chuẩn hóa tuyệt đối môn Tin học 11 theo đúng ma trận giáo viên:
-        # 1. Phần I: 16 câu toàn bộ là Nhận biết (16 Biết), phân bổ đều Bài 1..8 (2 câu/bài), Bài 9 KHÔNG có câu MC nào.
+        # Chủ đề 1 (8 câu): Bài 1 (2 câu), Bài 2 (1 câu), Bài 3 (2 câu), Bài 4 (2 câu), Bài 5 (1 câu) = 8 câu
+        # Chủ đề 2 (8 câu): Bài 6 (3 câu), Bài 7 (2 câu), Bài 8 (3 câu) = 8 câu
+        # Bài 9 KHÔNG có câu MC nào.
         tin11_p1_topics = [
             "Chủ đề 1. Máy tính và xã hội tri thức - 1. Hệ điều hành",
             "Chủ đề 1. Máy tính và xã hội tri thức - 1. Hệ điều hành",
             "Chủ đề 1. Máy tính và xã hội tri thức - 2. Thực hành sử dụng hệ điều hành",
-            "Chủ đề 1. Máy tính và xã hội tri thức - 2. Thực hành sử dụng hệ điều hành",
             "Chủ đề 1. Máy tính và xã hội tri thức - 3. Phần mềm nguồn mở và phần mềm chạy trên Internet",
             "Chủ đề 1. Máy tính và xã hội tri thức - 3. Phần mềm nguồn mở và phần mềm chạy trên Internet",
             "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính",
             "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính",
             "Chủ đề 1. Máy tính và xã hội tri thức - 5. Kết nối máy tính với các thiết bị số",
-            "Chủ đề 1. Máy tính và xã hội tri thức - 5. Kết nối máy tính với các thiết bị số",
+            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 6. Lưu trữ và chia sẻ tệp tin trên Internet",
             "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 6. Lưu trữ và chia sẻ tệp tin trên Internet",
             "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 6. Lưu trữ và chia sẻ tệp tin trên Internet",
             "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 7. Thực hành tìm kiếm thông tin trên Internet",
             "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 7. Thực hành tìm kiếm thông tin trên Internet",
+            "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội",
             "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội",
             "Chủ đề 2. Tổ chức lưu trữ, tìm kiếm và trao đổi thông tin - 8. Thực hành nâng cao sử dụng thư điện tử và mạng xã hội"
         ]
@@ -3654,12 +3656,13 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
             q.cognitive_level = "Nhận biết"
             q.matrix_topic = tin11_p1_topics[i] if i < len(tin11_p1_topics) else "Chủ đề 1. Máy tính và xã hội tri thức - 1. Hệ điều hành"
             
-            # Kiểm tra phân loại ngữ nghĩa ranh giới kiến thức
+            # Kiểm tra phân loại ngữ nghĩa ranh giới kiến thức (chỉ trong phạm vi câu 6..8 để không nhảy chệch chủ đề)
             q_text = (q.question or "").lower()
-            if any(k in q_text for k in ["cổng and", "cổng or", "cổng not", "cổng xor", "bảng chân lý", "mạch logic", "alu", "cpu", "ram"]):
-                q.matrix_topic = "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính"
-            elif any(k in q_text for k in ["hdmi", "vga", "usb", "displayport", "bluetooth", "safely remove", "ngắt kết nối an toàn"]):
-                q.matrix_topic = "Chủ đề 1. Máy tính và xã hội tri thức - 5. Kết nối máy tính với các thiết bị số"
+            if i in [5, 6, 7]:
+                if any(k in q_text for k in ["cổng and", "cổng or", "cổng not", "cổng xor", "bảng chân lý", "mạch logic", "alu", "cpu"]):
+                    q.matrix_topic = "Chủ đề 1. Máy tính và xã hội tri thức - 4. Bên trong máy tính"
+                elif any(k in q_text for k in ["hdmi", "vga", "usb", "displayport", "bluetooth", "safely remove", "ngắt kết nối an toàn"]):
+                    q.matrix_topic = "Chủ đề 1. Máy tính và xã hội tri thức - 5. Kết nối máy tính với các thiết bị số"
 
         # 2. Phần II: 4 câu Đúng/Sai phân bổ vào 4 bài thực hành: Bài 2, Bài 3, Bài 6, Bài 7
         tin11_p2_topics = [

@@ -443,13 +443,22 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
                 t.part4_essay.biet = 0
                 t.part4_essay.hieu = 1
                 t.part4_essay.vd = 0
-            elif any(k in sub for k in [
-                "thực hành sử dụng hệ điều hành", "bài 2.",
-                "nguồn mở", "bài 3.",
-                "lưu trữ và chia sẻ", "bài 6.",
-                "thực hành tìm kiếm", "bài 7."
-            ]):
-                # 4 bài thực hành có Đúng/Sai YN: Bài 2, 3, 6, 7
+            elif "thực hành sử dụng hệ điều hành" in sub or "bài 2." in sub:
+                # Bài 2: Đúng 1 câu MC Nhận biết, 1 câu Đúng/Sai (tổng Chủ đề 1 có tròn 8 câu MC: 2+1+2+2+1=8)
+                t.part1_mcq.biet = 1
+                t.part1_mcq.hieu = 0
+                t.part1_mcq.vd = 0
+                t.part2_tf.biet = 2
+                t.part2_tf.hieu = 1
+                t.part2_tf.vd = 1
+                t.part3_short.biet = 0
+                t.part3_short.hieu = 0
+                t.part3_short.vd = 0
+                t.part4_essay.biet = 0
+                t.part4_essay.hieu = 0
+                t.part4_essay.vd = 0
+            elif "nguồn mở" in sub or "bài 3." in sub:
+                # Bài 3: 2 câu MC Nhận biết, 1 câu Đúng/Sai
                 t.part1_mcq.biet = 2
                 t.part1_mcq.hieu = 0
                 t.part1_mcq.vd = 0
@@ -462,8 +471,64 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
                 t.part4_essay.biet = 0
                 t.part4_essay.hieu = 0
                 t.part4_essay.vd = 0
+            elif "lưu trữ và chia sẻ" in sub or "bài 6." in sub:
+                # Bài 6: 3 câu MC Nhận biết, 1 câu Đúng/Sai
+                t.part1_mcq.biet = 3
+                t.part1_mcq.hieu = 0
+                t.part1_mcq.vd = 0
+                t.part2_tf.biet = 2
+                t.part2_tf.hieu = 1
+                t.part2_tf.vd = 1
+                t.part3_short.biet = 0
+                t.part3_short.hieu = 0
+                t.part3_short.vd = 0
+                t.part4_essay.biet = 0
+                t.part4_essay.hieu = 0
+                t.part4_essay.vd = 0
+            elif "thực hành tìm kiếm" in sub or "bài 7." in sub:
+                # Bài 7: 2 câu MC Nhận biết, 1 câu Đúng/Sai
+                t.part1_mcq.biet = 2
+                t.part1_mcq.hieu = 0
+                t.part1_mcq.vd = 0
+                t.part2_tf.biet = 2
+                t.part2_tf.hieu = 1
+                t.part2_tf.vd = 1
+                t.part3_short.biet = 0
+                t.part3_short.hieu = 0
+                t.part3_short.vd = 0
+                t.part4_essay.biet = 0
+                t.part4_essay.hieu = 0
+                t.part4_essay.vd = 0
+            elif "kết nối máy tính" in sub or "bài 5." in sub:
+                # Bài 5: Đúng 1 câu MC Nhận biết (để Chủ đề 1 có tròn 8 câu: 2+1+2+2+1=8)
+                t.part1_mcq.biet = 1
+                t.part1_mcq.hieu = 0
+                t.part1_mcq.vd = 0
+                t.part2_tf.biet = 0
+                t.part2_tf.hieu = 0
+                t.part2_tf.vd = 0
+                t.part3_short.biet = 0
+                t.part3_short.hieu = 0
+                t.part3_short.vd = 0
+                t.part4_essay.biet = 0
+                t.part4_essay.hieu = 0
+                t.part4_essay.vd = 0
+            elif "thư điện tử" in sub or "bài 8." in sub:
+                # Bài 8: 3 câu MC Nhận biết (để Chủ đề 2 có tròn 8 câu: 3+2+3=8)
+                t.part1_mcq.biet = 3
+                t.part1_mcq.hieu = 0
+                t.part1_mcq.vd = 0
+                t.part2_tf.biet = 0
+                t.part2_tf.hieu = 0
+                t.part2_tf.vd = 0
+                t.part3_short.biet = 0
+                t.part3_short.hieu = 0
+                t.part3_short.vd = 0
+                t.part4_essay.biet = 0
+                t.part4_essay.hieu = 0
+                t.part4_essay.vd = 0
             else:
-                # Các bài còn lại (Bài 1, Bài 5, Bài 8): 2 câu MC Nhận biết
+                # Các bài còn lại (Bài 1 - Hệ điều hành): 2 câu MC Nhận biết
                 t.part1_mcq.biet = 2
                 t.part1_mcq.hieu = 0
                 t.part1_mcq.vd = 0
