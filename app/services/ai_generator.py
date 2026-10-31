@@ -3539,8 +3539,18 @@ def build_grade_curriculum_instructions(subject: str, grade: str) -> str:
                 )
             elif g == "11":
                 sections.append(
-                    f"\nLƯU Ý ĐẶC THÙ MÔN TIN HỌC LỚP 11 (GDPT 2018):\n"
-                    f"- Trọng tâm: Hệ điều hành & phần mềm ứng dụng; Cơ sở dữ liệu quan hệ (RDBMS), mô hình quan hệ, khóa chính, khóa ngoại, các câu lệnh truy vấn SQL (SELECT, INSERT, UPDATE, DELETE, WHERE, JOIN), thiết kế và chuẩn hóa bảng dữ liệu; hoặc chuyên đề Khoa học máy tính / Tin học ứng dụng."
+                    f"\nLƯU Ý ĐẶC THÙ MÔN TIN HỌC LỚP 11 (GDPT 2018 - BÁM SÁT KNTT & CÔNG VĂN 7991):\n"
+                    f"- Học kì 1 (Giữa kì 1): Phân biệt rõ ranh giới kiến thức từng bài học để tuyệt đối không gán nhầm câu hỏi:\n"
+                    f"  + Bài 1. Hệ điều hành: Khái niệm HĐH, lịch sử, HĐH nguồn mở (Ubuntu, Linux) vs nguồn đóng (Windows, macOS), vai trò quản lý tài nguyên (CPU, RAM, ổ đĩa).\n"
+                    f"  + Bài 2. Thực hành sử dụng HĐH: Quản lý tệp/thư mục, Thùng rác (Recycle Bin), tiện ích Disk Cleanup, Optimize Drives (TRIM/Defragment), Task Manager.\n"
+                    f"  + Bài 3. Phần mềm nguồn mở & SaaS: LibreOffice, GIMP, Canva (SaaS), giấy phép nguồn mở, bản quyền phần mềm.\n"
+                    f"  + Bài 4. Bên trong máy tính: Cấu tạo CPU, RAM, SSD; Mạch logic & CỔNG LOGIC (AND, OR, NOT, XOR, bảng chân lý); Cấu hình phần cứng PC (dành cho Tự luận 1). 🚨 CỔNG LOGIC AND/OR/NOT BẮT BUỘC THUỘC BÀI 4, KHÔNG ĐƯỢC XẾP VÀO BÀI 5!\n"
+                    f"  + Bài 5. Kết nối máy tính với thiết bị số: Cổng kết nối vật lý (HDMI, VGA, USB, DisplayPort), Bluetooth, Wi-Fi, ngắt kết nối an toàn (Safely Remove Hardware). TUYỆT ĐỐI KHÔNG hỏi về cổng logic ở bài này.\n"
+                    f"  + Bài 6. Lưu trữ và chia sẻ tệp trên Internet: Google Drive, OneDrive, phân quyền Viewer, Commenter, Editor.\n"
+                    f"  + Bài 7. Thực hành tìm kiếm: Toán tử tìm kiếm Google (site:, filetype:, dấu ngoặc kép \"\"), đánh giá độ tin cậy thông tin, ảo giác AI.\n"
+                    f"  + Bài 8. Thực hành nâng cao email & mạng xã hội: Nhãn (Label), Bộ lọc (Filter) trong Gmail, bảo vệ danh tính số.\n"
+                    f"  + Bài 9. Giao tiếp an toàn trên Internet: 3 nguyên tắc phòng lừa đảo trực tuyến (Chậm lại, Kiểm tra ngay, Dừng lại không gửi), rủi ro lộ mã OTP, đạo đức và an toàn AI.\n"
+                    f"- Học kì 2: Cơ sở dữ liệu quan hệ (RDBMS), SQL (SELECT, INSERT, UPDATE, DELETE, WHERE, JOIN), mô hình quan hệ."
                 )
             else: # 12
                 sections.append(
@@ -3635,6 +3645,19 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
             # Khớp chính xác 100% theo từng bài và mức độ trong ma trận
             q.cognitive_level = p1_spec_items[i]["level"]
             q.matrix_topic = p1_spec_items[i]["topic"]
+            
+            # Kiểm tra phân loại ngữ nghĩa để tránh nhầm chủ đề đặc thù (ví dụ môn Tin học)
+            q_text = (q.question or "").lower()
+            if any(k in q_text for k in ["cổng and", "cổng or", "cổng not", "cổng xor", "bảng chân lý", "mạch logic"]):
+                for t in topics_list:
+                    if "bên trong máy tính" in (t.sub_topic or "").lower() or "bên trong máy tính" in (t.topic or "").lower():
+                        q.matrix_topic = f"{t.topic} - {t.sub_topic}" if t.sub_topic else t.topic
+                        break
+            elif any(k in q_text for k in ["hdmi", "vga", "usb", "displayport", "bluetooth", "safely remove", "ngắt kết nối an toàn"]):
+                for t in topics_list:
+                    if "kết nối" in (t.sub_topic or "").lower() or "kết nối" in (t.topic or "").lower():
+                        q.matrix_topic = f"{t.topic} - {t.sub_topic}" if t.sub_topic else t.topic
+                        break
         else:
             # Fallback nếu không có ma trận hoặc số câu vượt quá ma trận
             if not getattr(q, "cognitive_level", None):
@@ -3683,18 +3706,28 @@ def ensure_exam_cognitive_levels(exam: ExamStructure, matrix_spec: Optional[Any]
         else:
             q.matrix_topic = exam.subject
 
-    # 4. Phần IV: Tự luận (Chuẩn Công văn 7991: Mức độ Vận dụng)
+    # 4. Phần IV: Tự luận (Chuẩn Công văn 7991: Mức độ Vận dụng hoặc Thông hiểu từ Ma trận)
     p4_topics = [t for t in topics_list if (getattr(getattr(t, 'part4_essay', None), 'biet', 0) + getattr(getattr(t, 'part4_essay', None), 'hieu', 0) + getattr(getattr(t, 'part4_essay', None), 'vd', 0)) > 0]
     for i, q in enumerate(exam.part4_essay):
-        q.cognitive_level = "Vận dụng"
         src_list = p4_topics if p4_topics else topics_list
         if src_list:
             t_idx = min(i % len(src_list), len(src_list) - 1)
-            full_t = getattr(src_list[t_idx], "topic", "")
-            sub_t = getattr(src_list[t_idx], "sub_topic", "")
+            t_obj = src_list[t_idx]
+            full_t = getattr(t_obj, "topic", "")
+            sub_t = getattr(t_obj, "sub_topic", "")
             q.matrix_topic = f"{full_t} - {sub_t}" if sub_t else full_t
+            
+            # Gán mức độ nhận thức chính xác từ ma trận (Thông hiểu hoặc Vận dụng)
+            essay_spec = getattr(t_obj, "part4_essay", None)
+            if essay_spec and getattr(essay_spec, "hieu", 0) > 0 and getattr(essay_spec, "vd", 0) == 0:
+                q.cognitive_level = "Thông hiểu"
+            elif essay_spec and getattr(essay_spec, "biet", 0) > 0 and getattr(essay_spec, "vd", 0) == 0:
+                q.cognitive_level = "Nhận biết"
+            else:
+                q.cognitive_level = "Vận dụng"
         else:
             q.matrix_topic = exam.subject
+            q.cognitive_level = "Vận dụng"
 
     return exam
 
@@ -3906,17 +3939,47 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
                 if t.requirements.application:
                     matrix_details.append(f"  + Yêu cầu mức Vận dụng: {t.requirements.application}")
                     
+        # Kiểm tra nếu người dùng yêu cầu toàn bộ nhận biết trong prompt hoặc ma trận
+        force_p1_all_nb = bool(re.search(r"(?:16|toàn bộ|100%)\s*(?:câu)?\s*(?:trắc nghiệm|nhiều lựa chọn|phần i|mcq)?\s*(?:là|đều là|thuộc)?\s*mức\s*nhận biết|nhận biết\s*toàn bộ", request.prompt or "", re.IGNORECASE))
+
         # Xây dựng danh sách chi tiết từng câu Phần I bám sát 100% Ma trận
         p1_blueprint = []
         c_num = 1
-        for lvl_name, lvl_key in [("Nhận biết", "biet"), ("Thông hiểu", "hieu"), ("Vận dụng", "vd")]:
+        if force_p1_all_nb:
             for t in ms.topics:
                 mcq = getattr(t, "part1_mcq", None)
-                cnt = getattr(mcq, lvl_key, 0) if mcq else 0
-                for _ in range(cnt):
-                    top_label = t.topic + (f" - {t.sub_topic}" if t.sub_topic else "")
-                    p1_blueprint.append(f"  + Câu {c_num} [{lvl_name}]: {top_label}")
+                tot_mc = (getattr(mcq, "biet", 0) + getattr(mcq, "hieu", 0) + getattr(mcq, "vd", 0)) if mcq else 0
+                if tot_mc == 0:
+                    continue
+                top_label = t.topic + (f" - {t.sub_topic}" if t.sub_topic else "")
+                req_text = f" (Trọng tâm: {t.requirements.recognition})" if t.requirements and t.requirements.recognition else ""
+                for _ in range(tot_mc):
+                    p1_blueprint.append(f"  + Câu {c_num} [Nhận biết]: {top_label}{req_text}")
                     c_num += 1
+        else:
+            for lvl_name, lvl_key in [("Nhận biết", "biet"), ("Thông hiểu", "hieu"), ("Vận dụng", "vd")]:
+                for t in ms.topics:
+                    mcq = getattr(t, "part1_mcq", None)
+                    cnt = getattr(mcq, lvl_key, 0) if mcq else 0
+                    if cnt == 0:
+                        continue
+                    top_label = t.topic + (f" - {t.sub_topic}" if t.sub_topic else "")
+                    req_text = ""
+                    if t.requirements:
+                        if lvl_key == "biet" and t.requirements.recognition:
+                            req_text = f" (Trọng tâm: {t.requirements.recognition})"
+                        elif lvl_key == "hieu" and t.requirements.comprehension:
+                            req_text = f" (Trọng tâm: {t.requirements.comprehension})"
+                        elif lvl_key == "vd" and t.requirements.application:
+                            req_text = f" (Trọng tâm: {t.requirements.application})"
+                    # Cảnh báo ranh giới kiến thức chống nhầm lẫn đặc thù môn Tin học
+                    if "kết nối" in top_label.lower():
+                        req_text += " [LƯU Ý: Chỉ hỏi về cổng kết nối vật lý HDMI/VGA/USB/Bluetooth, TUYỆT ĐỐI KHÔNG hỏi về cổng logic AND/OR/NOT]"
+                    elif "bên trong máy tính" in top_label.lower():
+                        req_text += " [LƯU Ý: Hỏi về CPU/RAM/SSD/ROM hoặc cổng logic AND/OR/NOT/mạch logic]"
+                    for _ in range(cnt):
+                        p1_blueprint.append(f"  + Câu {c_num} [{lvl_name}]: {top_label}{req_text}")
+                        c_num += 1
 
         if p1_blueprint:
             matrix_details.append(
@@ -3951,14 +4014,23 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             tot_essay = (getattr(essay, "biet", 0) + getattr(essay, "hieu", 0) + getattr(essay, "vd", 0)) if essay else 0
             if tot_essay > 0:
                 top_label = t.topic + (f" - {t.sub_topic}" if t.sub_topic else "")
-                p4_blueprint.append(f"  + Câu {c_num} (Tự luận - Mức Vận dụng): {top_label}")
+                lvl_str = "Vận dụng"
+                req_str = ""
+                if essay and getattr(essay, "hieu", 0) > 0 and getattr(essay, "vd", 0) == 0:
+                    lvl_str = "Thông hiểu"
+                    req_str = t.requirements.comprehension if t.requirements else ""
+                else:
+                    lvl_str = "Vận dụng"
+                    req_str = t.requirements.application if t.requirements else ""
+                req_text = f" (Yêu cầu cần đạt: {req_str})" if req_str else ""
+                p4_blueprint.append(f"  + Câu {c_num} (Tự luận - Mức {lvl_str}): {top_label}{req_text}")
                 c_num += 1
 
         if p4_blueprint:
             matrix_details.append(
-                f"\n⭐ PHÂN BỔ BẮT BUỘC CỦA PHẦN IV (TỰ LUẬN) - MỨC VẬN DỤNG:\n"
+                f"\n⭐ PHÂN BỔ BẮT BUỘC CỦA PHẦN IV (TỰ LUẬN):\n"
                 + "\n".join(p4_blueprint)
-                + "\n🚨 QUY TẮC TỰ LUẬN: Chỉ biên soạn câu tự luận vào đúng các bài trên (ví dụ: Bài 2 và Bài 8). Tuyệt đối không đưa tự luận vào Bài 1 hay các bài khác!"
+                + "\n🚨 QUY TẮC TỰ LUẬN TỐI THƯỢNG: BẮT BUỘC biên soạn câu tự luận vào ĐÚNG CHÍNH XÁC các bài nêu trên theo đúng thứ tự! Tuyệt đối không tự ý đổi sang bài khác!"
             )
 
         custom_rules = []

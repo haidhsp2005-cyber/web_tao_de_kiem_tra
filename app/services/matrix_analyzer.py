@@ -464,10 +464,10 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
                 for m in re.finditer(r"(\d+)\s*(?:MC|MCQ|TNKQ)\b", cell, re.IGNORECASE):
                     cnt = int(m.group(1))
                     all_mc_count += cnt
-                    if c_idx <= 4:
+                    if c_idx == 3:
                         p1_cb.biet += cnt
                         total_biet += cnt
-                    elif c_idx == 5:
+                    elif c_idx == 4:
                         p1_cb.hieu += cnt
                         total_hieu += cnt
                     else:
@@ -507,7 +507,12 @@ def parse_cv7991_heuristic(text: str) -> ExamMatrixSpec:
                     cnt = int(m.group(1)) if m.group(1) else 1
                     qid = m.group(2) or str(topic_counter)
                     all_tl_qids.add(qid)
-                    p4_cb.vd += cnt
+                    if c_idx <= 9:
+                        p4_cb.biet += cnt
+                    elif c_idx == 10:
+                        p4_cb.hieu += cnt
+                    else:
+                        p4_cb.vd += cnt
                     total_vd += cnt
                     
                 # 4. TLN (Trả lời ngắn)
@@ -679,7 +684,7 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
         t.part2_tf.hieu = 0
         t.part2_tf.vd = 0
 
-    # 2. Map TL vào đúng topic (Bài 2, Bài 8)
+    # 2. Map TL vào đúng topic (Bài 4, Bài 9 hoặc theo TL trong tài liệu)
     for tl_line in tl_lines:
         tl_low = tl_line.lower()
         best_match = None
@@ -693,7 +698,13 @@ def reconcile_topics_with_matrix_tokens(topics_list: List[Cv7991TopicItem], text
                 best_match = t
                 break
         if best_match:
-            best_match.part4_essay.vd = 1
+            is_hieu = bool(re.search(r"\|\s*(?:1\s*)?TL[1-9]?\s*\|\s*(?:\||\b\d+\b)", tl_line)) or ("hiểu" in tl_line.lower() and "vận dụng" not in tl_line.lower())
+            if is_hieu:
+                best_match.part4_essay.hieu = 1
+                best_match.part4_essay.vd = 0
+            else:
+                best_match.part4_essay.vd = 1
+                best_match.part4_essay.hieu = 0
 
     # 3. Map YN vào đúng topic (Bài 1, Bài 4, Bài 5, Bài 9)
     for yn_line in yn_lines:

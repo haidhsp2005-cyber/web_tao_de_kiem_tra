@@ -320,22 +320,59 @@ createApp({
       const p3Topics = topics.filter(t => t.part3_short && ((t.part3_short.biet || 0) + (t.part3_short.hieu || 0) + (t.part3_short.vd || 0)) > 0);
       const p4Topics = topics.filter(t => t.part4_essay && ((t.part4_essay.biet || 0) + (t.part4_essay.hieu || 0) + (t.part4_essay.vd || 0)) > 0);
 
-      // Part 1: Nhiều lựa chọn (Chuẩn Công văn 7991: Nhận biết & Thông hiểu, một số bài có Vận dụng)
-      const p1Count = form.num_part1 !== undefined ? form.num_part1 : (ms.num_part1 || 16);
-      const activeP1 = p1Topics.length ? p1Topics : topics;
-      for (let i = 1; i <= p1Count; i++) {
-        const t = activeP1.length ? activeP1[(i - 1) % activeP1.length] : null;
-        let level = "Nhận biết";
-        if (i > p1Count * 0.5) level = "Thông hiểu";
-        if (t && t.part1_mcq && t.part1_mcq.vd > 0 && i > p1Count * 0.85) {
-          level = "Vận dụng";
+      // Part 1: Nhiều lựa chọn - Đọc trực tiếp từ phân bổ từng bài trong ma trận
+      const p1Items = [];
+      // 1. Nhận biết
+      for (const t of topics) {
+        const biet = (t.part1_mcq && t.part1_mcq.biet) || 0;
+        for (let k = 0; k < biet; k++) {
+          p1Items.push({
+            level: "Nhận biết",
+            topic: t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : ""),
+            requirement: (t.requirements && t.requirements.recognition) || "Nhận biết kiến thức cốt lõi"
+          });
         }
+      }
+      // 2. Thông hiểu
+      for (const t of topics) {
+        const hieu = (t.part1_mcq && t.part1_mcq.hieu) || 0;
+        for (let k = 0; k < hieu; k++) {
+          p1Items.push({
+            level: "Thông hiểu",
+            topic: t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : ""),
+            requirement: (t.requirements && t.requirements.comprehension) || "Hiểu và giải thích các đặc điểm, nguyên lý"
+          });
+        }
+      }
+      // 3. Vận dụng
+      for (const t of topics) {
+        const vd = (t.part1_mcq && t.part1_mcq.vd) || 0;
+        for (let k = 0; k < vd; k++) {
+          p1Items.push({
+            level: "Vận dụng",
+            topic: t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : ""),
+            requirement: (t.requirements && t.requirements.application) || "Vận dụng giải quyết tình huống"
+          });
+        }
+      }
+
+      const p1Count = form.num_part1 !== undefined ? form.num_part1 : (ms.num_part1 || p1Items.length || 16);
+      for (let i = 1; i <= p1Count; i++) {
+        const item = p1Items[i - 1] || (p1Topics.length ? {
+          level: i <= p1Count * 0.5 ? "Nhận biết" : "Thông hiểu",
+          topic: p1Topics[(i - 1) % p1Topics.length].topic + (p1Topics[(i - 1) % p1Topics.length].sub_topic ? ` - ${p1Topics[(i - 1) % p1Topics.length].sub_topic}` : ""),
+          requirement: ""
+        } : {
+          level: "Nhận biết",
+          topic: ms.subject || "Tin học",
+          requirement: ""
+        });
         list.push({
           num: i,
           part: "Phần I (Nhiều LC)",
-          level,
-          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Tin học"),
-          requirement: t && t.requirements ? (level === "Nhận biết" ? t.requirements.recognition : (level === "Thông hiểu" ? t.requirements.comprehension : t.requirements.application)) : ""
+          level: item.level,
+          topic: item.topic,
+          requirement: item.requirement
         });
       }
 
@@ -367,17 +404,52 @@ createApp({
         });
       }
 
-      // Part 4: Tự luận (Chuẩn Công văn 7991: Mức độ Vận dụng, KHÔNG có Vận dụng cao)
-      const p4Count = form.num_essay !== undefined ? form.num_essay : (ms.num_essay || 0);
-      const activeP4 = p4Topics.length ? p4Topics : topics;
+      // Part 4: Tự luận (Chuẩn Công văn 7991: Khớp chính xác bài có TL và mức độ Hiểu/Vận dụng)
+      const p4Items = [];
+      for (const t of topics) {
+        const biet = (t.part4_essay && t.part4_essay.biet) || 0;
+        const hieu = (t.part4_essay && t.part4_essay.hieu) || 0;
+        const vd = (t.part4_essay && t.part4_essay.vd) || 0;
+        for (let k = 0; k < biet; k++) {
+          p4Items.push({
+            level: "Nhận biết",
+            topic: t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : ""),
+            requirement: (t.requirements && t.requirements.recognition) || "Trình bày kiến thức"
+          });
+        }
+        for (let k = 0; k < hieu; k++) {
+          p4Items.push({
+            level: "Thông hiểu",
+            topic: t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : ""),
+            requirement: (t.requirements && t.requirements.comprehension) || "Hiểu và giải thích"
+          });
+        }
+        for (let k = 0; k < vd; k++) {
+          p4Items.push({
+            level: "Vận dụng",
+            topic: t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : ""),
+            requirement: (t.requirements && t.requirements.application) || "Trình bày giải bài tập tự luận"
+          });
+        }
+      }
+
+      const p4Count = form.num_essay !== undefined ? form.num_essay : (ms.num_essay || p4Items.length || 0);
       for (let i = 1; i <= p4Count; i++) {
-        const t = activeP4.length ? activeP4[(i - 1) % activeP4.length] : null;
+        const item = p4Items[i - 1] || (p4Topics.length ? {
+          level: (p4Topics[(i - 1) % p4Topics.length].part4_essay && p4Topics[(i - 1) % p4Topics.length].part4_essay.hieu > 0) ? "Thông hiểu" : "Vận dụng",
+          topic: p4Topics[(i - 1) % p4Topics.length].topic + (p4Topics[(i - 1) % p4Topics.length].sub_topic ? ` - ${p4Topics[(i - 1) % p4Topics.length].sub_topic}` : ""),
+          requirement: "Vận dụng tổng hợp"
+        } : {
+          level: "Vận dụng",
+          topic: ms.subject || "Tin học",
+          requirement: "Vận dụng tổng hợp"
+        });
         list.push({
           num: i,
           part: "Phần IV (Tự luận)",
-          level: "Vận dụng",
-          topic: t ? t.topic + (t.sub_topic ? ` - ${t.sub_topic}` : "") : (ms.subject || "Tin học"),
-          requirement: t && t.requirements ? (t.requirements.application || "Trình bày giải bài tập tự luận") : "Vận dụng tổng hợp"
+          level: item.level,
+          topic: item.topic,
+          requirement: item.requirement
         });
       }
 
