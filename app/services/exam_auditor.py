@@ -2763,17 +2763,32 @@ def heal_essay_offline(q: Part4EssayQuestion, subject: str, index: int = 0) -> P
                 "answer": r"$x = 2$ sản phẩm",
                 "explanation": "- Tìm hàm chi phí cận biên: $C'(x) = 3x^2 - 12x + 15$\n- Biến đổi hàm số: $C'(x) = 3(x - 2)^2 + 3$\n- Do $(x - 2)^2 \\ge 0$ nên $C'(x) \\ge 3$ với mọi $x > 0$\n- Dấu đẳng thức xảy ra khi $x = 2$. Vậy mức sản lượng cần tìm là 2 sản phẩm"
             }
-        ]
-    }
-    chosen = essay_banks.get("toán", [])
-    if "toán" not in sub_lower:
-        chosen = [
+        ],
+        "tin": [
             {
-                "question": f"Vận dụng kiến thức môn {subject}, hãy phân tích một hiện tượng thực tế và đề xuất giải pháp khoa học phù hợp.",
-                "answer": "Giải pháp có cơ sở khoa học và tính khả thi",
-                "explanation": "- Nêu cơ sở lý thuyết và điều kiện thực tế\n- Phân tích nguyên nhân và các yếu tố ảnh hưởng\n- Đề xuất các giải pháp khả thi và đánh giá hiệu quả"
+                "question": "Trí tuệ nhân tạo (AI) ngày càng phát triển mạnh mẽ và thâm nhập sâu rộng vào đời sống hiện đại. Em hãy phân tích 2 cảnh báo về nguy cơ/tác động tiêu cực của AI đối với việc làm và an toàn thông tin số. Từ đó, nêu rõ trách nhiệm đạo đức của công dân trẻ khi tiếp cận và ứng dụng các hệ thống AI tạo sinh (như ChatGPT, Deepfake) trong học tập và đời sống.",
+                "answer": "Phân tích được 2 nguy cơ của AI và nêu rõ trách nhiệm đạo đức công dân khi ứng dụng công nghệ.",
+                "explanation": "- Nguy cơ và tác động tiêu cực của AI:\n  + Tác động đến cơ cấu việc làm: Tự động hóa thay thế lao động thủ công và kỹ năng cơ bản, tạo áp lực chuyển đổi nghề nghiệp.\n  + Nguy cơ an toàn thông tin & đạo đức: Bị lạm dụng tạo tin giả (Deepfake), lừa đảo danh tính, định kiến thuật toán và xâm phạm bản quyền dữ liệu.\n- Trách nhiệm đạo đức công dân:\n  + Sử dụng AI trung thực và có trách nhiệm, không dùng AI để gian lận học thuật hay tạo sản phẩm sai lệch.\n  + Có ý thức bảo mật dữ liệu cá nhân và kiểm chứng thông tin chính thống trước khi chia sẻ."
+            },
+            {
+                "question": "Một văn phòng triển khai hệ thống mạng LAN cục bộ gồm 30 máy tính kết nối qua thiết bị chuyển mạch (Switch) và thiết bị định tuyến (Router) có kết nối cáp quang Internet. Em hãy giải thích vai trò của địa chỉ IP trong mạng và phân tích tại sao việc hai máy tính bị gán trùng một địa chỉ IP (IP Conflict) sẽ khiến kết nối mạng bị gián đoạn. Đề xuất giải pháp khắc phục bằng giao thức cấp phát động DHCP.",
+                "answer": "Giải thích được vai trò địa chỉ IP, cơ chế xung đột IP và giải pháp cấu hình DHCP.",
+                "explanation": "- Vai trò của địa chỉ IP: Định danh duy nhất từng thiết bị trong mạng, là cơ sở để định tuyến và chuyển phát chính xác các gói tin (packet).\n- Hiện tượng trùng IP (IP Conflict): Khi hai máy tính có cùng một địa chỉ IP trong mạng nội bộ, Router và Switch không thể xác định đích đến của gói tin phản hồi, dẫn đến việc xung đột định tuyến và làm cả hai máy mất kết nối.\n- Giải pháp: Kích hoạt dịch vụ DHCP trên Router để tự động cấp phát địa chỉ IP cho các máy trạm một cách tuần tự, đảm bảo không bị trùng lặp."
+            },
+            {
+                "question": "Trong không gian mạng ngày nay, các hình thức lừa đảo trực tuyến (như mạo danh người quen vay tiền, gửi link độc nhận quà, cuộc gọi video giả mạo Deepfake) và bắt nạt trên mạng (Cyberbullying) diễn biến hết sức phức tạp. Em hãy phân tích 3 nguyên tắc vàng phòng chống lừa đảo trên Internet ('Chậm lại - Kiểm tra ngay - Dừng lại không gửi') và nêu rõ trách nhiệm đạo đức, văn hoá ứng xử của học sinh khi tham gia các hội nhóm mạng xã hội.",
+                "answer": "Nêu và giải thích đúng 3 nguyên tắc phòng chống lừa đảo; phân tích trách nhiệm văn hoá ứng xử và đạo đức học sinh trên không gian số.",
+                "explanation": "- Phân tích 3 nguyên tắc phòng chống lừa đảo trực tuyến:\n  1. Chậm lại: Giữ bình tĩnh trước các tin nhắn/cuộc gọi gấp gáp đòi chuyển tiền hoặc đe dọa; không vội vàng làm theo yêu cầu của đối tượng.\n  2. Kiểm tra ngay: Xác minh lại danh tính người gửi qua một kênh độc lập (như gọi điện thoại trực tiếp); kiểm tra độ tin cậy của đường dẫn website trước khi nhập mật khẩu.\n  3. Dừng lại không gửi: Tuyệt đối không gửi mã OTP, thông tin tài khoản ngân hàng hoặc chuyển tiền khi chưa xác thực chắc chắn.\n- Trách nhiệm đạo đức và văn hoá ứng xử của học sinh:\n  + Tôn trọng và bảo vệ danh dự người khác: Không tham gia công kích hội đồng, không phát tán clip bạo lực hay tin đồn ác ý.\n  + Có ý thức bảo vệ danh tính số: Không tò mò truy cập hay chia sẻ các nội dung độc hại; chấp hành nghiêm chỉnh Luật An ninh mạng."
             }
         ]
+    }
+    chosen = []
+    for k, v in essay_banks.items():
+        if k in sub_lower:
+            chosen = v
+            break
+    if not chosen:
+        chosen = essay_banks.get("toán", [])
     t = chosen[index % len(chosen)]
     q.question = t["question"]
     q.answer = t.get("answer", "Đáp số")

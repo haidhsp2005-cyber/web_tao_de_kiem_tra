@@ -4192,14 +4192,33 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
                 req_text = f" (Yêu cầu cần đạt: {req_str})" if req_str else ""
                 if any(k in top_label.lower() for k in ["giao tiếp an toàn", "đạo đức", "môi trường số", "bảo vệ thông tin"]):
                     req_text += " [LƯU Ý ĐẶC BIỆT: Chủ đề này về an toàn mạng, bảo mật dữ liệu, phòng chống lừa đảo trực tuyến và đạo đức AI/số. TUYỆT ĐỐI CẤM HỎI VỀ HTML, CSS, LẬP TRÌNH HOẶC THIẾT KẾ WEB!]"
-                p4_blueprint.append(f"  + Câu {c_num} (Tự luận - Mức {lvl_str}): {top_label}{req_text}")
-                c_num += 1
+                for _ in range(tot_essay):
+                    p4_blueprint.append(f"  + Câu {c_num} (Tự luận - Mức {lvl_str}): {top_label}{req_text}")
+                    c_num += 1
+
+        # Nếu người dùng yêu cầu số câu tự luận lớn hơn số chủ đề có đánh dấu tự luận trong ma trận
+        while len(p4_blueprint) < request.num_essay:
+            c_num = len(p4_blueprint) + 1
+            t_candidates = [t for t in ms.topics if getattr(t, "part4_essay", None) and (t.part4_essay.biet + t.part4_essay.hieu + t.part4_essay.vd > 0)]
+            if not t_candidates:
+                t_candidates = ms.topics
+            t_pick = t_candidates[(c_num - 1) % len(t_candidates)] if t_candidates else None
+            if t_pick:
+                top_label = t_pick.topic + (f" - {t_pick.sub_topic}" if t_pick.sub_topic else "")
+                req_str = (t_pick.requirements.application or t_pick.requirements.comprehension) if t_pick.requirements else ""
+                req_text = f" (Yêu cầu cần đạt: {req_str})" if req_str else ""
+                p4_blueprint.append(f"  + Câu {c_num} (Tự luận - Mức Vận dụng): {top_label}{req_text}")
+            else:
+                break
 
         if p4_blueprint:
             matrix_details.append(
-                f"\n⭐ PHÂN BỔ BẮT BUỘC CỦA PHẦN IV (TỰ LUẬN):\n"
+                f"\n⭐ PHÂN BỔ BẮT BUỘC CỦA PHẦN IV (TỰ LUẬN) - BẮT BUỘC TẠO ĐỦ {request.num_essay} CÂU:\n"
                 + "\n".join(p4_blueprint)
-                + "\n🚨 QUY TẮC TỰ LUẬN TỐI THƯỢNG: BẮT BUỘC biên soạn câu tự luận vào ĐÚNG CHÍNH XÁC các bài nêu trên theo đúng thứ tự! Tuyệt đối không tự ý đổi sang bài khác!"
+                + "\n🚨 QUY TẮC BIÊN SOẠN CÂU HỎI TỰ LUẬN TỐI THƯỢNG:\n"
+                "1. TUYỆT ĐỐI CẤM chép nguyên văn dòng 'Yêu cầu cần đạt' làm đề bài câu hỏi! Đề bài tự luận BẮT BUỘC phải là một BÀI TOÁN TÌNH HUỐNG THỰC TẾ / TÌNH HUỐNG DỰ ÁN ĐỜI SỐNG (dài 50-100 từ), có nhân vật/bối cảnh/dữ liệu hoặc sơ đồ cụ thể, sau đó đặt ra 2 đến 3 câu hỏi/yêu cầu giải quyết rõ ràng cho học sinh.\n"
+                "2. Hướng dẫn chấm ('explanation'): BẮT BUỘC gạch đầu dòng '-' chi tiết các luận điểm hoặc các bước giải khoa học, không trả lời cộc lốc hoặc chung chung.\n"
+                "3. TUYỆT ĐỐI KHÔNG sinh câu hỏi placeholder chung chung kiểu 'Vận dụng kiến thức môn... hãy phân tích một hiện tượng...'. Phải là đề bài chuyên môn sâu sắc gắn liền với môn học và khối lớp."
             )
 
         custom_rules = []
@@ -4536,14 +4555,9 @@ Chỉ trả về DUY NHẤT một chuỗi JSON hợp lệ theo cấu trúc các 
     # Part 4 Essay Fallback Guarantee
     while num_essay_needed > 0 and len(normalized.get("part4_essay", [])) < num_essay_needed:
         idx = len(normalized["part4_essay"])
-        item = {
-            "id": idx + 1,
-            "question": f"Vận dụng kiến thức môn {request.subject} lớp {request.grade} để giải quyết bài toán/tình huống thực tiễn sau...",
-            "points": 1.0,
-            "answer": "Tóm tắt kết quả phân tích then chốt.",
-            "explanation": "- Nêu được cơ sở lý thuyết.\n- Vận dụng vào tình huống cụ thể.\n- Rút ra kết luận chính xác."
-        }
-        normalized["part4_essay"].append(item)
+        dummy_q = Part4EssayQuestion(id=idx + 1, question="", points=1.0)
+        healed_q = heal_essay_offline(dummy_q, request.subject, idx)
+        normalized["part4_essay"].append(healed_q.model_dump())
 
     # Enforce EXACT question counts if exceeded and renumber IDs sequentially
     if num_p1_needed > 0 and len(normalized["part1_mcq"]) > num_p1_needed:
