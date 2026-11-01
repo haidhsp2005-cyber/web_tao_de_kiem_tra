@@ -4258,8 +4258,8 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
 
     if request.file_content:
         f_content = request.file_content.strip()
-        if len(f_content) > 70000:
-            f_content = f_content[:70000] + "\n...(nội dung tài liệu đã được tối ưu độ dài để đảm bảo phản hồi tức thì)..."
+        if len(f_content) > 25000:
+            f_content = f_content[:25000] + "\n...(nội dung tài liệu đã được trích chọn phần trọng tâm để đảm bảo phản hồi tức thì dưới 10 giây)..."
         user_prompt += (
             f"\n\nNỘI DUNG TÀI LIỆU/GIÁO ÁN/ĐỀ CƯƠNG/HÌNH ẢNH ĐÍNH KÈM (TOÀN VĂN):\n"
             f"{f_content}\n\n"
