@@ -422,10 +422,10 @@ async def generate_with_gemini(prompt: str, api_key: str, model: str = "auto") -
             
         # Priority: active high-speed reasoning models on Google AI Studio
         for pref in [
-            "gemini-2.5-flash",
             "gemini-2.0-flash",
             "gemini-1.5-flash",
             "gemini-2.0-flash-lite",
+            "gemini-1.5-pro",
             "gemini-flash-latest"
         ]:
             if pref not in candidate_models:
@@ -4238,9 +4238,12 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
         )
 
     if request.file_content:
+        f_content = request.file_content.strip()
+        if len(f_content) > 70000:
+            f_content = f_content[:70000] + "\n...(nội dung tài liệu đã được tối ưu độ dài để đảm bảo phản hồi tức thì)..."
         user_prompt += (
             f"\n\nNỘI DUNG TÀI LIỆU/GIÁO ÁN/ĐỀ CƯƠNG/HÌNH ẢNH ĐÍNH KÈM (TOÀN VĂN):\n"
-            f"{request.file_content[:140000]}\n\n"
+            f"{f_content}\n\n"
             f"CHỈ DẪN QUAN TRỌNG KHI BIÊN SOẠN ĐỀ TỪ TÀI LIỆU/HÌNH ẢNH ĐÍNH KÈM:\n"
             f"1. Toàn bộ các câu hỏi ở Phần I (trắc nghiệm 4 lựa chọn), Phần II (Đúng/Sai), Phần III (trả lời ngắn) và Phần IV (Tự luận nếu có) "
             f"BẮT BUỘC PHẢI BÁM SÁT VÀO TẤT CẢ CÁC KIẾN THỨC, KHÁI NIỆM, VÍ DỤ, BÀI TẬP, CÔNG THỨC HOẶC DẠNG CÂU HỎI ĐÃ ĐƯỢC TRÍCH XUẤT TỪ CÁC TỆP ĐÍNH KÈM (bao gồm cả file Word, file PDF và các hình ảnh chụp SGK/đề cương).\n"

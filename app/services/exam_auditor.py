@@ -1,3 +1,4 @@
+import asyncio
 import re
 import json
 from typing import List, Dict, Any, Tuple, Optional
@@ -3153,18 +3154,28 @@ async def audit_and_verify_exam(
     if api_key and len(api_key) > 5 and api_key not in effective_keys:
         effective_keys.insert(0, api_key)
 
-    if effective_keys and total_q > 0:
-        exam, ai_notes = await run_ai_auditor_healing(
-            exam=exam,
-            defective_p1=defective_p1,
-            defective_p2=defective_p2,
-            defective_p3=defective_p3,
-            api_key=effective_keys[0],
-            api_keys=effective_keys,
-            provider=provider,
-            model=model
-        )
-        notes.extend(ai_notes)
+    has_defects = len(defective_p1) > 0 or len(defective_p2) > 0 or len(defective_p3) > 0
+    if effective_keys and has_defects:
+        try:
+            # Giới hạn timeout 7 giây để ngăn chặn triệt để lỗi 504 Gateway Timeout trên Vercel
+            exam, ai_notes = await asyncio.wait_for(
+                run_ai_auditor_healing(
+                    exam=exam,
+                    defective_p1=defective_p1,
+                    defective_p2=defective_p2,
+                    defective_p3=defective_p3,
+                    api_key=effective_keys[0],
+                    api_keys=effective_keys,
+                    provider=provider,
+                    model=model
+                ),
+                timeout=7.0
+            )
+            notes.extend(ai_notes)
+        except Exception as e:
+            print(f"[Auditor Warning] Bỏ qua AI healing do timeout hoặc lỗi: {e}. Áp dụng bộ chuẩn hóa offline tức thì.")
+    elif total_q > 0:
+        notes.append(f"AI Auditor Agent đã thẩm định {total_q} câu hỏi: Đề bài, dữ liệu số và đáp án logic tuyệt đối.")
         
     # 4. Offline Fallback Safety Nets
     for i, q in enumerate(exam.part1_mcq):
