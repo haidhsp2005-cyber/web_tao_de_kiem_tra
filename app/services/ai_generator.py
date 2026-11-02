@@ -422,10 +422,12 @@ async def generate_with_gemini(prompt: str, api_key: str, model: str = "auto") -
             
         # Priority: active high-speed reasoning models on Google AI Studio
         for pref in [
-            "gemini-2.0-flash",
-            "gemini-1.5-flash",
-            "gemini-2.0-flash-lite",
-            "gemini-1.5-pro",
+            "gemini-3.5-flash",
+            "gemini-3.6-flash",
+            "gemini-flash-lite-latest",
+            "gemini-3.5-flash-lite",
+            "gemini-3-flash-preview",
+            "gemini-3.8-flash",
             "gemini-flash-latest"
         ]:
             if pref not in candidate_models:
@@ -463,13 +465,14 @@ async def generate_with_gemini(prompt: str, api_key: str, model: str = "auto") -
                 # 404: Deprecated model or not supported
                 # 503: Temporary demand spike -> smoothly try next candidate model!
                 last_error = f"{cand_model} (Status {response.status_code})"
-                print(f"[Gemini Model Fallback] Model {cand_model} trả về {response.status_code}, đang chuyển tiếp model tiếp theo trong danh sách...")
-                if response.status_code == 404 and not tried_discovery:
+                print(f"[Gemini Model Fallback] Model {cand_model} returned {response.status_code}, trying next model in list...")
+                if not tried_discovery:
                     tried_discovery = True
                     discovered = await discover_gemini_models(client, api_key)
                     for d_model in discovered:
-                        if d_model not in candidate_models:
-                            candidate_models.append(d_model)
+                        if ("flash" in d_model or "pro" in d_model) and not any(bad in d_model for bad in ("tts", "image", "robotics", "computer-use", "clip")):
+                            if d_model not in candidate_models:
+                                candidate_models.append(d_model)
                 continue
             elif response.status_code == 429:
                 err_msg = "Tài khoản vượt quá hạn ngạch (429 Quota Exceeded / Rate Limit)"
@@ -4336,11 +4339,11 @@ async def generate_exam(request: GenerateRequest) -> ExamStructure:
             if not raw_json or ("{" not in raw_json and "[" not in raw_json):
                 raise ValueError("Mô hình AI phản hồi văn bản giải thích thay vì xuất cấu trúc đề thi JSON.")
 
-            print(f"[Key Pool] Đã sinh đề thành công bằng Key {masked} (Lần thử {attempt_idx}/{len(ordered_keys)})")
+            print(f"[Key Pool] Generated exam successfully using Key {masked} (Attempt {attempt_idx}/{len(ordered_keys)})")
             break
         except Exception as e:
             err_detail = str(e)
-            print(f"[Key Failover] Thất bại với Key {masked}: {err_detail}. Đang chuyển tiếp key tiếp theo trong danh sách...")
+            print(f"[Key Failover] Failed with Key {masked}: {err_detail}. Trying next key...")
             key_errors.append(f"Key {masked}: {err_detail}")
             raw_json = None
             continue
