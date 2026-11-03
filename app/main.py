@@ -43,6 +43,11 @@ app.add_middleware(
 
 @app.middleware("http")
 async def add_no_cache_headers(request: Request, call_next):
+    # Detect cron-job.org / monitoring bots pinging root URL to avoid "output too large" error
+    user_agent = request.headers.get("user-agent", "").lower()
+    if request.url.path in ("/", "") and ("cron-job" in user_agent or "uptimerobot" in user_agent or "betteruptime" in user_agent or request.method == "HEAD"):
+        return JSONResponse(status_code=200, content={"status": "ok", "app": "EduExamAI 2026"})
+
     response = await call_next(request)
     if request.url.path == "/" or request.url.path.endswith(".html"):
         response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate, max-age=0"
@@ -401,6 +406,13 @@ async def api_export_zip(req: ZipExportRequest):
     except Exception as e:
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Lỗi tạo tệp ZIP: {str(e)}")
+
+# Health check endpoints for Cron jobs and uptime monitoring
+@app.get("/api/health")
+@app.get("/health")
+@app.get("/ping")
+async def health_check():
+    return {"status": "ok", "app": "EduExamAI 2026", "healthy": True}
 
 # Phục vụ giao diện tĩnh SPA
 app.mount("/", StaticFiles(directory=STATIC_DIR, html=True), name="static")
